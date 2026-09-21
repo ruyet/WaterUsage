@@ -1,46 +1,41 @@
-# Follow the Flow — Mobile Water Story
+# Follow the Flow v2
 
-A mobile-first scrollytelling prototype for a Fontys Visual Storytelling project.
+Mobile-first scrollytelling prototype inspired by collage, halftone, and paper-cut editorial graphics.
+
+## What changed
+- Much bolder full-screen type
+- More scroll-driven animation
+- Water-filled text
+- Tap to glass to many-glasses zoom-out sequence
+- Moving paper-cut style decorative hands
+- Breathing collage layout with rotating note cards and sticker elements
+- More center-focused statements instead of small bottom data labels
 
 ## Files
-- `index.html` — page structure
-- `styles.css` — complete mobile styling
-- `script.js` — scroll interactions and editable data constants
-
-## How to run
-Open `index.html` in a browser. For the intended design, use a mobile viewport around 390 × 844 px.
-
-For best results, run it through a simple local server, for example:
-- VS Code Live Server
-- `python -m http.server`
+- `index.html`
+- `styles.css`
+- `script.js`
 
 ## Important data note
-The design is production-ready as a prototype, but not every number in the experience is presented as a final researched fact.
+This prototype is designed to feel strong visually first.
+Before final presentation, replace any placeholder or example assumptions with your final dataset values.
 
-In `script.js`, the `DATA` object contains:
-- `dailyLitres: 118`
-- `targetLitres: 100`
-- `exampleShowerFlow: 8`
-- `exampleShowerMinutes: 10`
-- `showerFrequencyPerWeek: 6`
-- `shorterByMinutes: 2`
+Current example assumptions in the prototype:
+- Average drinking-water use: 118 L/day
+- Target: 100 L/day
+- Example shower flow: 8 L/min
+- Example shower length: 10 min
+- Example saving: 2 minutes shorter
+- Example frequency: 6 showers per week
 
-The shower flow is explicitly treated as an example assumption in the UI. Replace it with the flow rate you decide to use from your final source.
+## Suggested next step
+If you want, you can:
+1. Replace placeholder category texts with exact percentages from your selected Dutch source
+2. Add more sections such as costs, environmental context, or a final CTA
+3. Swap the decorative paper-cut SVGs with your own custom collage graphics
+4. Fine-tune every animation speed in `script.js`
 
-The usage breakdown percentages in the 'Where does it go?' section are also clearly marked as illustrative placeholders. Replace those with the values from your selected Dutch dataset before presenting this as a data-backed final MVP.
-
-## Design direction
-- editorial / data journalism
-- warm neutral background
-- water-blue as the main semantic colour
-- large typography
-- almost no conventional app chrome
-- story controlled primarily through scrolling
-- zoom/scale used to explain quantity
-
-## Suggested next iterations
-1. Replace the placeholder breakdown percentages with exact values from your dataset.
-2. Test whether glasses, bottles, or another object communicates scale best.
-3. Validate the three shower-behaviour cards with target users.
-4. Test whether the 'music as a timer' concept feels useful or gimmicky.
-5. Replace generic labels with your final research-backed wording.
+## Tip
+Open with a local server for best results:
+- VS Code Live Server
+- `python -m http.server`
