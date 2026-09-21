@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4f1e8" />
+  <title>Follow the Flow — Water Story</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <section class="hero scene" data-scene="hero">
+      <div class="scene-inner">
+        <p class="eyebrow">A visual story about everyday water use</p>
+        <h1>Follow<br>the flow.</h1>
+        <p class="intro">Scroll to see how something as ordinary as turning on a tap quickly becomes much bigger.</p>
+        <div class="scroll-cue">
+          <span>Scroll</span>
+          <div class="scroll-line"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tap-story scene tall" data-scene="tap">
+      <div class="sticky">
+        <div class="copy copy-top">
+          <p class="eyebrow">01 — It starts small</p>
+          <h2>One tap.<br>One glass.</h2>
+          <p>Water feels almost invisible when we only see a little at a time.</p>
+        </div>
+
+        <div class="tap-visual" aria-hidden="true">
+          <svg class="tap-svg" viewBox="0 0 420 480">
+            <path class="tap-body" d="M92 115h126c46 0 82 37 82 82v24h54v52h-109v-69c0-22-17-39-39-39H92z"/>
+            <rect class="tap-neck" x="64" y="95" width="54" height="90" rx="14"/>
+            <rect class="tap-handle" x="42" y="76" width="98" height="24" rx="12"/>
+            <rect class="tap-spout" x="297" y="206" width="69" height="26" rx="13"/>
+          </svg>
+          <div class="water-stream"></div>
+          <div class="glass">
+            <div class="glass-water"></div>
+            <div class="glass-shine"></div>
+          </div>
+        </div>
+
+        <div class="copy copy-bottom tap-caption">
+          <p><strong>A glass is easy to understand.</strong><br>A day of water use is not.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="glasses-story scene tall" data-scene="glasses">
+      <div class="sticky dark">
+        <div class="copy copy-top light">
+          <p class="eyebrow">02 — Zoom out</p>
+          <h2>Now imagine<br>many more.</h2>
+          <p>We scale the same familiar object until the amount starts to feel real.</p>
+        </div>
+
+        <div class="glasses-stage" aria-hidden="true">
+          <div id="glassesGrid" class="glasses-grid"></div>
+        </div>
+
+        <div class="stat-card floating">
+          <span class="stat-label">Average Dutch drinking-water use</span>
+          <strong><span id="dailyLitres">118</span> L</strong>
+          <span>per person, per day</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="breakdown scene tall" data-scene="breakdown">
+      <div class="sticky">
+        <div class="copy copy-top">
+          <p class="eyebrow">03 — Where does it go?</p>
+          <h2>A day is made<br>of routines.</h2>
+          <p>Instead of one abstract number, break the day into things people already recognise.</p>
+        </div>
+
+        <div class="usage-stack">
+          <div class="usage-block shower" data-share="45">
+            <div>
+              <span>Shower</span>
+              <small>One of the biggest daily uses</small>
+            </div>
+            <strong>≈ 45%</strong>
+          </div>
+          <div class="usage-block toilet" data-share="26">
+            <div>
+              <span>Toilet</span>
+              <small>Repeated throughout the day</small>
+            </div>
+            <strong>≈ 26%</strong>
+          </div>
+          <div class="usage-block laundry" data-share="14">
+            <div>
+              <span>Laundry</span>
+              <small>Fewer, fuller loads help</small>
+            </div>
+            <strong>≈ 14%</strong>
+          </div>
+          <div class="usage-block other" data-share="15">
+            <div>
+              <span>Kitchen + other</span>
+              <small>Taps, dishes and everyday use</small>
+            </div>
+            <strong>≈ 15%</strong>
+          </div>
+        </div>
+
+        <p class="data-note">Prototype breakdown values are illustrative. Replace these percentages with the final values from your chosen Dutch dataset.</p>
+      </div>
+    </section>
+
+    <section class="shower-story scene tall" data-scene="shower">
+      <div class="sticky dark shower-bg">
+        <div class="copy copy-top light">
+          <p class="eyebrow">04 — Focus on one habit</p>
+          <h2>Your shower<br>keeps counting.</h2>
+          <p>The longer it runs, the faster one routine turns into a yearly amount.</p>
+        </div>
+
+        <div class="shower-visual" aria-hidden="true">
+          <div class="shower-head">
+            <div class="shower-arm"></div>
+            <div class="shower-disc"></div>
+          </div>
+          <div class="droplets">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+
+        <div class="shower-counter">
+          <span class="counter-kicker">Example shower</span>
+          <strong><span id="showerMinutes">10</span> min</strong>
+          <p>At an example flow of 8 L/min:</p>
+          <div class="counter-row">
+            <span>one shower</span>
+            <b><span id="oneShowerLitres">80</span> L</b>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reduce scene extra-tall" data-scene="reduce">
+      <div class="sticky">
+        <div class="copy copy-top">
+          <p class="eyebrow">05 — Make it easier to stop</p>
+          <h2>Shorter showers<br>need a trigger.</h2>
+          <p>“Shower less” is vague. A specific cue is easier to act on.</p>
+        </div>
+
+        <div class="habit-cards">
+          <article class="habit-card active" data-saving="2">
+            <span class="habit-number">01</span>
+            <h3>Pick a shorter playlist</h3>
+            <p>Instead of letting music run endlessly, choose 2–3 songs and make the last song your cue to finish.</p>
+            <div class="pill">Example: save 2 min</div>
+          </article>
+
+          <article class="habit-card" data-saving="2">
+            <span class="habit-number">02</span>
+            <h3>Use one song as a timer</h3>
+            <p>Start one familiar track when you step in. When it ends, rinse and get out.</p>
+            <div class="pill">Simple behavioural cue</div>
+          </article>
+
+          <article class="habit-card" data-saving="3">
+            <span class="habit-number">03</span>
+            <h3>Move shampoo time off-water</h3>
+            <p>Turn the water off while shampooing or soaping, then switch it back on only to rinse.</p>
+            <div class="pill">Example: save 3 min of flow</div>
+          </article>
+        </div>
+
+        <div class="savings-panel">
+          <div>
+            <span class="stat-label">If your shower is 2 minutes shorter</span>
+            <strong><span id="savedPerShower">16</span> L</strong>
+            <span>saved per shower*</span>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <span class="stat-label">If you shower 6× per week</span>
+            <strong><span id="savedPerYear">4992</span> L</strong>
+            <span>saved per year*</span>
+          </div>
+        </div>
+
+        <p class="data-note">*Example calculation based on 8 L/min. Keep the interaction, but replace the flow rate with the value you decide to use from your final source.</p>
+      </div>
+    </section>
+
+    <section class="year scene tall" data-scene="year">
+      <div class="sticky blue">
+        <div class="copy copy-top light">
+          <p class="eyebrow">06 — A day becomes a year</p>
+          <h2>Small routines.<br>Huge scale.</h2>
+        </div>
+
+        <div class="year-number">
+          <span>118 L/day</span>
+          <strong>43,070 L</strong>
+          <span>per person, per year</span>
+        </div>
+
+        <div class="year-grid" id="yearGrid" aria-hidden="true"></div>
+
+        <div class="copy copy-bottom light">
+          <p>This is why visualising scale matters. The litres were always there — we just rarely see them all at once.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="target scene tall" data-scene="target">
+      <div class="sticky">
+        <div class="copy copy-top">
+          <p class="eyebrow">07 — The target</p>
+          <h2>118 → 100.</h2>
+          <p>The Dutch goal is to reduce average drinking-water use to 100 litres per person per day by 2035.</p>
+        </div>
+
+        <div class="target-bars">
+          <div class="bar-row">
+            <span>Today</span>
+            <div class="bar-track"><div class="bar current"></div></div>
+            <strong>118 L</strong>
+          </div>
+          <div class="bar-row">
+            <span>2035 target</span>
+            <div class="bar-track"><div class="bar goal"></div></div>
+            <strong>100 L</strong>
+          </div>
+        </div>
+
+        <div class="difference">
+          <span>The difference</span>
+          <strong>18 L</strong>
+          <p>per person, every day</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ending scene">
+      <div class="scene-inner ending-inner">
+        <p class="eyebrow">08 — Make the invisible visible</p>
+        <h2>Water is easy<br>to ignore<br>when you can’t see it.</h2>
+        <p class="intro">The goal is not to shame people. It is to make everyday water use understandable enough to notice — and simple enough to act on.</p>
+        <button class="restart" id="restartBtn">Start again</button>
+        <p class="footer-note">Mobile scrollytelling prototype · Fontys Visual Storytelling</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
