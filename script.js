@@ -1,188 +1,266 @@
-const CONFIG = {
-  dailyLitres: 118,
-  targetLitres: 100,
+const state = {
   showerMinutes: 10,
-  showerFlowPerMinute: 8,
-  shorterMinutes: 2,
-  showersPerWeek: 6
+  showersPerWeek: 5,
+  dishesPerWeek: 5,
+  dishMethod: "basin",
+  laundryPerWeek: 2.5
 };
 
-const clamp = (n, min = 0, max = 1) => Math.max(min, Math.min(max, n));
-const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (n,a=0,b=1)=>Math.max(a,Math.min(b,n));
+const lerp = (a,b,t)=>a+(b-a)*t;
 
-function progressFor(section) {
-  const rect = section.getBoundingClientRect();
-  const total = rect.height - window.innerHeight;
-  if (total <= 0) return clamp(-rect.top / window.innerHeight + 1);
-  return clamp(-rect.top / total);
+function progress(id){
+  const el=document.getElementById(id);
+  const r=el.getBoundingClientRect();
+  const total=r.height-innerHeight;
+  return total<=0?clamp(-r.top/innerHeight+1):clamp(-r.top/total);
 }
 
-const glassesCloud = document.getElementById("glassesCloud");
-for (let i = 0; i < 64; i++) {
-  const glass = document.createElement("div");
-  glass.className = "mini-glass";
-  glassesCloud.appendChild(glass);
+function selectInGroup(container, button){
+  [...container.querySelectorAll("button")].forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
 }
 
-const yearDrops = document.getElementById("yearDrops");
-for (let i = 0; i < 42; i++) {
-  const drop = document.createElement("div");
-  drop.className = "drop";
-  yearDrops.appendChild(drop);
-}
-
-const savePerShower = CONFIG.shorterMinutes * CONFIG.showerFlowPerMinute;
-const savePerYear = savePerShower * CONFIG.showersPerWeek * 52;
-document.getElementById("minutesStat").textContent = `${CONFIG.showerMinutes} MIN`;
-document.querySelector(".save-badge b").textContent = `≈ ${savePerYear.toLocaleString("en-US")} L LESS PER YEAR*`;
-
-function updateFillScene() {
-  const section = document.getElementById("fill");
-  const p = progressFor(section);
-  const fill = clamp((p - 0.08) / 0.58);
-  document.getElementById("waterWord").style.setProperty("--fill-level", `${fill * 100}%`);
-}
-
-function updateTapScene() {
-  const section = document.getElementById("tap");
-  const p = progressFor(section);
-
-  const stream = document.getElementById("waterStream");
-  const glass = document.getElementById("glassOne");
-  const glassWater = document.getElementById("glassWater");
-  const cloud = document.getElementById("glassesCloud");
-  const label = document.querySelector(".statement-box");
-
-  const streamP = clamp((p - 0.05) / 0.22);
-  stream.style.height = `${lerp(0, 31, streamP)}vh`;
-  stream.style.opacity = String(streamP);
-
-  const fillP = clamp((p - 0.18) / 0.22);
-  glassWater.style.height = `${fillP * 78}%`;
-
-  const zoomP = clamp((p - 0.36) / 0.2);
-  glass.style.transform = `translateX(-50%) scale(${lerp(1, 1.65, zoomP)})`;
-  glass.style.opacity = String(lerp(1, 0.12, zoomP));
-
-  const cloudP = clamp((p - 0.48) / 0.28);
-  cloud.style.opacity = String(cloudP);
-  cloud.style.transform = `scale(${lerp(0.4, 1.08, cloudP)}) rotate(${lerp(-8, 0, cloudP)}deg)`;
-
-  const textP = clamp((p - 0.62) / 0.18);
-  label.style.transform = `scale(${lerp(0.75, 1, textP)})`;
-  label.style.opacity = String(lerp(0.4, 1, textP));
-}
-
-function updateBreakdownScene() {
-  const section = document.getElementById("breakdown");
-  const p = progressFor(section);
-
-  const cards = [
-    document.getElementById("catShower"),
-    document.getElementById("catToilet"),
-    document.getElementById("catLaundry"),
-    document.getElementById("catKitchen")
-  ];
-
-  cards.forEach((card, i) => {
-    const base = 0.08 + i * 0.09;
-    const local = clamp((p - base) / 0.18);
-    const y = lerp(52, 0, local);
-    const r = [ -6, 5, 7, -5 ][i];
-    card.style.opacity = String(local);
-    card.style.transform = `rotate(${r}deg) translateY(${y}px) scale(${lerp(0.92, 1, local)})`;
-  });
-
-  const sideNote = document.querySelector(".big-side-note");
-  const noteP = clamp((p - 0.5) / 0.22);
-  sideNote.style.opacity = String(noteP);
-  sideNote.style.transform = `translateY(${lerp(20, 0, noteP)}px)`;
-}
-
-function updateShowerScene() {
-  const section = document.getElementById("shower");
-  const p = progressFor(section);
-
-  const fillP = clamp((p - 0.1) / 0.6);
-  document.getElementById("showerWord").style.setProperty("--fill-level", `${fillP * 100}%`);
-
-  const stat = document.getElementById("minutesStat");
-  const scaleP = clamp((p - 0.34) / 0.2);
-  stat.style.transform = `scale(${lerp(0.85, 1.08, scaleP)})`;
-}
-
-function updateHabitsScene() {
-  const section = document.getElementById("habits");
-  const p = progressFor(section);
-
-  const notes = [
-    document.getElementById("habitOne"),
-    document.getElementById("habitTwo"),
-    document.getElementById("habitThree")
-  ];
-
-  notes.forEach((note, i) => {
-    const local = clamp((p - (0.1 + i * 0.12)) / 0.2);
-    note.style.opacity = String(local);
-    note.style.transform += ` translateY(${lerp(40, 0, local)}px) scale(${lerp(0.95, 1, local)})`;
-  });
-
-  const save = document.getElementById("saveBadge");
-  const saveP = clamp((p - 0.54) / 0.16);
-  save.style.opacity = String(saveP);
-  save.style.transform = `translateY(${lerp(34, 0, saveP)}px)`;
-}
-
-function updateYearScene() {
-  const section = document.getElementById("year");
-  const p = progressFor(section);
-
-  const num = document.querySelector(".year-number");
-  const numP = clamp((p - 0.08) / 0.28);
-  num.style.transform = `scale(${lerp(0.78, 1.06, numP)})`;
-
-  const drops = document.querySelectorAll(".year-drops .drop");
-  const reveal = clamp((p - 0.24) / 0.4);
-  drops.forEach((drop, i) => {
-    const local = clamp((reveal * drops.length - i) / 12);
-    drop.style.opacity = String(local * 0.92);
-    drop.style.transform = `scale(${lerp(0.4, 1, local)})`;
-  });
-}
-
-function updateTargetScene() {
-  const section = document.getElementById("target");
-  const p = progressFor(section);
-  const pill = document.getElementById("differencePill");
-  const pillP = clamp((p - 0.36) / 0.2);
-  pill.style.opacity = String(pillP);
-  pill.style.transform = `translateX(-50%) translateY(${lerp(26, 0, pillP)}px)`;
-}
-
-function tick() {
-  updateFillScene();
-  updateTapScene();
-  updateBreakdownScene();
-  updateShowerScene();
-  updateHabitsScene();
-  updateYearScene();
-  updateTargetScene();
-}
-
-let ticking = false;
-window.addEventListener("scroll", () => {
-  if (!ticking) {
-    window.requestAnimationFrame(() => {
-      tick();
-      ticking = false;
+function bindDial(id, key, callback){
+  const dial=document.getElementById(id);
+  let startY=null;
+  const buttons=[...dial.querySelectorAll(".rotary-btn")];
+  buttons.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      selectInGroup(dial,btn);
+      state[key]=Number(btn.dataset.value);
+      callback?.();
     });
-    ticking = true;
+  });
+  dial.addEventListener("pointerdown",e=>{
+    startY=e.clientY;
+    dial.setPointerCapture?.(e.pointerId);
+  });
+  dial.addEventListener("pointerup",e=>{
+    if(startY===null)return;
+    const dy=e.clientY-startY;
+    if(Math.abs(dy)>18){
+      const current=Math.max(0,buttons.findIndex(b=>b.classList.contains("active")));
+      const next=clamp(current+(dy>0?1:-1),0,buttons.length-1);
+      buttons[next].click();
+    }
+    startY=null;
+  });
+}
+
+function showerIntensity(){
+  return clamp((state.showerMinutes/20)*0.75+(state.showersPerWeek/10)*0.25,.12,1);
+}
+
+function buildRain(containerId, count=42){
+  const c=document.getElementById(containerId);
+  c.innerHTML="";
+  for(let i=0;i<count;i++){
+    const d=document.createElement("i");
+    d.className="drop";
+    d.style.left=`${Math.random()*100}%`;
+    d.style.height=`${45+Math.random()*95}px`;
+    d.style.animationDuration=`${.7+Math.random()*1.25}s`;
+    d.style.animationDelay=`${-Math.random()*2}s`;
+    d.style.opacity=(.35+Math.random()*.55).toFixed(2);
+    c.appendChild(d);
   }
-}, { passive: true });
+}
 
-window.addEventListener("resize", tick);
-tick();
+function updateRain(){
+  const intensity=showerIntensity();
+  ["showerRain","showerRain2"].forEach(id=>{
+    const c=document.getElementById(id);
+    c.style.opacity=String(.18+intensity*.82);
+    [...c.children].forEach((d,i)=>{
+      d.style.display=(i<Math.round(c.children.length*(.18+intensity*.82)))?"block":"none";
+    });
+  });
+}
 
-document.getElementById("restartBtn").addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
+function bindPlates(){
+  const group=document.getElementById("dishFrequency");
+  [...group.querySelectorAll(".plate")].forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      selectInGroup(group,btn);
+      state.dishesPerWeek=Number(btn.dataset.value);
+      updateSink();
+      updateEstimate();
+    });
+  });
+
+  const method=document.getElementById("dishMethod");
+  [...method.querySelectorAll(".method-plate")].forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      selectInGroup(method,btn);
+      state.dishMethod=btn.dataset.value;
+      updateSink();
+      updateEstimate();
+    });
+  });
+}
+
+function bindLaundry(){
+  const g=document.getElementById("laundryButtons");
+  [...g.querySelectorAll("button[data-value]")].forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      selectInGroup(g,btn);
+      state.laundryPerWeek=Number(btn.dataset.value);
+      updateLaundry();
+      updateEstimate();
+    });
+  });
+}
+
+function updateSink(){
+  const methodFactor={dishwasher:.35,basin:.58,running:1}[state.dishMethod];
+  const frequencyFactor=clamp(state.dishesPerWeek/7,.15,1);
+  const h=12+58*methodFactor*frequencyFactor;
+  document.getElementById("sinkStream").style.height=`${80+130*methodFactor}px`;
+  document.getElementById("basinWater").style.height=`${h}%`;
+}
+
+function updateLaundry(){
+  const h=18+clamp(state.laundryPerWeek/4,0,1)*54;
+  document.getElementById("washerWater").style.height=`${h}%`;
+}
+
+function estimateDailyLitres(){
+  // Prototype model. Shower is the most responsive element because that is the key story.
+  const shower=(state.showerMinutes*8*state.showersPerWeek)/7;
+  const dishPerSession={dishwasher:10,basin:18,running:34}[state.dishMethod];
+  const dishes=(dishPerSession*state.dishesPerWeek)/7;
+  const laundry=(50*state.laundryPerWeek)/7;
+  const baseline=28; // toilet, drinking, cooking and other household use placeholder
+  return Math.round(shower+dishes+laundry+baseline);
+}
+
+function updateEstimate(){
+  const litres=estimateDailyLitres();
+  document.getElementById("personalLitres").textContent=litres;
+  document.getElementById("glassCount").textContent=Math.round(litres/0.5);
+  const cost=Math.max(18,Math.round(litres*.46));
+  document.getElementById("monthlyCost").textContent=cost;
+}
+
+function buildFlyingGlasses(){
+  const c=document.getElementById("flyingGlasses");
+  for(let i=0;i<42;i++){
+    const g=document.createElement("i");
+    g.className="fly-glass";
+    g.dataset.x=(Math.random()*88+4).toFixed(2);
+    g.dataset.y=(Math.random()*88+4).toFixed(2);
+    g.dataset.r=(Math.random()*80-40).toFixed(2);
+    c.appendChild(g);
+  }
+}
+
+function buildMoneyRain(){
+  const c=document.getElementById("moneyRain");
+  for(let i=0;i<28;i++){
+    const e=document.createElement("i");
+    e.className="euro";
+    e.textContent="€";
+    e.style.left=`${Math.random()*92}%`;
+    e.style.fontSize=`${24+Math.random()*34}px`;
+    e.style.animationDuration=`${2.5+Math.random()*4}s`;
+    e.style.animationDelay=`${-Math.random()*5}s`;
+    c.appendChild(e);
+  }
+}
+
+function updateScrollAnimations(){
+  const p1=progress("showerStart");
+  const head=document.querySelector("#showerStart .shower-head-wrap");
+  head.style.transform=`translateX(-50%) translateY(${lerp(0,-18,p1)}px) scale(${lerp(1,1.08,p1)})`;
+  document.querySelector(".first-control").style.transform=`translateY(${lerp(0,-12,clamp((p1-.25)/.35))}px)`;
+  document.getElementById("showerScrollHint").style.opacity=String(clamp((p1-.52)/.22));
+
+  const p2=progress("showerFrequency");
+  document.querySelector(".water-type-one").style.transform=`translate(-50%,-50%) scale(${lerp(.8,1.35,p2)})`;
+  document.querySelector(".water-type-one").style.opacity=String(lerp(.1,.35,clamp((p2-.25)/.45)));
+
+  const p3=progress("sinkChapter");
+  document.querySelector(".sink-scene").style.transform=`translateY(${lerp(26,-10,p3)}px) scale(${lerp(.95,1.04,p3)})`;
+  document.getElementById("dishMethodPanel").style.opacity=String(clamp((p3-.55)/.2));
+  document.getElementById("dishMethodPanel").style.transform=`translateY(${lerp(28,0,clamp((p3-.55)/.2))}px)`;
+
+  const p4=progress("drainChapter");
+  const tunnel=document.getElementById("drainTunnel");
+  tunnel.style.transform=`translate(-50%,-50%) scale(${lerp(.65,5.5,p4)}) rotate(${lerp(0,75,p4)}deg)`;
+  tunnel.style.opacity=String(lerp(1,.18,clamp((p4-.72)/.2)));
+  document.querySelector(".drain-copy").style.opacity=String(lerp(1,0,clamp((p4-.35)/.22)));
+
+  const p5=progress("laundryChapter");
+  document.querySelector(".washer").style.transform=`translate(-50%,-50%) scale(${lerp(.84,1.08,clamp((p5-.05)/.62))})`;
+  document.querySelector(".washer-drum").style.transform=`rotate(${lerp(0,540,clamp((p5-.2)/.65))}deg)`;
+
+  const p6=progress("resultChapter");
+  document.querySelector(".result-number").style.transform=`translateY(-50%) scale(${lerp(.72,1.08,clamp((p6-.12)/.45))})`;
+  document.querySelector(".marker-strip").style.opacity=String(clamp((p6-.52)/.18));
+
+  const p7=progress("glassesChapter");
+  [...document.querySelectorAll(".fly-glass")].forEach((g,i)=>{
+    const local=clamp((p7-(i%12)*.015)/.55);
+    const x=Number(g.dataset.x),y=Number(g.dataset.y),r=Number(g.dataset.r);
+    g.style.left=`${lerp(50,x,local)}%`;
+    g.style.top=`${lerp(50,y,local)}%`;
+    g.style.opacity=String(local*.88);
+    g.style.transform=`translate(-50%,-50%) rotate(${lerp(0,r,local)}deg) scale(${lerp(.25,1,local)})`;
+  });
+  document.querySelector(".figma-glasses").style.transform=`scale(${lerp(.75,1.05,p7)})`;
+
+  const p8=progress("moneyChapter");
+  document.querySelector(".money-title").style.transform=`translateY(-50%) scale(${lerp(.84,1.04,clamp((p8-.06)/.55))})`;
+  document.getElementById("moneyRain").style.opacity=String(clamp((p8-.15)/.2));
+
+  const p9=progress("savingChapter");
+  document.querySelector(".saving-big").style.transform=`scale(${lerp(.74,1.06,clamp((p9-.08)/.38))})`;
+  document.querySelector(".meme-one").style.transform=`rotate(${lerp(-18,-7,p9)}deg) translateY(${lerp(50,0,p9)}px)`;
+  document.querySelector(".meme-two").style.transform=`rotate(${lerp(18,8,p9)}deg) translateY(${lerp(70,0,p9)}px)`;
+
+  const p10=progress("valueChapter");
+  document.querySelector(".doner-comparison").style.transform=`translateY(${lerp(70,0,clamp((p10-.08)/.3))}px)`;
+  document.querySelector(".outfit-comparison").style.transform=`translateX(${lerp(80,0,clamp((p10-.45)/.28))}px)`;
+
+  const p11=progress("actionsChapter");
+  [...document.querySelectorAll(".action-card")].forEach((card,i)=>{
+    const local=clamp((p11-(.08+i*.16))/.22);
+    const rot=[-6,6,-4][i];
+    card.style.opacity=String(local);
+    card.style.transform=`rotate(${rot}deg) translateY(${lerp(70,0,local)}px) scale(${lerp(.92,1,local)})`;
+  });
+
+  const p12=progress("futureChapter");
+  document.querySelector(".collage-dry").style.transform=`scale(${lerp(.72,1.04,clamp((p12-.18)/.3))})`;
+  document.querySelector(".collage-before-after").style.clipPath=`inset(0 ${lerp(48,0,clamp((p12-.5)/.3))}% 0 0)`;
+  document.querySelector(".future-meme").style.transform=`rotate(${lerp(-12,6,p12)}deg) scale(${lerp(.7,1.05,p12)})`;
+}
+
+bindDial("showerLengthDial","showerMinutes",()=>{updateRain();updateEstimate();});
+bindDial("showerFrequencyDial","showersPerWeek",()=>{updateRain();updateEstimate();});
+bindPlates();
+bindLaundry();
+buildRain("showerRain",52);
+buildRain("showerRain2",48);
+buildFlyingGlasses();
+buildMoneyRain();
+updateRain();
+updateSink();
+updateLaundry();
+updateEstimate();
+updateScrollAnimations();
+
+let ticking=false;
+addEventListener("scroll",()=>{
+  if(!ticking){
+    requestAnimationFrame(()=>{
+      updateScrollAnimations();
+      ticking=false;
+    });
+    ticking=true;
+  }
+},{passive:true});
+addEventListener("resize",updateScrollAnimations);
+
+document.getElementById("restartBtn").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
