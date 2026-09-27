@@ -1,63 +1,21 @@
-# Water You Don’t See — v26
+# Water Story Mobile v28
 
-v26 is a stability hotfix for the GSAP version. The visual direction and interaction choices from v25 are kept, but the chapter handoff and pinned-scroll architecture are simplified so the transition cannot strand the user on the blue overlay and Laundry can always be driven by scrolling.
+## Stability changes
 
-## What was fixed
+- Native browser scrolling is now the only scroll coordinate system. GSAP + ScrollTrigger still controls all chapter animation and pinning. ScrollSmoother and ScrollToPlugin were removed because this project is mostly pinned storytelling, where a second transformed scroll layer can create handoff drift.
+- Every pinned chapter has an explicit `refreshPriority` matching document order. All triggers are created first, then one ordered `ScrollTrigger.refresh()` measures the complete page.
+- The two timed autoplay chapters (08 savings and the future-world sequence) now use a hidden 2.2-viewport GSAP pin buffer. This prevents a strong wheel/touch gesture from skipping across the trigger before the input gate starts.
+- When autoplay finishes, the document is moved to the final 2px of that buffer while the chapter is still pinned. The move is visually invisible; the next deliberate scroll releases the chapter immediately.
+- Guided question transitions no longer refresh every ScrollTrigger after their overlay closes. Their geometry does not change, and avoiding mid-session refreshes prevents unrelated chapters from re-evaluating while the user is scrolling.
 
-- Removed the conflict where `ScrollSmoother.paused(true)` was used at the same time as a transition tried to reposition ScrollSmoother.
-- The blue transition is now **one GSAP panel** that slides in, fully covers the viewport, moves the page underneath it, then slides out.
-- Transition text is explicitly centered with GSAP transform percentages, so it no longer disappears during the wipe.
-- Shower → Sink remains locked after the transition because the sink still requires answers.
-- Sink → Laundry explicitly unlocks manual scrolling after the transition finishes.
-- On touch/mobile layouts, native touch scrolling is used instead of ScrollSmoother. GSAP + ScrollTrigger still control all scroll-driven animations. This avoids the common mobile conflict between transformed smooth-scroll containers and pinned sections.
-- Laundry, Your Water Story, Glasses, Money, Actions and Morph now pin the **whole chapter** with `pinSpacing: true`. ScrollTrigger creates exactly the space needed for the animation, so there is no fake 185–285svh blank background after a stage.
-- The pinned stages use explicit viewport-based scroll distances in JavaScript and automatically release when their animation is complete.
-- Scroll hints stay visible during the stage and change to the next instruction near the end instead of disappearing immediately.
+## Main pacing values
 
-## Adjusting how much scrolling a pinned stage needs
-
-In `script.js`, inside `setupHeldStages()`, each stage has an `end: pinDistance(...)` value.
-
-Examples:
-
-```js
-// Laundry
-end: pinDistance(0.88)
-
-// Your Water Story
-end: pinDistance(0.78)
-
-// Glasses
-end: pinDistance(1.02)
-
-// Money
-end: pinDistance(0.84)
-
-// Morph
-end: pinDistance(1.85)
-```
-
-`1.0` is approximately one viewport of scrolling while the chapter remains pinned. Lower values make the interaction finish faster; higher values require more scrolling.
-
-## Automatic story timing
-
-Near the top of `script.js`:
+In `script.js`:
 
 ```js
 const AUTO_STORY_STEP = 1.72;
 const FUTURE_STORY_STEP = 2.05;
+const AUTO_GATE_VIEWPORTS = 2.2;
 ```
 
-These control how long each automatic savings/future-world beat stays on screen.
-
-## Mobile scrolling architecture
-
-Desktop/trackpad layouts can still use GSAP ScrollSmoother. Touch layouts intentionally use native scrolling plus ScrollTrigger. The scroll-driven visuals are still GSAP animations; only the physical touch scrolling is left native because it is more reliable for mobile pinned storytelling.
-
-## GSAP dependency
-
-GSAP, ScrollTrigger, ScrollToPlugin and ScrollSmoother are loaded from jsDelivr in `index.html`. The prototype therefore needs an internet connection when opened locally unless those libraries are hosted with the project.
-
-## Prototype calculation
-
-The water-use calculation is still a prototype estimate. Replace the assumptions with final sourced values before presenting the calculated litres/cost as factual measurements.
+`AUTO_GATE_VIEWPORTS` is a safety buffer, not visible scroll distance. Do not reduce it too aggressively; it protects autoplay sections against fast-scroll overshoot.

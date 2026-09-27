@@ -498,12 +498,12 @@ p {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 3px;
+  width: 2px;
   height: 24px;
   transform: translate(-50%, -100%) rotate(var(--dial-angle));
   transform-origin: 50% 100%;
   border-radius: 99px;
-  background: var(--ink);
+  background: rgb(13 13 13 / 51%);
   transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .dial-value {
@@ -3135,7 +3135,7 @@ body.interaction-locked {
 }
 .console-question {
   min-height: 194px;
-  justify-content: flex-start;
+  justify-content: center;
   padding-top: 5px;
   transition: none !important;
 }
@@ -3513,7 +3513,7 @@ body.interaction-locked {
 .answer-dial.is-active {
   opacity: 1 !important;
   filter: none !important;
-  transform: scale(1) !important;
+  /* transform: scale(1) !important; */
 }
 .answer-dial.is-active .dial-knob {
   box-shadow:
@@ -3914,3 +3914,4 @@ body.interaction-locked {
     overflow: visible !important;
   }
 }
+\n\n/* ==========================================================================\n   v28 stability pass — one native scroll coordinate system\n   ========================================================================== */\n#smooth-wrapper,\n#smooth-content {\n  width: 100%;\n  overflow: visible !important;\n}\n\n/* Autoplay chapters are pinned by ScrollTrigger while their timed story plays.\n   The pin buffer is skipped invisibly at completion, so there is no dead scroll. */\n.saving-story,\n.future-auto-stage {\n  contain: layout paint;\n  isolation: isolate;\n}\n

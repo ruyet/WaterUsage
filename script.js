@@ -1,4 +1,4 @@
-/* Water Story v26 — stable GSAP chapter handoffs + touch-safe pinned storytelling */
+/* Water Story v28 — deterministic chapter pins + overscroll-safe autoplay gates */
 
 const state = {
   showerMinutes: 2,
@@ -24,6 +24,9 @@ const sinkUI = {
 /* Easy pacing controls. Autoplay is intentionally slower than v24. */
 const AUTO_STORY_STEP = 1.72;
 const FUTURE_STORY_STEP = 2.05;
+/* Hidden pin buffer for autoplay chapters. It prevents a fast swipe/wheel from
+   skipping across the whole chapter before its input gate can activate. */
+const AUTO_GATE_VIEWPORTS = 2.2;
 
 const clamp = (n, a = 0, b = 1) => Math.max(a, Math.min(b, n));
 const qs = (selector, root = document) => root.querySelector(selector);
@@ -35,10 +38,9 @@ if (!window.gsap) {
   throw new Error("GSAP did not load. Check the GSAP CDN script tags in index.html.");
 }
 
-const plugins = [window.ScrollTrigger, window.ScrollToPlugin, window.ScrollSmoother].filter(Boolean);
+const plugins = [window.ScrollTrigger].filter(Boolean);
 if (plugins.length) gsap.registerPlugin(...plugins);
 
-let smoother = null;
 let activeTransition = null;
 let savingTimeline = null;
 let futureTimeline = null;
@@ -72,8 +74,8 @@ window.addEventListener("touchmove", blockManualScroll, { passive: false, captur
 window.addEventListener("keydown", blockManualScroll, { passive: false, capture: true });
 
 function lockPageScroll() {
-  /* Only gate real user input. Do NOT pause ScrollSmoother here: pausing it while
-     a chapter handoff is trying to reposition the page can deadlock the overlay. */
+  /* Gate only real user input. Programmatic chapter handoffs can still reposition
+     the document while the overlay or pinned autoplay stage hides that movement. */
   scrollGate.locked = true;
   document.documentElement.classList.add("interaction-locked");
   document.body.classList.add("interaction-locked");
@@ -86,21 +88,15 @@ function unlockPageScroll() {
 }
 
 function setupSmoothScrolling() {
-  if (window.ScrollTrigger) ScrollTrigger.config({ ignoreMobileResize: true });
+  if (!window.ScrollTrigger) return;
 
-  /* Native touch scrolling is more reliable with pinned ScrollTriggers on phones.
-     GSAP still owns every chapter animation and scrub. ScrollSmoother is reserved
-     for mouse/trackpad layouts, where it actually improves the feel. */
-  const touchLayout = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth <= 760;
-  if (!window.ScrollSmoother || reducedMotion || touchLayout) return;
-
-  smoother = ScrollSmoother.create({
-    wrapper: "#smooth-wrapper",
-    content: "#smooth-content",
-    smooth: 0.72,
-    effects: false,
-    normalizeScroll: false,
-    ignoreMobileResize: true
+  /* v28 intentionally uses native document scrolling on every device. ScrollSmoother
+     transforms the whole page, which is useful for free-scrolling sites but adds a
+     second scroll coordinate system to a story made mostly from pinned chapters.
+     Native scroll + ScrollTrigger keeps one source of truth and removes handoff jumps. */
+  ScrollTrigger.config({
+    ignoreMobileResize: true,
+    autoRefreshEvents: "visibilitychange,DOMContentLoaded,load"
   });
 }
 
@@ -108,14 +104,8 @@ function alignTo(target) {
   const el = typeof target === "string" ? qs(target) : target;
   if (!el) return;
 
-  if (smoother) {
-    const y = smoother.offset(el, "top top");
-    smoother.scrollTop(y);
-  } else {
-    const y = window.scrollY + el.getBoundingClientRect().top;
-    window.scrollTo(0, y);
-  }
-
+  const y = Math.round(window.scrollY + el.getBoundingClientRect().top);
+  window.scrollTo(0, y);
   window.ScrollTrigger?.update();
 }
 
@@ -158,7 +148,6 @@ function runGuidedTransition({ kicker, title, target, lockAfter = true, releaseC
 
     if (!lockAfter && releaseCue) setGlobalScrollCueVisible(true, releaseCue);
     activeTransition = null;
-    requestAnimationFrame(() => window.ScrollTrigger?.refresh());
   };
 
   /* The WHOLE overlay moves as one panel. While it fully covers the viewport we
@@ -279,7 +268,7 @@ function buildNewShowerRain() {
   const container = qs("#newShowerRain");
   if (!container) return;
   container.innerHTML = "";
-  const lanes = [8,14,20,26,32,38,44,50,56,62,68,74,80,86,92];
+  const lanes = [8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 80, 86, 92];
   for (let i = 0; i < 30; i++) {
     const line = document.createElement("i");
     line.className = "water-line";
@@ -440,7 +429,7 @@ function setShowerStep(step) {
   if (step === 1) {
     setDialActive(timeDial, true);
     setDialActive(flowDial, false);
-    label.textContent = "SET YOUR ANSWER";
+    // label.textContent = "SET YOUR ANSWER";
     question.textContent = "How long is your usual shower?";
     helper.textContent = "Use the slider or the − / + buttons.";
     nextText.textContent = "NEXT QUESTION";
@@ -451,7 +440,7 @@ function setShowerStep(step) {
   } else {
     setDialActive(timeDial, false);
     setDialActive(flowDial, true);
-    label.textContent = "SET YOUR ANSWER";
+    // label.textContent = "SET YOUR ANSWER";
     question.textContent = "How many times a week do you shower?";
     helper.textContent = "Use the slider or the − / + buttons.";
     nextText.textContent = "NEXT: THE SINK";
@@ -670,14 +659,25 @@ function showStoryReleaseCue(selector, show) {
   gsap.to(cue, { autoAlpha: show ? 1 : 0, y: show ? 0 : 10, duration: reducedMotion ? 0.01 : 0.34, ease: "power3.out", overwrite: true });
 }
 
-function playLockedStory({ section, slides, progress, stepDuration, kind, releaseCue }) {
+function settleAutoplayGate(gateTrigger) {
+  if (!gateTrigger) return;
+
+  /* Keep the visual completely pinned while moving the document to the final
+     couple of pixels of the hidden buffer. The user sees no jump, but the very
+     next deliberate scroll releases the chapter instead of requiring an extra
+     viewport of "dead" scrolling. */
+  const releaseY = Math.max(gateTrigger.start + 1, gateTrigger.end - 2);
+  window.scrollTo(0, Math.round(releaseY));
+  ScrollTrigger.update();
+}
+
+function playLockedStory({ slides, progress, stepDuration, kind, releaseCue, gateTrigger }) {
   const isSaving = kind === "saving";
   const playedKey = isSaving ? "savingPlayed" : "futurePlayed";
   const busyKey = isSaving ? "savingBusy" : "futureBusy";
   if (storyState[playedKey] || storyState[busyKey]) return;
 
   storyState[busyKey] = true;
-  alignTo(section);
   lockPageScroll();
   setGlobalScrollCueVisible(false);
   showStoryReleaseCue(releaseCue, false);
@@ -689,6 +689,10 @@ function playLockedStory({ section, slides, progress, stepDuration, kind, releas
     storyState[playedKey] = true;
     storyState[busyKey] = false;
     updateStoryDots(progress, slides.length, 1);
+
+    /* Do this before unlocking input. The section is still pinned, so moving
+       through its safety buffer is visually invisible. */
+    settleAutoplayGate(gateTrigger);
     showStoryReleaseCue(releaseCue, true);
     unlockPageScroll();
   };
@@ -707,11 +711,28 @@ function setupAutomaticStories() {
   gsap.set(savingSlides[0], { autoAlpha: 1, visibility: "visible" });
   showStoryReleaseCue("#savingReleaseCue", false);
 
-  ScrollTrigger.create({
+  let savingGate;
+  savingGate = ScrollTrigger.create({
+    id: "saving-autoplay-gate",
     trigger: saving,
     start: "top top",
-    onEnter: () => playLockedStory({ section: saving, slides: savingSlides, progress: savingProgress, stepDuration: AUTO_STORY_STEP, kind: "saving", releaseCue: "#savingReleaseCue" }),
-    onEnterBack: () => { if (storyState.savingPlayed) showStoryReleaseCue("#savingReleaseCue", true); }
+    end: pinDistance(AUTO_GATE_VIEWPORTS),
+    pin: true,
+    pinSpacing: true,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
+    refreshPriority: 60,
+    onEnter: () => playLockedStory({
+      slides: savingSlides,
+      progress: savingProgress,
+      stepDuration: AUTO_STORY_STEP,
+      kind: "saving",
+      releaseCue: "#savingReleaseCue",
+      gateTrigger: savingGate
+    }),
+    onEnterBack: () => {
+      if (storyState.savingPlayed) showStoryReleaseCue("#savingReleaseCue", true);
+    }
   });
 
   const future = qs("#futureAutoStage");
@@ -721,11 +742,28 @@ function setupAutomaticStories() {
   gsap.set(futureSlides[0], { autoAlpha: 1, visibility: "visible" });
   showStoryReleaseCue("#futureReleaseCue", false);
 
-  ScrollTrigger.create({
+  let futureGate;
+  futureGate = ScrollTrigger.create({
+    id: "future-autoplay-gate",
     trigger: future,
     start: "top top",
-    onEnter: () => playLockedStory({ section: future, slides: futureSlides, progress: futureProgress, stepDuration: FUTURE_STORY_STEP, kind: "future", releaseCue: "#futureReleaseCue" }),
-    onEnterBack: () => { if (storyState.futurePlayed) showStoryReleaseCue("#futureReleaseCue", true); }
+    end: pinDistance(AUTO_GATE_VIEWPORTS),
+    pin: true,
+    pinSpacing: true,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
+    refreshPriority: 40,
+    onEnter: () => playLockedStory({
+      slides: futureSlides,
+      progress: futureProgress,
+      stepDuration: FUTURE_STORY_STEP,
+      kind: "future",
+      releaseCue: "#futureReleaseCue",
+      gateTrigger: futureGate
+    }),
+    onEnterBack: () => {
+      if (storyState.futurePlayed) showStoryReleaseCue("#futureReleaseCue", true);
+    }
   });
 }
 
@@ -755,6 +793,7 @@ function setupHeldStages() {
   const load = qs(".washer-load");
   gsap.timeline({
     scrollTrigger: {
+      id: "laundry-pin",
       trigger: "#laundryChapter",
       start: "top top",
       end: pinDistance(0.88),
@@ -763,6 +802,7 @@ function setupHeldStages() {
       anticipatePin: 1,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
+      refreshPriority: 100,
       onEnter: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"),
       onEnterBack: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"),
       onUpdate: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY")
@@ -776,6 +816,7 @@ function setupHeldStages() {
   gsap.set(resultComparison, { y: 44, autoAlpha: 0 });
   gsap.timeline({
     scrollTrigger: {
+      id: "result-pin",
       trigger: "#resultChapter",
       start: "top top",
       end: pinDistance(0.78),
@@ -784,6 +825,7 @@ function setupHeldStages() {
       anticipatePin: 1,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
+      refreshPriority: 90,
       onEnter: self => stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"),
       onEnterBack: self => stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"),
       onUpdate: self => stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE")
@@ -797,6 +839,7 @@ function setupHeldStages() {
   const glasses = qsa(".fly-glass");
   const glassTl = gsap.timeline({
     scrollTrigger: {
+      id: "glasses-pin",
       trigger: "#glassesChapter",
       start: "top top",
       end: pinDistance(1.02),
@@ -805,6 +848,7 @@ function setupHeldStages() {
       anticipatePin: 1,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
+      refreshPriority: 80,
       onEnter: self => { setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
       onEnterBack: self => { setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
       onUpdate: self => stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"),
@@ -827,6 +871,7 @@ function setupHeldStages() {
   gsap.set(moneyFace, { y: 34, opacity: 0, scale: 0.92 });
   gsap.timeline({
     scrollTrigger: {
+      id: "money-pin",
       trigger: "#moneyChapter",
       start: "top top",
       end: pinDistance(0.84),
@@ -835,6 +880,7 @@ function setupHeldStages() {
       anticipatePin: 1,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
+      refreshPriority: 70,
       onEnter: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"),
       onEnterBack: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"),
       onUpdate: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE")
@@ -847,6 +893,7 @@ function setupHeldStages() {
   const cards = qsa(".action-card");
   const actionsTl = gsap.timeline({
     scrollTrigger: {
+      id: "actions-pin",
       trigger: "#actionsChapter",
       start: "top top",
       end: pinDistance(1.08),
@@ -855,6 +902,7 @@ function setupHeldStages() {
       anticipatePin: 1,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
+      refreshPriority: 50,
       onEnter: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"),
       onEnterBack: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"),
       onUpdate: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS")
@@ -867,6 +915,7 @@ function setupHeldStages() {
   const morphShell = qs(".morph-frame-shell");
   gsap.set(morphShell, { y: 76, scale: 0.86, opacity: 0.72 });
   ScrollTrigger.create({
+    id: "morph-pin",
     trigger: "#morphChapter",
     start: "top top",
     end: pinDistance(1.85),
@@ -875,6 +924,7 @@ function setupHeldStages() {
     anticipatePin: 1,
     scrub: reducedMotion ? false : 0.32,
     invalidateOnRefresh: true,
+    refreshPriority: 30,
     onEnter: self => stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"),
     onEnterBack: self => stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"),
     onUpdate: self => {
@@ -895,14 +945,16 @@ function setupHeldStages() {
   const endWords = splitWords(endHeading);
   const endTl = gsap.timeline({ paused: true });
   endTl.fromTo(qs(".end-kicker"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" })
-    .add(() => {}, 0.1);
+    .add(() => { }, 0.1);
   animateWordsIn(endWords, endTl, 0.14);
   endTl.fromTo(qs("#endMessage p"), { y: 22, opacity: 0 }, { y: 0, opacity: 0.72, duration: 0.45, ease: "power2.out" }, 0.55)
     .fromTo(qs("#restartBtn"), { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, pointerEvents: "auto", duration: 0.4, ease: "back.out(1.4)" }, 0.82);
 
   ScrollTrigger.create({
+    id: "end-trigger",
     trigger: "#endChapter",
     start: "top top",
+    refreshPriority: 10,
     once: true,
     onEnter: () => { setBrowserTheme("#070707"); setGlobalScrollCueVisible(false); endTl.play(0); }
   });
@@ -947,8 +999,14 @@ function init() {
   resetInitialVisuals();
   preloadMorphFrames();
   setupLoopingDecorations();
-  setupAutomaticStories();
+
+  /* Build every chapter trigger first, then perform ONE ordered refresh. Explicit
+     refreshPriority values follow DOM order, so every pin spacer is included before
+     positions below it are measured. This is the core v28 anti-jump rule. */
   setupHeldStages();
+  setupAutomaticStories();
+  window.ScrollTrigger?.sort();
+  window.ScrollTrigger?.refresh();
 
   lockPageScroll();
 
@@ -959,7 +1017,6 @@ function init() {
 
   requestAnimationFrame(() => {
     window.ScrollTrigger?.refresh();
-    if (smoother) smoother.scrollTo(0, false);
   });
 }
 
