@@ -3457,3 +3457,460 @@ body.interaction-locked {
     overflow: visible;
   }
 }
+
+/* =========================================================
+   v25 — held viewport stages + touch-first shower control
+   ========================================================= */
+:root {
+  --saving-auto-height: 100svh;
+  --future-auto-height: 100svh;
+  --morph-scroll: 285svh;
+}
+
+/* Each important chapter keeps the viewport visually held while scroll drives its story. */
+.chapter-shower { height: 100svh !important; }
+.chapter-sink { height: 100svh !important; }
+.chapter-laundry { height: 100svh !important; }
+.chapter-result { height: 100svh !important; }
+.chapter-glasses { height: 100svh !important; }
+.chapter-money { height: 100svh !important; }
+.chapter-actions { height: 100svh !important; }
+.chapter-end { height: 100svh !important; min-height: 100svh; }
+
+.sticky {
+  top: 0;
+  height: 100svh;
+  min-height: 100svh;
+}
+
+/* ---------- shower: range + stepper instead of rotary dragging ---------- */
+.shower-console {
+  min-height: 232px;
+  padding-left: 94px;
+  padding-right: 94px;
+}
+.console-question {
+  min-height: 202px;
+  padding-top: 3px;
+}
+.console-question h2 {
+  max-width: 178px;
+  font-size: 14px;
+}
+.console-question p {
+  max-width: 178px;
+  margin-top: 4px;
+  font-size: 8px;
+  line-height: 1.25;
+}
+.answer-dial {
+  width: 88px;
+  height: 124px;
+  pointer-events: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.answer-dial.is-active {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: scale(1) !important;
+}
+.answer-dial.is-active .dial-knob {
+  box-shadow:
+    0 0 0 3px rgba(45, 143, 255, .11),
+    0 5px 0 rgba(13,13,13,.08);
+}
+.answer-dial.is-active .dial-caption,
+.flow-dial.is-active .dial-caption {
+  color: var(--blue);
+  opacity: 1;
+  font-weight: 900;
+}
+.answer-dial.is-inactive {
+  opacity: .30 !important;
+  filter: grayscale(.65) !important;
+}
+.flow-dial.is-active:before {
+  opacity: .48 !important;
+}
+
+.shower-answer-options {
+  display: block !important;
+  width: 178px;
+  margin-top: 8px;
+}
+.shower-answer-options > button {
+  display: none !important;
+}
+.shower-stepper {
+  width: 100%;
+  padding: 7px 7px 6px;
+  border: 1.5px solid rgba(13,13,13,.34);
+  border-radius: 14px;
+  background: rgba(255,255,255,.74);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+}
+.stepper-row {
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  gap: 5px;
+}
+.stepper-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1.7px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.stepper-button:active {
+  transform: translateY(1px) scale(.97);
+}
+.stepper-readout {
+  min-width: 0;
+  text-align: center;
+}
+.stepper-readout strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+.stepper-readout span {
+  display: block;
+  margin-top: 3px;
+  font-size: 6.5px;
+  line-height: 1;
+  font-weight: 800;
+  color: rgba(13,13,13,.48);
+}
+.shower-range {
+  display: block;
+  width: 100%;
+  height: 20px;
+  margin: 6px 0 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.shower-range::-webkit-slider-runnable-track {
+  height: 5px;
+  border: 1px solid rgba(13,13,13,.65);
+  border-radius: 99px;
+  background: linear-gradient(90deg, rgba(45,143,255,.35), rgba(45,143,255,.9));
+}
+.shower-range::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 0 rgba(13,13,13,.12);
+}
+.shower-range::-moz-range-track {
+  height: 5px;
+  border: 1px solid rgba(13,13,13,.65);
+  border-radius: 99px;
+  background: rgba(45,143,255,.68);
+}
+.shower-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+}
+.range-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -1px;
+  font-size: 6px;
+  line-height: 1;
+  font-weight: 900;
+  color: rgba(13,13,13,.45);
+}
+.shower-next {
+  top: 691px;
+}
+
+/* ---------- sink: default choice + transition behaves as a true loading layer ---------- */
+.chapter-transition {
+  background: #248cff;
+}
+.chapter-transition-water {
+  background: linear-gradient(180deg, #7dd6ff 0%, #258cff 52%, #1769ff 100%);
+}
+.plate.active,
+.method-plate.active,
+.washer-panel button.active {
+  box-shadow: 0 4px 0 rgba(13,13,13,.10);
+}
+
+/* ---------- held-stage sizing ---------- */
+.saving-story {
+  height: 100svh !important;
+  min-height: 100svh !important;
+  overflow: hidden !important;
+}
+.saving-scroll-beat.saving-auto-slide,
+.saving-auto-slide .saving-beat-sticky {
+  height: 100svh !important;
+  min-height: 100svh !important;
+}
+.future-auto-stage {
+  height: 100svh !important;
+  min-height: 100svh !important;
+  overflow: hidden !important;
+}
+.future-auto-stage .future-auto-slide,
+.future-auto-stage .future-screen-inner {
+  height: 100svh !important;
+  min-height: 100svh !important;
+}
+.future-morph-chapter {
+  height: var(--morph-scroll) !important;
+  min-height: var(--morph-scroll);
+}
+
+.story-release-cue {
+  position: absolute;
+  z-index: 70;
+  left: 50%;
+  bottom: max(56px, calc(env(safe-area-inset-bottom) + 44px));
+  transform: translate(-50%, 10px);
+  width: min(86vw, 330px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1.5px solid rgba(13,13,13,.74);
+  border-radius: 999px;
+  background: rgba(245,241,233,.92);
+  color: var(--ink);
+  box-shadow: 0 7px 18px rgba(13,13,13,.08);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  text-align: center;
+}
+.story-release-cue span {
+  font-size: 7px;
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: .09em;
+}
+.story-release-cue i {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-size: 13px;
+}
+
+/* Result comparison starts hidden and becomes the purpose of the scroll. */
+.result-compare-card {
+  will-change: transform, opacity;
+}
+
+/* Glasses and money remain fixed in their viewport while GSAP advances them. */
+.flying-glasses,
+.money-rain,
+.money-stack,
+.washer,
+.result-card,
+.morph-frame-shell {
+  will-change: transform, opacity;
+}
+
+/* ---------- final black closing screen ---------- */
+.end-room {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  padding: 48px 24px max(34px, env(safe-area-inset-bottom));
+  background: #070707 !important;
+  color: #fff;
+  text-align: center;
+}
+.end-stage,
+.end-before-panel,
+.end-after-panel,
+.end-face-shell,
+.end-face-img {
+  display: none !important;
+}
+.end-message {
+  width: min(88vw, 350px);
+  margin: 0 auto;
+}
+.end-kicker {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .18em;
+  color: rgba(255,255,255,.58);
+}
+.end-message h2 {
+  margin: 0;
+  font-family: "Archivo Black";
+  font-size: clamp(34px, 11vw, 50px);
+  line-height: .94;
+  letter-spacing: -.055em;
+}
+.end-message p {
+  max-width: 310px;
+  margin: 20px auto 0;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: rgba(255,255,255,.72);
+}
+#restartBtn {
+  position: static !important;
+  transform: none !important;
+  min-width: 170px;
+  height: 50px;
+  border: 2px solid #fff;
+  border-radius: 16px;
+  background: #fff;
+  color: #070707;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 6px 0 rgba(255,255,255,.14);
+}
+#restartBtn:active {
+  transform: translateY(2px) !important;
+}
+
+@media (max-width: 600px) {
+  .chapter-shower { height: 100svh !important; }
+  .shower-console {
+    top: 415px;
+    min-height: 232px;
+  }
+  .shower-next {
+    top: 662px;
+  }
+}
+
+@media (max-height: 720px) {
+  .shower-console {
+    top: 365px;
+    min-height: 224px;
+  }
+  .shower-next {
+    top: 602px;
+  }
+  .console-question {
+    min-height: 194px;
+  }
+  .shower-stepper {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  .chapter-actions {
+    height: 220svh !important;
+  }
+  .end-room {
+    gap: 24px;
+  }
+}
+
+/* ScrollTrigger, not CSS sticky, owns the true v25 viewport hold on these stages. */
+.chapter-laundry .laundry-room,
+.chapter-result .result-room,
+.chapter-glasses .glasses-room,
+.chapter-money .money-room,
+.chapter-actions .actions-room,
+.future-morph-chapter .future-morph-room {
+  position: relative;
+  top: auto;
+  width: 100%;
+  height: 100svh;
+  min-height: 100svh;
+}
+
+/* =========================================================
+   v26 hotfix — reliable handoffs + real ScrollTrigger spacing
+   ========================================================= */
+
+/* The transition is one moving panel now. No child element can get stranded. */
+.chapter-transition {
+  background: linear-gradient(180deg, #79d5ff 0%, #2d8fff 50%, #1769ff 100%) !important;
+  will-change: transform, opacity;
+}
+.chapter-transition-water {
+  inset: 0 !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background:
+    radial-gradient(circle at 50% 110%, rgba(255,255,255,.14), transparent 36%),
+    linear-gradient(180deg, rgba(125,214,255,.22), rgba(23,105,255,.08)) !important;
+  pointer-events: none;
+}
+.chapter-transition-copy {
+  left: 50%;
+  top: 50%;
+  transform: none;
+  margin: 0;
+  will-change: transform, opacity;
+}
+
+/* ScrollTrigger itself creates the required scroll distance. Keeping the source
+   sections at one viewport prevents the blank-background gaps from v25. */
+.chapter-laundry,
+.chapter-result,
+.chapter-glasses,
+.chapter-money,
+.chapter-actions,
+.future-morph-chapter {
+  height: 100svh !important;
+  min-height: 100svh !important;
+}
+
+/* These rooms are just the 100svh visual canvas. The parent chapter is pinned. */
+.chapter-laundry .laundry-room,
+.chapter-result .result-room,
+.chapter-glasses .glasses-room,
+.chapter-money .money-room,
+.chapter-actions .actions-room,
+.future-morph-chapter .future-morph-room {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  width: 100%;
+  height: 100svh !important;
+  min-height: 100svh !important;
+}
+
+/* On touch devices ScrollSmoother is intentionally not created; native scrolling
+   + ScrollTrigger pinning is more stable and still gives GSAP-driven movement. */
+@media (pointer: coarse), (max-width: 760px) {
+  #smooth-wrapper {
+    overflow: visible !important;
+  }
+  #smooth-content {
+    overflow: visible !important;
+  }
+}

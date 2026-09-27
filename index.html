@@ -96,13 +96,6 @@
 <span id="showerNextText">NEXT QUESTION</span>
 <i aria-hidden="true">→</i>
 </button>
-<div aria-hidden="true" class="shower-transition" id="showerTransition">
-<div class="transition-water"></div>
-<div class="transition-copy">
-<span>ROUTINE SAVED</span>
-<strong>NEXT: THE SINK</strong>
-</div>
-</div>
 </div>
 </section>
 <!-- 03 sink questions -->
@@ -139,9 +132,9 @@
 </div>
 <div aria-label="How many times a week do you wash dishes?" class="plate-rack" id="dishFrequency">
 <div aria-hidden="true" class="rack-back"></div>
-<button aria-label="1 time a week" class="plate" data-value="1">
+<button aria-label="1 time a week" class="plate active" data-value="1">
 <svg aria-hidden="true" viewbox="0 0 120 120">
-<circle class="plate-fill" cx="60" cy="60" fill="#f8f4ed" r="56" stroke="#0d0d0d"></circle>
+<circle class="plate-fill" cx="60" cy="60" fill="#c9ff38" r="56" stroke="#0d0d0d"></circle>
 <circle class="plate-ring" cx="60" cy="60" fill="none" r="43" stroke="rgba(13,13,13,.34)"></circle>
 <path class="plate-arc" d="M18 62 A42 42 0 0 1 102 62" fill="none" id="plateArc1"></path>
 <text class="plate-label" fill="#0d0d0d">
@@ -169,7 +162,7 @@
 </button>
 <button aria-label="5 times a week" class="plate" data-value="5">
 <svg aria-hidden="true" viewbox="0 0 120 120">
-<circle class="plate-fill" cx="60" cy="60" fill="#c9ff38" r="56" stroke="#0d0d0d"></circle>
+<circle class="plate-fill" cx="60" cy="60" fill="#f8f4ed" r="56" stroke="#0d0d0d"></circle>
 <circle class="plate-ring" cx="60" cy="60" fill="none" r="43" stroke="rgba(13,13,13,.34)"></circle>
 <path class="plate-arc" d="M18 62 A42 42 0 0 1 102 62" fill="none" id="plateArc5"></path>
 <text class="plate-label" fill="#0d0d0d">
@@ -207,7 +200,7 @@
 <div aria-hidden="true" class="sink-question-two" id="dishMethodPanel">
 <h3>How do you usually wash them?</h3>
 <div class="method-plates" id="dishMethod">
-<button class="method-plate" data-value="dishwasher">
+<button class="method-plate active" data-value="dishwasher">
                 Dishwasher
               </button>
 <button class="method-plate" data-value="basin">
@@ -229,7 +222,7 @@
 </div>
 <div class="washer">
 <div class="washer-panel" id="laundryButtons">
-<button data-value="1">1×</button>
+<button class="active" data-value="1">1×</button>
 <button data-value="2.5">2 to 3×</button>
 <button data-value="4">4+×</button>
 <div aria-hidden="true" class="washer-dial"></div>
@@ -358,7 +351,7 @@
 </div>
 </div>
 </section>
-<div aria-hidden="true" class="auto-story-progress saving-auto-progress"><i data-dot="0"></i><i data-dot="1"></i><i data-dot="2"></i><i data-dot="3"></i></div></section>
+<div aria-hidden="true" class="auto-story-progress saving-auto-progress"><i data-dot="0"></i><i data-dot="1"></i><i data-dot="2"></i><i data-dot="3"></i></div><div aria-hidden="true" class="story-release-cue" id="savingReleaseCue"><span>SCROLL DOWN TO SEE HOW TO USE LESS WATER</span><i>↓</i></div></section>
 <!-- 09 actions -->
 <section class="chapter chapter-actions" id="actionsChapter">
 <div class="sticky actions-room">
@@ -413,24 +406,10 @@
               </figcaption>
 </figure>
 </div>
-</section><div aria-hidden="true" class="auto-story-progress future-auto-progress"><i data-dot="0"></i><i data-dot="1"></i><i data-dot="2"></i></div></section><section class="future-morph-chapter" id="morphChapter">
+</section><div aria-hidden="true" class="auto-story-progress future-auto-progress"><i data-dot="0"></i><i data-dot="1"></i><i data-dot="2"></i></div><div aria-hidden="true" class="story-release-cue" id="futureReleaseCue"><span>SCROLL DOWN TO SEE THE WORLD CHANGE</span><i>↓</i></div></section><section class="future-morph-chapter" id="morphChapter">
 <div class="sticky future-morph-room">
 <div class="morph-frame-shell">
 <img alt="Waterfall changing from green to dry while scrolling" id="morphFrame" src="assets/morph_frames_webp/frame_00.webp"/>
-</div>
-</div>
-</section>
-<section class="future-screen future-reaction-screen future-hold-screen" id="futureReactionScreen">
-<div class="future-screen-inner">
-<div class="reaction-media">
-<img alt="Reaction meme" src="assets/nonono.gif"/>
-</div>
-</div>
-</section>
-<section class="future-screen future-warning-screen future-hold-screen" id="futureWarningScreen">
-<div class="future-screen-inner">
-<div class="future-warning-copy">
-<strong>CHANGE IT BEFORE<br/>IT'S TOO LATE</strong>
 </div>
 </div>
 </section>
@@ -438,19 +417,10 @@
 <!-- 11 ending: fixed composition, fade only -->
 <section class="chapter chapter-end" id="endChapter">
 <div class="sticky end-room">
-<div class="end-stage">
-<div class="end-before-panel">
-<div class="end-face-shell dark">
-<img alt="Before changes" class="end-face-img before" src="assets/before.png"/>
-</div>
-<span>BEFORE CHANGES</span>
-</div>
-<div class="end-after-panel">
-<div class="end-face-shell bright">
-<img alt="After changes" class="end-face-img after" src="assets/after.png"/>
-</div>
-<span>AFTER CHANGES</span>
-</div>
+<div class="end-message" id="endMessage">
+<span class="end-kicker">ONE LAST THING</span>
+<h2>PLEASE THINK CAREFULLY ABOUT YOUR WATER USAGE.</h2>
+<p>Small choices in your daily routine can save thousands of litres over time. Use what you just saw the next time you shower, wash dishes or do laundry.</p>
 </div>
 <button id="restartBtn">START AGAIN</button>
 </div>

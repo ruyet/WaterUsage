@@ -1,49 +1,63 @@
-# Water You Don't See — v24
+# Water You Don’t See — v26
 
-v24 moves the interaction and storytelling motion to GSAP 3.15.0 using ScrollTrigger, ScrollToPlugin and ScrollSmoother.
+v26 is a stability hotfix for the GSAP version. The visual direction and interaction choices from v25 are kept, but the chapter handoff and pinned-scroll architecture are simplified so the transition cannot strand the user on the blue overlay and Laundry can always be driven by scrolling.
 
-## What changed
+## What was fixed
 
-- Replaced the old manual scroll-animation loop with GSAP ScrollTrigger timelines.
-- Added ScrollSmoother for smoother page movement, including light touch smoothing on mobile.
-- Shower answers no longer require dragging a rotary control. The knobs are now visual feedback and answers use large tap targets.
-- The inactive shower knob is non-interactive and no longer says `FLOW` before question 2.
-- Shower questions require an actual answer before the Next button is enabled.
-- Moved the shower Next button below the control panel, matching the sink interaction pattern.
-- Shower → Sink and Sink → Laundry now use a GSAP transition plus a locked, animated page movement instead of jumping to the next chapter.
-- Screen 08 is now an automatic story: €12 monthly → kapsalons → beers → yearly saving changes automatically after entering the section.
-- The automatic savings text uses staggered rolling word motion rather than simple fades.
-- The “Otherwise... this will be the new world” title and the two lake comparisons now form one automatic sequence, so users do not have to scroll through three separate long screens.
-- The waterfall morph is still controlled by scrolling, but its range is shorter and uses ScrollTrigger scrubbing.
-- Decorative water, money rain and scroll-cue movement are driven by GSAP instead of CSS keyframe animations.
-- The site still respects `prefers-reduced-motion`.
+- Removed the conflict where `ScrollSmoother.paused(true)` was used at the same time as a transition tried to reposition ScrollSmoother.
+- The blue transition is now **one GSAP panel** that slides in, fully covers the viewport, moves the page underneath it, then slides out.
+- Transition text is explicitly centered with GSAP transform percentages, so it no longer disappears during the wipe.
+- Shower → Sink remains locked after the transition because the sink still requires answers.
+- Sink → Laundry explicitly unlocks manual scrolling after the transition finishes.
+- On touch/mobile layouts, native touch scrolling is used instead of ScrollSmoother. GSAP + ScrollTrigger still control all scroll-driven animations. This avoids the common mobile conflict between transformed smooth-scroll containers and pinned sections.
+- Laundry, Your Water Story, Glasses, Money, Actions and Morph now pin the **whole chapter** with `pinSpacing: true`. ScrollTrigger creates exactly the space needed for the animation, so there is no fake 185–285svh blank background after a stage.
+- The pinned stages use explicit viewport-based scroll distances in JavaScript and automatically release when their animation is complete.
+- Scroll hints stay visible during the stage and change to the next instruction near the end instead of disappearing immediately.
 
-## Easy timing adjustments
+## Adjusting how much scrolling a pinned stage needs
 
-In `script.js` near the top:
+In `script.js`, inside `setupHeldStages()`, each stage has an `end: pinDistance(...)` value.
+
+Examples:
 
 ```js
-const AUTO_STORY_STEP = 1.08;
-const FUTURE_STORY_STEP = 1.55;
+// Laundry
+end: pinDistance(0.88)
+
+// Your Water Story
+end: pinDistance(0.78)
+
+// Glasses
+end: pinDistance(1.02)
+
+// Money
+end: pinDistance(0.84)
+
+// Morph
+end: pinDistance(1.85)
 ```
 
-- `AUTO_STORY_STEP` controls how quickly the Screen 08 saving messages change.
-- `FUTURE_STORY_STEP` controls the title/Lake Mead/Lake Urmia automatic sequence.
+`1.0` is approximately one viewport of scrolling while the chapter remains pinned. Lower values make the interaction finish faster; higher values require more scrolling.
 
-In `styles.css` inside the `v24` section:
+## Automatic story timing
 
-```css
---saving-auto-height: 125svh;
---future-auto-height: 125svh;
---morph-scroll: 245svh;
+Near the top of `script.js`:
+
+```js
+const AUTO_STORY_STEP = 1.72;
+const FUTURE_STORY_STEP = 2.05;
 ```
 
-The first two control how much page distance the two automatic sections occupy. `--morph-scroll` controls how much scrolling is needed to scrub through the waterfall morph.
+These control how long each automatic savings/future-world beat stays on screen.
+
+## Mobile scrolling architecture
+
+Desktop/trackpad layouts can still use GSAP ScrollSmoother. Touch layouts intentionally use native scrolling plus ScrollTrigger. The scroll-driven visuals are still GSAP animations; only the physical touch scrolling is left native because it is more reliable for mobile pinned storytelling.
 
 ## GSAP dependency
 
-GSAP and the three GSAP plugins are loaded from jsDelivr in `index.html`. The project therefore needs an internet connection when opened locally, or those CDN files can later be hosted with the site.
+GSAP, ScrollTrigger, ScrollToPlugin and ScrollSmoother are loaded from jsDelivr in `index.html`. The prototype therefore needs an internet connection when opened locally unless those libraries are hosted with the project.
 
 ## Prototype calculation
 
-The water-use calculation is still the existing prototype model. Replace prototype assumptions with final sourced values before presenting them as factual data.
+The water-use calculation is still a prototype estimate. Replace the assumptions with final sourced values before presenting the calculated litres/cost as factual measurements.
