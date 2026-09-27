@@ -18,6 +18,18 @@
     <link href="styles.css" rel="stylesheet" />
   </head>
   <body>
+    <div class="story-loader" id="storyLoader" aria-label="Loading Water You Don’t See">
+      <div class="story-loader-water" id="storyLoaderWater" aria-hidden="true"></div>
+      <div class="story-loader-copy">
+        <span class="story-loader-kicker">CASE STUDY / WATER USAGE</span>
+        <h1>WATER YOU<br />DON’T SEE</h1>
+        <p>A short interactive story about your everyday water use.</p>
+      </div>
+      <div class="story-loader-status" aria-hidden="true">
+        <span>LOADING THE STORY</span>
+        <strong id="storyLoaderProgress">00%</strong>
+      </div>
+    </div>
     <div aria-hidden="true" class="global-scroll-hint" id="globalScrollHint">
       <span>SCROLL TO CONTINUE</span><i>↓</i>
     </div>
@@ -467,10 +479,10 @@
               <div class="laundry-copy">
                 <h2>How many times a week do you do laundry?</h2>
               </div>
-              <div class="laundry-answer-hint" id="laundryAnswerHint" aria-hidden="false">
-                <span>CHOOSE YOUR ANSWER</span><i aria-hidden="true">↓</i>
-              </div>
               <div class="washer">
+                <div class="laundry-answer-hint" id="laundryAnswerHint" aria-hidden="false">
+                  <i aria-hidden="true">↓</i>
+                </div>
                 <div class="washer-panel" id="laundryButtons">
                   <button data-value="1">1×</button>
                   <button data-value="2.5">2 to 3×</button>

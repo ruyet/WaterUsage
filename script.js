@@ -167,6 +167,109 @@ function setGlobalScrollCueVisible(visible, label = null) {
   });
 }
 
+
+function playStoryLoader() {
+  const loader = qs("#storyLoader");
+  const water = qs("#storyLoaderWater");
+  const copy = loader ? qs(".story-loader-copy", loader) : null;
+  const status = loader ? qs(".story-loader-status", loader) : null;
+  const progress = qs("#storyLoaderProgress");
+  if (!loader || !water || !copy || !status) return;
+
+  /* v40: this intro NEVER skips because of a URL parameter, reduced-motion,
+     history state, or browser restoration. Safari may preserve both URLs and DOM
+     state via its back/forward cache, so the old ?restart shortcut was not safe.
+
+     CSS makes the loader visible before JavaScript executes. The animation starts
+     only when the page is actually visible. A real setTimeout controls the exit,
+     independent of the GSAP timeline, so even if a browser catches up/throttles an
+     animation after backgrounding, it cannot dismiss the loader instantly. */
+  lockPageScroll();
+  setGlobalScrollCueVisible(false);
+
+  gsap.killTweensOf([loader, water, copy, status]);
+  gsap.set(loader, { display: "block", autoAlpha: 1, yPercent: 0 });
+  gsap.set(water, { height: "0%" });
+  gsap.set([copy, status], { color: "#0d0d0d" });
+  loader.classList.remove("is-complete");
+  if (progress) progress.textContent = "00%";
+
+  let started = false;
+  let visibilityHandler = null;
+  let exitTimer = 0;
+  const MIN_VISIBLE_MS = 2550;
+
+  const finish = () => {
+    if (!loader.isConnected) return;
+    gsap.to(loader, {
+      yPercent: -100,
+      duration: 0.62,
+      ease: "power4.inOut",
+      overwrite: true,
+      onComplete: () => {
+        loader.classList.add("is-complete");
+        gsap.set(loader, { display: "none", autoAlpha: 0 });
+        /* Screen 01 intentionally remains interaction-locked until the first
+           shower answer is completed. */
+        lockPageScroll();
+      }
+    });
+  };
+
+  const start = () => {
+    if (started || document.visibilityState !== "visible") return;
+    started = true;
+    if (visibilityHandler) document.removeEventListener("visibilitychange", visibilityHandler);
+
+    /* Two frames force a visible initial paint before the animation begins. */
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const meter = { value: 0 };
+
+      gsap.timeline({ defaults: { overwrite: "auto" } })
+        .from(copy.children, {
+          y: 18,
+          autoAlpha: 0,
+          stagger: 0.075,
+          duration: 0.46,
+          ease: "power3.out"
+        }, 0.08)
+        .to(meter, {
+          value: 100,
+          duration: 1.72,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            if (progress) progress.textContent = `${String(Math.round(meter.value)).padStart(2, "0")}%`;
+          }
+        }, 0.14)
+        .to(water, {
+          height: "106%",
+          duration: 1.72,
+          ease: "power2.inOut"
+        }, 0.14)
+        .to([copy, status], {
+          color: "#fff",
+          duration: 0.22,
+          ease: "none"
+        }, 1.03)
+        .to(copy, {
+          y: -8,
+          duration: 0.34,
+          ease: "power2.out"
+        }, 1.48);
+
+      /* The exit is deliberately NOT part of the timeline. This timer starts only
+         after the document is visible, making the minimum on-screen duration
+         deterministic in Safari, Chrome, Firefox and Chromium-based mobile apps. */
+      clearTimeout(exitTimer);
+      exitTimer = window.setTimeout(finish, MIN_VISIBLE_MS);
+    }));
+  };
+
+  visibilityHandler = () => start();
+  if (document.visibilityState === "visible") start();
+  else document.addEventListener("visibilitychange", visibilityHandler, { passive: true });
+}
+
 function runGuidedTransition({ kicker, title, target, lockAfter = true, releaseCue = null }) {
   if (activeTransition?.isActive()) return;
 
@@ -1119,9 +1222,20 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 100,
-      onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"); },
-      onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"); },
-      onUpdate: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"),
+      onEnter: self => {
+        activateHeldTouch(self);
+        if (laundryUI.chosen) stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY");
+        else setGlobalScrollCueVisible(false);
+      },
+      onEnterBack: self => {
+        activateHeldTouch(self);
+        if (laundryUI.chosen) stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY");
+        else setGlobalScrollCueVisible(false);
+      },
+      onUpdate: self => {
+        if (laundryUI.chosen) stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY");
+        else setGlobalScrollCueVisible(false);
+      },
       onLeave: deactivateHeldTouch,
       onLeaveBack: deactivateHeldTouch
     }
@@ -1361,6 +1475,7 @@ function init() {
   window.ScrollTrigger?.refresh();
 
   lockPageScroll();
+  playStoryLoader();
 
   qs("#restartBtn")?.addEventListener("click", () => {
     unlockPageScroll();
