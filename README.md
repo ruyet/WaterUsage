@@ -1,30 +1,24 @@
-# Water You Don't See v3
+# Water You Don't See v9
 
-This version follows the supplied Figma concept much more closely while keeping the animated collage and halftone direction from v2.
+This version keeps the existing water-story prototype intact, but completely rebuilds the opening shower interaction from scratch.
 
-## Main changes from v2
+## Shower redesign in v9
 
-1. Starts with a large shower head instead of a generic title page.
-2. Q1 sits inside a shower-control bar.
-3. Shower duration is chosen with the right rotary control.
-4. Scroll reveals water from the shower head.
-5. Water intensity changes based on the selected shower duration and frequency.
-6. Q2 uses the left rotary control.
-7. Sink section uses clickable stacked plates for washing frequency.
-8. A second sink question lets the user choose dishwasher, filled sink, or running tap.
-9. Scroll transitions into a perspective drain tunnel.
-10. Washing-machine question uses the machine's own circular buttons.
-11. The washing-machine drum fills and rotates while scrolling.
-12. Results are personalised from the selected habits.
-13. The main litre result is full-screen, bold, and centered.
-14. Glasses fly into the viewport during the scale comparison.
-15. Euro symbols fall during the money section.
-16. The Figma placeholder memes and reference assets are reused from the uploaded SVG.
-17. Savings are translated into relatable items.
-18. Action section uses large tilted paper-cut cards.
-19. Future-consequence section uses the before/after dry-land imagery from the concept.
-20. The visual style uses halftone texture, cream paper, hard black outlines, lime, blue, pink, red, cutout collage, and oversized typography.
-21. No em dashes are used in the website copy.
+1. The old shower riser, shower head, control bar and separate Q2 shower chapter were removed.
+2. A new simple front-view wall-mounted shower fixture was drawn as lightweight inline SVG.
+3. The shower keeps the existing warm paper / black ink style, with a subtle bathroom-grid texture and blue water accents.
+4. Q1 and Q2 now happen in one clear shower interface instead of two disconnected scroll screens.
+5. Q1 asks for shower duration and highlights the right dial.
+6. Q2 asks for shower frequency and highlights the left dial.
+7. The inactive dial is visually muted so users immediately know which control to use.
+8. Dials support touch / pointer turning, tap stepping, mouse wheel and keyboard arrows.
+9. The selected value is shown directly inside the physical dial.
+10. A connected Next button sits below the mixer, matching the physical-control metaphor.
+11. Pressing Next after Q1 triggers a full-screen water transition: the water level rises, briefly covers the screen, then drains back down while Q2 replaces Q1.
+12. The transition explicitly says “Answer saved / Next question” so the question change is clear.
+13. After Q2, the button becomes Continue and moves the user into the sink chapter.
+14. The shower answers still feed directly into the existing personalised litre calculation.
+15. Reduced-motion and keyboard focus behaviour are retained for accessibility.
 
 ## Important prototype calculations
 
@@ -38,7 +32,7 @@ Current assumptions:
 - Laundry load: 50 L
 - Other household baseline: 28 L/day
 
-These are prototype assumptions for interaction design. Replace them with the exact values from your chosen Dutch sources before you present the final data as factual.
+These are prototype assumptions for interaction design. Replace them with the exact values from your chosen Dutch sources before presenting the final data as factual.
 
 The monthly cost is also still a prototype visual calculation. Replace it once your final cost calculation is defined.
 

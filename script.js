@@ -21,60 +21,203 @@ function selectInGroup(container, button){
   button.classList.add("active");
 }
 
-function bindDial(id, key, callback){
-  const dial=document.getElementById(id);
-  let startY=null;
-  const buttons=[...dial.querySelectorAll(".rotary-btn")];
-  buttons.forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      selectInGroup(dial,btn);
-      state[key]=Number(btn.dataset.value);
-      callback?.();
-    });
-  });
-  dial.addEventListener("pointerdown",e=>{
-    startY=e.clientY;
-    dial.setPointerCapture?.(e.pointerId);
-  });
-  dial.addEventListener("pointerup",e=>{
-    if(startY===null)return;
-    const dy=e.clientY-startY;
-    if(Math.abs(dy)>18){
-      const current=Math.max(0,buttons.findIndex(b=>b.classList.contains("active")));
-      const next=clamp(current+(dy>0?1:-1),0,buttons.length-1);
-      buttons[next].click();
-    }
-    startY=null;
-  });
+const showerUI = {
+  step: 1,
+  transitioning: false,
+  timeValues: [2, 5, 10, 20],
+  flowValues: [3, 5, 7, 10]
+};
+
+function dialAngleForIndex(index, count){
+  if(count <= 1) return 0;
+  return -118 + (236 * index) / (count - 1);
 }
 
-function showerIntensity(){
-  return clamp((state.showerMinutes/20)*0.75+(state.showersPerWeek/10)*0.25,.12,1);
+function bindAnswerDial({id, values, stateKey, valueId, formatter}){
+  const dial = document.getElementById(id);
+  const valueEl = document.getElementById(valueId);
+  let startPointerAngle = null;
+  let startIndex = 0;
+  let moved = false;
+
+  const currentIndex = () => {
+    const exact = values.indexOf(Number(state[stateKey]));
+    return exact >= 0 ? exact : 0;
+  };
+
+  const render = () => {
+    const index = currentIndex();
+    const value = values[index];
+    dial.style.setProperty("--dial-angle", `${dialAngleForIndex(index, values.length)}deg`);
+    dial.setAttribute("aria-valuenow", String(value));
+    dial.setAttribute("aria-valuetext", formatter(value, true));
+    valueEl.innerHTML = formatter(value, false);
+  };
+
+  const choose = index => {
+    if(dial.getAttribute("aria-disabled") === "true") return;
+    index = clamp(index, 0, values.length - 1);
+    state[stateKey] = values[index];
+    render();
+    updateEstimate();
+  };
+
+  const angleAt = event => {
+    const rect = dial.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + 43;
+    return Math.atan2(event.clientY - cy, event.clientX - cx) * 180 / Math.PI;
+  };
+
+  dial.addEventListener("pointerdown", event => {
+    if(dial.getAttribute("aria-disabled") === "true") return;
+    event.preventDefault();
+    startPointerAngle = angleAt(event);
+    startIndex = currentIndex();
+    moved = false;
+    dial.setPointerCapture?.(event.pointerId);
+    dial.classList.add("is-turning");
+  });
+
+  dial.addEventListener("pointermove", event => {
+    if(startPointerAngle === null) return;
+    let delta = angleAt(event) - startPointerAngle;
+    if(delta > 180) delta -= 360;
+    if(delta < -180) delta += 360;
+    const step = Math.round(delta / 34);
+    if(step !== 0) moved = true;
+    choose(startIndex + step);
+  });
+
+  const finish = event => {
+    if(startPointerAngle === null) return;
+    if(!moved) choose(currentIndex() + (currentIndex() < values.length - 1 ? 1 : -1));
+    startPointerAngle = null;
+    dial.classList.remove("is-turning");
+    if(event?.pointerId != null) dial.releasePointerCapture?.(event.pointerId);
+  };
+  dial.addEventListener("pointerup", finish);
+  dial.addEventListener("pointercancel", finish);
+
+  dial.addEventListener("wheel", event => {
+    if(dial.getAttribute("aria-disabled") === "true") return;
+    event.preventDefault();
+    choose(currentIndex() + (event.deltaY > 0 ? 1 : -1));
+  }, {passive:false});
+
+  dial.addEventListener("keydown", event => {
+    if(dial.getAttribute("aria-disabled") === "true") return;
+    if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.key)) return;
+    event.preventDefault();
+    const forward = event.key === "ArrowRight" || event.key === "ArrowUp";
+    choose(currentIndex() + (forward ? 1 : -1));
+  });
+
+  render();
+  return {render, choose};
 }
 
-function buildRain(containerId, count=42){
-  const c=document.getElementById(containerId);
-  c.innerHTML="";
-  for(let i=0;i<count;i++){
-    const d=document.createElement("i");
-    d.className="drop";
-    d.style.left=`${Math.random()*100}%`;
-    d.style.height=`${45+Math.random()*95}px`;
-    d.style.animationDuration=`${.7+Math.random()*1.25}s`;
-    d.style.animationDelay=`${-Math.random()*2}s`;
-    d.style.opacity=(.35+Math.random()*.55).toFixed(2);
-    c.appendChild(d);
+function buildNewShowerRain(){
+  const container = document.getElementById("newShowerRain");
+  container.innerHTML = "";
+  const lanes = [9,16,23,30,37,44,51,58,65,72,79,86,93];
+  for(let i=0;i<28;i++){
+    const line = document.createElement("i");
+    line.className = "water-line";
+    const lane = lanes[i % lanes.length];
+    const centerOffset = (lane - 50) / 50;
+    line.style.left = `${lane + (Math.random()*2.4-1.2)}%`;
+    line.style.setProperty("--length", `${62 + Math.random()*74}px`);
+    line.style.setProperty("--speed", `${.88 + Math.random()*.72}s`);
+    line.style.setProperty("--delay", `${-Math.random()*1.4}s`);
+    line.style.setProperty("--alpha", `${.36 + Math.random()*.48}`);
+    line.style.setProperty("--tilt", `${centerOffset*8}deg`);
+    container.appendChild(line);
   }
 }
 
-function updateRain(){
-  const intensity=showerIntensity();
-  ["showerRain","showerRain2"].forEach(id=>{
-    const c=document.getElementById(id);
-    c.style.opacity=String(.18+intensity*.82);
-    [...c.children].forEach((d,i)=>{
-      d.style.display=(i<Math.round(c.children.length*(.18+intensity*.82)))?"block":"none";
-    });
+function setDialEnabled(dial, enabled){
+  dial.classList.toggle("is-active", enabled);
+  dial.classList.toggle("is-inactive", !enabled);
+  dial.setAttribute("aria-disabled", String(!enabled));
+  dial.tabIndex = enabled ? 0 : -1;
+}
+
+function setShowerStep(step){
+  showerUI.step = step;
+  const timeDial = document.getElementById("timeDial");
+  const flowDial = document.getElementById("flowDial");
+  const top = document.getElementById("showerStepTop");
+  const count = document.getElementById("showerQuestionCount");
+  const label = document.getElementById("activeControlLabel");
+  const question = document.getElementById("showerQuestion");
+  const helper = document.getElementById("showerHelper");
+  const next = document.getElementById("showerNextText");
+  const timeCaption = document.getElementById("timeCaption");
+  const flowCaption = document.getElementById("flowCaption");
+  const timeAction = document.getElementById("timeAction");
+  const flowAction = document.getElementById("flowAction");
+  const flowValue = document.getElementById("flowValue");
+
+  if(step === 1){
+    setDialEnabled(timeDial, true);
+    setDialEnabled(flowDial, false);
+    top.textContent = "QUESTION 1 / 2";
+    count.textContent = "Q1";
+    label.textContent = "USE RIGHT DIAL";
+    question.textContent = "How long is your usual shower?";
+    helper.textContent = "Turn the highlighted dial to choose your answer.";
+    next.textContent = "NEXT QUESTION";
+    timeCaption.textContent = "DURATION";
+    flowCaption.textContent = "FLOW";
+    timeAction.textContent = "TURN";
+    flowAction.textContent = "Q2";
+    flowValue.textContent = "FLOW";
+  } else {
+    setDialEnabled(timeDial, false);
+    setDialEnabled(flowDial, true);
+    top.textContent = "QUESTION 2 / 2";
+    count.textContent = "Q2";
+    label.textContent = "USE LEFT DIAL";
+    question.textContent = "How many times a week do you shower?";
+    helper.textContent = "Same shower. New question. Turn the left dial.";
+    next.textContent = "CONTINUE";
+    timeCaption.textContent = "TEMP";
+    flowCaption.textContent = "FREQUENCY";
+    timeAction.textContent = "Q1";
+    flowAction.textContent = "TURN";
+    flowValue.innerHTML = `${state.showersPerWeek}<span>× / week</span>`;
+  }
+}
+
+function runShowerQuestionTransition(){
+  if(showerUI.transitioning || showerUI.step !== 1) return;
+  showerUI.transitioning = true;
+  const transition = document.getElementById("showerTransition");
+  const questionBlock = document.getElementById("showerQuestionBlock");
+  transition.classList.remove("is-running");
+  void transition.offsetWidth;
+  transition.classList.add("is-running");
+
+  setTimeout(()=>questionBlock.classList.add("is-switching"), 280);
+  setTimeout(()=>{
+    setShowerStep(2);
+    questionBlock.classList.remove("is-switching");
+  }, 525);
+  setTimeout(()=>{
+    transition.classList.remove("is-running");
+    showerUI.transitioning = false;
+    document.getElementById("flowDial").focus({preventScroll:true});
+  }, 1160);
+}
+
+function bindShowerNext(){
+  document.getElementById("showerNext").addEventListener("click", ()=>{
+    if(showerUI.step === 1){
+      runShowerQuestionTransition();
+      return;
+    }
+    document.getElementById("sinkChapter").scrollIntoView({behavior:"smooth", block:"start"});
   });
 }
 
@@ -171,14 +314,10 @@ function buildMoneyRain(){
 
 function updateScrollAnimations(){
   const p1=progress("showerStart");
-  const head=document.querySelector("#showerStart .shower-head-wrap");
-  head.style.transform=`translateX(-50%) translateY(${lerp(0,-18,p1)}px) scale(${lerp(1,1.08,p1)})`;
-  document.querySelector(".first-control").style.transform=`translateY(${lerp(0,-12,clamp((p1-.25)/.35))}px)`;
-  document.getElementById("showerScrollHint").style.opacity=String(clamp((p1-.52)/.22));
-
-  const p2=progress("showerFrequency");
-  document.querySelector(".water-type-one").style.transform=`translate(-50%,-50%) scale(${lerp(.8,1.35,p2)})`;
-  document.querySelector(".water-type-one").style.opacity=String(lerp(.1,.35,clamp((p2-.25)/.45)));
+  const fixture=document.querySelector(".shower-fixture");
+  const console=document.querySelector(".shower-console");
+  fixture.style.transform=`translateY(${lerp(0,-8,p1)}px)`;
+  console.style.transform=`translateY(${lerp(0,-5,p1)}px)`;
 
   const p3=progress("sinkChapter");
   document.querySelector(".sink-scene").style.transform=`translateY(${lerp(26,-10,p3)}px) scale(${lerp(.95,1.04,p3)})`;
@@ -237,15 +376,27 @@ function updateScrollAnimations(){
   document.querySelector(".future-meme").style.transform=`rotate(${lerp(-12,6,p12)}deg) scale(${lerp(.7,1.05,p12)})`;
 }
 
-bindDial("showerLengthDial","showerMinutes",()=>{updateRain();updateEstimate();});
-bindDial("showerFrequencyDial","showersPerWeek",()=>{updateRain();updateEstimate();});
+const timeDialController = bindAnswerDial({
+  id:"timeDial",
+  values:showerUI.timeValues,
+  stateKey:"showerMinutes",
+  valueId:"timeValue",
+  formatter:(value, aria)=>aria ? `${value} minutes` : `${value}<span>min</span>`
+});
+const flowDialController = bindAnswerDial({
+  id:"flowDial",
+  values:showerUI.flowValues,
+  stateKey:"showersPerWeek",
+  valueId:"flowValue",
+  formatter:(value, aria)=>aria ? `${value} showers per week` : `${value}<span>× / week</span>`
+});
+buildNewShowerRain();
+setShowerStep(1);
+bindShowerNext();
 bindPlates();
 bindLaundry();
-buildRain("showerRain",52);
-buildRain("showerRain2",48);
 buildFlyingGlasses();
 buildMoneyRain();
-updateRain();
 updateSink();
 updateLaundry();
 updateEstimate();

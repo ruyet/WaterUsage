@@ -1,332 +1,396 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f4efe7">
-  <title>Water You Don't See</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="grain" aria-hidden="true"></div>
-  <main class="phone">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f4efe7" />
+    <title>Water You Don't See</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <main class="phone">
+      <!-- 01 shower: two-question interaction -->
+      <section class="chapter chapter-shower" id="showerStart">
+        <div class="sticky shower-room">
+          <div class="tiny-label top-left">01 / YOUR ROUTINE</div>
+          <div class="tiny-label top-right shower-step-top" id="showerStepTop">QUESTION 1 / 2</div>
 
-    <!-- 01 shower -->
-    <section class="chapter chapter-shower" id="showerStart">
-      <div class="sticky shower-room">
-        <div class="tiny-label top-left">01 / YOUR ROUTINE</div>
-        <div class="tiny-label top-right">SCROLL ↓</div>
+          <div class="shower-fixture" aria-hidden="true">
+            <svg class="shower-fixture-svg" viewBox="0 0 390 330" role="presentation">
+              <path class="fixture-shadow-line" d="M326 342 L326 76 Q326 39 289 39 L212 39 Q180 39 180 70 L180 84" />
+              <path class="fixture-pipe" d="M316 342 L316 76 Q316 49 289 49 L214 49 Q190 49 190 72 L190 86" />
+              <rect class="fixture-connector" x="181" y="76" width="18" height="29" rx="8" />
+              <path class="fixture-cap" d="M124 127 Q132 91 190 91 Q248 91 256 127 Z" />
+              <path class="fixture-face" d="M119 127 Q190 153 261 127 Q254 148 190 156 Q126 148 119 127 Z" />
+              <path class="fixture-highlight" d="M145 118 Q160 102 190 101 Q220 101 238 118" />
+              <g class="fixture-nozzles">
+                <circle cx="143" cy="133" r="2.6"/><circle cx="158" cy="137" r="2.6"/>
+                <circle cx="174" cy="140" r="2.6"/><circle cx="190" cy="141" r="2.6"/>
+                <circle cx="206" cy="140" r="2.6"/><circle cx="222" cy="137" r="2.6"/>
+                <circle cx="237" cy="133" r="2.6"/>
+              </g>
+            </svg>
+            <div class="new-shower-rain" id="newShowerRain"></div>
+          </div>
 
-        <div class="shower-head-wrap" aria-hidden="true">
-          <div class="pipe"></div>
-          <div class="shower-head">
-            <div class="halftone-fill"></div>
-            <div class="nozzles">
-              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <div class="shower-console" id="showerConsole">
+            <div class="console-rail" aria-hidden="true"></div>
+
+            <div class="answer-dial flow-dial is-inactive" id="flowDial" role="slider" tabindex="-1"
+              aria-label="Showers per week" aria-valuemin="3" aria-valuemax="10" aria-valuenow="5" aria-disabled="true">
+              <div class="dial-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="dial-knob">
+                <span class="dial-marker"></span>
+                <span class="dial-value" id="flowValue">FLOW</span>
+              </div>
+              <span class="dial-caption" id="flowCaption">FLOW</span>
+              <span class="dial-action" id="flowAction">Q2</span>
+            </div>
+
+            <div class="console-question" id="showerQuestionBlock" aria-live="polite">
+              <div class="question-meta">
+                <span class="question-count" id="showerQuestionCount">Q1</span>
+                <span class="active-control-label" id="activeControlLabel">USE RIGHT DIAL</span>
+              </div>
+              <h2 id="showerQuestion">How long is your usual shower?</h2>
+              <p id="showerHelper">Turn the highlighted dial to choose your answer.</p>
+            </div>
+
+            <div class="answer-dial time-dial is-active" id="timeDial" role="slider" tabindex="0"
+              aria-label="Shower duration" aria-valuemin="2" aria-valuemax="20" aria-valuenow="10" aria-disabled="false">
+              <div class="dial-scale temperature-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div class="dial-knob">
+                <span class="dial-marker"></span>
+                <span class="dial-value" id="timeValue">10<span> min</span></span>
+              </div>
+              <span class="dial-caption" id="timeCaption">DURATION</span>
+              <span class="dial-action" id="timeAction">TURN</span>
+            </div>
+
+            <button class="shower-next" id="showerNext" type="button">
+              <span id="showerNextText">NEXT QUESTION</span>
+              <i aria-hidden="true">→</i>
+            </button>
+          </div>
+
+          <div class="shower-transition" id="showerTransition" aria-hidden="true">
+            <div class="transition-water"></div>
+            <div class="transition-copy">
+              <span>ANSWER SAVED</span>
+              <strong>NEXT QUESTION</strong>
+            </div>
+          </div>
+
+          <div class="shower-footnote" id="showerFootnote">
+            <span>TURN</span><i></i><span>CHOOSE</span><i></i><span>NEXT</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 sink questions -->
+      <section class="chapter chapter-sink" id="sinkChapter">
+        <div class="sticky kitchen-room">
+          <div class="tiny-label top-left">03 / THE SINK</div>
+          <div class="sink-copy">
+            <span class="question-count">Q3</span>
+            <h2>How many times a week do you wash dishes?</h2>
+            <p>Tap one plate.</p>
+          </div>
+
+          <div class="sink-scene" aria-hidden="true">
+            <div class="faucet">
+              <div class="faucet-neck"></div>
+              <div class="faucet-spout"></div>
+              <div class="sink-stream" id="sinkStream"></div>
+            </div>
+            <div class="basin">
+              <div class="basin-water" id="basinWater"></div>
+              <div class="soap-bubbles">
+                <i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="plate-stack" id="dishFrequency">
+            <button class="plate" data-value="1">
+              <b>1×</b><span>a week</span>
+            </button>
+            <button class="plate" data-value="3">
+              <b>3×</b><span>a week</span>
+            </button>
+            <button class="plate active" data-value="5">
+              <b>5×</b><span>a week</span>
+            </button>
+            <button class="plate" data-value="7">
+              <b>7×</b><span>a week</span>
+            </button>
+          </div>
+
+          <div class="sink-question-two" id="dishMethodPanel">
+            <span class="question-count">Q4</span>
+            <h3>How do you usually wash them?</h3>
+            <div class="method-plates" id="dishMethod">
+              <button class="method-plate" data-value="dishwasher">
+                Dishwasher
+              </button>
+              <button class="method-plate active" data-value="basin">
+                Filled sink
+              </button>
+              <button class="method-plate" data-value="running">
+                Running tap
+              </button>
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="control-bar first-control">
-          <div class="control-left temp-wheel" aria-hidden="true">
-            <span class="cold">COLD</span>
+      <!-- 04 drain tunnel -->
+      <section class="chapter chapter-drain" id="drainChapter">
+        <div class="sticky drain-room">
+          <div class="tiny-label top-left light">04 / DOWN THE DRAIN</div>
+          <div class="drain-copy">
+            <strong>FOLLOW IT</strong>
+            <span>KEEP SCROLLING</span>
+          </div>
+          <div class="drain-tunnel" id="drainTunnel" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <div class="drain-hole"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 washing machine -->
+      <section class="chapter chapter-laundry" id="laundryChapter">
+        <div class="sticky laundry-room">
+          <div class="tiny-label top-left">05 / LAUNDRY</div>
+          <div class="laundry-copy">
+            <span class="question-count">Q5</span>
+            <h2>How many times a week do you do laundry?</h2>
+            <p>Use the machine buttons.</p>
+          </div>
+
+          <div class="washer">
+            <div class="washer-panel" id="laundryButtons">
+              <button data-value="1">1×</button>
+              <button class="active" data-value="2.5">2 to 3×</button>
+              <button data-value="4">4+×</button>
+              <div class="washer-dial" aria-hidden="true"></div>
+            </div>
+            <div class="washer-door">
+              <div class="washer-drum">
+                <div class="washer-water" id="washerWater"></div>
+                <div class="laundry-piece piece-a"></div>
+                <div class="laundry-piece piece-b"></div>
+                <div class="laundry-piece piece-c"></div>
+              </div>
+            </div>
+            <div class="washer-handle"></div>
+          </div>
+
+          <div class="washer-result" id="washerResult">
+            <span>YOUR ANSWER FILLS THE DRUM</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 result -->
+      <section class="chapter chapter-result" id="resultChapter">
+        <div class="sticky result-room">
+          <div class="tiny-label top-left">06 / YOUR WATER STORY</div>
+          <div class="result-kicker">BASED ON YOUR ROUTINE</div>
+          <div class="result-number">
+            <span id="personalLitres">118</span><small>L / DAY</small>
+          </div>
+          <p class="result-copy">
+            This estimate only uses the habits you answered above. The Dutch
+            average is around <strong>118 L per person per day</strong>.
+          </p>
+          <div class="marker-strip">
+            <span>YOU</span>
             <i></i>
-            <span class="hot">HOT</span>
-          </div>
-
-          <div class="question-window">
-            <span class="question-count">Q1</span>
-            <strong>How long is your usual shower?</strong>
-            <small>Turn the right dial</small>
-          </div>
-
-          <div class="rotary" id="showerLengthDial" role="group" aria-label="Shower duration">
-            <button class="rotary-btn" data-value="2">2 min</button>
-            <button class="rotary-btn" data-value="5">5 min</button>
-            <button class="rotary-btn active" data-value="10">10 min</button>
-            <button class="rotary-btn" data-value="20">20 min</button>
+            <span>NL AVG 118 L</span>
           </div>
         </div>
+      </section>
 
-        <div class="shower-rain" id="showerRain" aria-hidden="true"></div>
-
-        <div class="scroll-instruction" id="showerScrollHint">
-          <span>ANSWERED</span>
-          <strong>NOW FOLLOW THE WATER</strong>
-          <i>↓</i>
+      <!-- 07 glasses -->
+      <section class="chapter chapter-glasses" id="glassesChapter">
+        <div class="sticky glasses-room">
+          <div class="tiny-label top-left light">07 / MAKE IT VISIBLE</div>
+          <div class="full-text light">
+            <span>THAT IS ABOUT</span>
+            <strong><span id="glassCount">236</span> GLASSES</strong>
+            <p>if one glass holds 500 ml.</p>
+          </div>
+          <div
+            class="flying-glasses"
+            id="flyingGlasses"
+            aria-hidden="true"
+          ></div>
+          <img
+            class="figma-grid figma-glasses"
+            src=""
+            alt=""
+            aria-hidden="true"
+          />
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 02 second shower question -->
-    <section class="chapter chapter-shower-q2" id="showerFrequency">
-      <div class="sticky shower-room room-two">
-        <div class="tiny-label top-left">02 / STILL IN THE SHOWER</div>
+      <!-- 08 money -->
+      <section class="chapter chapter-money" id="moneyChapter">
+        <div class="sticky money-room">
+          <div class="tiny-label top-left">08 / WHAT DOES THAT MEAN?</div>
+          <div class="money-title">
+            <span>WATER + HEATING</span>
+            <strong>€<span id="monthlyCost">54</span><br />A MONTH</strong>
+            <p>
+              Prototype example. Replace this with your final researched
+              calculation.
+            </p>
+          </div>
+          <div class="money-rain" id="moneyRain" aria-hidden="true"></div>
+          <img
+            class="figma-grid figma-euros"
+            src=""
+            alt=""
+            aria-hidden="true"
+          />
+        </div>
+      </section>
 
-        <div class="shower-rain shower-rain-secondary" id="showerRain2" aria-hidden="true"></div>
-
-        <div class="control-bar second-control">
-          <div class="rotary left-rotary" id="showerFrequencyDial" role="group" aria-label="Shower frequency">
-            <button class="rotary-btn" data-value="3">3×</button>
-            <button class="rotary-btn active" data-value="5">5×</button>
-            <button class="rotary-btn" data-value="7">7×</button>
-            <button class="rotary-btn" data-value="10">10×</button>
+      <!-- 09 saving -->
+      <section class="chapter chapter-saving" id="savingChapter">
+        <div class="sticky saving-room">
+          <div class="tiny-label top-left">09 / SMALL CHANGE</div>
+          <div class="saving-big">2 MIN<br />SHORTER</div>
+          <div class="saving-arrow">↓</div>
+          <div class="saving-result">
+            <strong>YOU CAN SAVE</strong>
+            <span>€12 / MONTH</span>
+            <small
+              >Example value from the concept. Replace when your final
+              calculation is ready.</small
+            >
           </div>
 
-          <div class="question-window">
-            <span class="question-count">Q2</span>
-            <strong>How many times a week do you shower?</strong>
-            <small>Turn the left dial</small>
+          <img
+            class="meme meme-one"
+            src="assets/figma_4.png"
+            alt="placeholder meme"
+          />
+          <img
+            class="meme meme-two"
+            src="assets/figma_5.png"
+            alt="placeholder meme"
+          />
+        </div>
+      </section>
+
+      <!-- 10 relatable value -->
+      <section class="chapter chapter-value" id="valueChapter">
+        <div class="sticky value-room">
+          <div class="tiny-label top-left">10 / PUT IT IN CONTEXT</div>
+          <div class="value-copy">
+            <strong>€12</strong>
+            <span>is not just a number.</span>
           </div>
 
-          <div class="control-right deco-knob" aria-hidden="true">
-            <span>FLOW</span>
-            <i></i>
+          <div class="doner-comparison">
+            <img src="assets/figma_2.png" alt="placeholder food comparison" />
+            <img src="assets/figma_2.png" alt="placeholder food comparison" />
+            <p>That can be roughly <b>two meals</b>.</p>
+          </div>
+
+          <div class="outfit-comparison">
+            <img src="assets/figma_3.png" alt="placeholder outfit comparison" />
+            <p>
+              And across a year, the saving starts to look like real spending
+              money.
+            </p>
           </div>
         </div>
+      </section>
 
-        <div class="big-water-type water-type-one" aria-hidden="true">DRIP<br>DRIP</div>
-      </div>
-    </section>
+      <!-- 11 actions -->
+      <section class="chapter chapter-actions" id="actionsChapter">
+        <div class="sticky actions-room">
+          <div class="tiny-label top-left">11 / START HERE</div>
+          <h2>LET'S GET<br />THAT BAG</h2>
 
-    <!-- 03 sink questions -->
-    <section class="chapter chapter-sink" id="sinkChapter">
-      <div class="sticky kitchen-room">
-        <div class="tiny-label top-left">03 / THE SINK</div>
-        <div class="sink-copy">
-          <span class="question-count">Q3</span>
-          <h2>How many times a week do you wash dishes?</h2>
-          <p>Tap one plate.</p>
-        </div>
-
-        <div class="sink-scene" aria-hidden="true">
-          <div class="faucet">
-            <div class="faucet-neck"></div>
-            <div class="faucet-spout"></div>
-            <div class="sink-stream" id="sinkStream"></div>
-          </div>
-          <div class="basin">
-            <div class="basin-water" id="basinWater"></div>
-            <div class="soap-bubbles">
-              <i></i><i></i><i></i><i></i><i></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="plate-stack" id="dishFrequency">
-          <button class="plate" data-value="1"><b>1×</b><span>a week</span></button>
-          <button class="plate" data-value="3"><b>3×</b><span>a week</span></button>
-          <button class="plate active" data-value="5"><b>5×</b><span>a week</span></button>
-          <button class="plate" data-value="7"><b>7×</b><span>a week</span></button>
-        </div>
-
-        <div class="sink-question-two" id="dishMethodPanel">
-          <span class="question-count">Q4</span>
-          <h3>How do you usually wash them?</h3>
-          <div class="method-plates" id="dishMethod">
-            <button class="method-plate" data-value="dishwasher">Dishwasher</button>
-            <button class="method-plate active" data-value="basin">Filled sink</button>
-            <button class="method-plate" data-value="running">Running tap</button>
+          <div class="action-cards">
+            <article class="action-card lime">
+              <span>01</span>
+              <strong>SHOWER 2 MIN LESS</strong>
+              <p>Make the final song in your playlist your cue to finish.</p>
+            </article>
+            <article class="action-card pink">
+              <span>02</span>
+              <strong>PAUSE THE TAP</strong>
+              <p>
+                Turn it off while shampooing, brushing your teeth, or soaping
+                dishes.
+              </p>
+            </article>
+            <article class="action-card blue">
+              <span>03</span>
+              <strong>RUN FULL LOADS</strong>
+              <p>
+                Wait until the dishwasher or washing machine is actually full.
+              </p>
+            </article>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 04 drain tunnel -->
-    <section class="chapter chapter-drain" id="drainChapter">
-      <div class="sticky drain-room">
-        <div class="tiny-label top-left light">04 / DOWN THE DRAIN</div>
-        <div class="drain-copy">
-          <strong>FOLLOW IT</strong>
-          <span>KEEP SCROLLING</span>
-        </div>
-        <div class="drain-tunnel" id="drainTunnel" aria-hidden="true">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-          <div class="drain-hole"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 05 washing machine -->
-    <section class="chapter chapter-laundry" id="laundryChapter">
-      <div class="sticky laundry-room">
-        <div class="tiny-label top-left">05 / LAUNDRY</div>
-        <div class="laundry-copy">
-          <span class="question-count">Q5</span>
-          <h2>How many times a week do you do laundry?</h2>
-          <p>Use the machine buttons.</p>
-        </div>
-
-        <div class="washer">
-          <div class="washer-panel" id="laundryButtons">
-            <button data-value="1">1×</button>
-            <button class="active" data-value="2.5">2 to 3×</button>
-            <button data-value="4">4+×</button>
-            <div class="washer-dial" aria-hidden="true"></div>
+      <!-- 12 future -->
+      <section class="chapter chapter-future" id="futureChapter">
+        <div class="sticky future-room">
+          <div class="future-headline">
+            <span>OTHERWISE...</span>
+            <strong><em>THIS</em> WILL BE<br />THE NEW WORLD</strong>
           </div>
-          <div class="washer-door">
-            <div class="washer-drum">
-              <div class="washer-water" id="washerWater"></div>
-              <div class="laundry-piece piece-a"></div>
-              <div class="laundry-piece piece-b"></div>
-              <div class="laundry-piece piece-c"></div>
-            </div>
+
+          <div class="future-collage collage-dry">
+            <img src="assets/figma_7.png" alt="placeholder drought visual" />
+            <img src="assets/figma_9.png" alt="placeholder dry landscape" />
           </div>
-          <div class="washer-handle"></div>
+
+          <div class="future-collage collage-before-after">
+            <img src="assets/figma_10.png" alt="green landscape" />
+            <img src="assets/figma_11.png" alt="dry landscape" />
+          </div>
+
+          <img
+            class="future-meme"
+            src="assets/figma_6.png"
+            alt="placeholder reaction meme"
+          />
         </div>
+      </section>
 
-        <div class="washer-result" id="washerResult">
-          <span>YOUR ANSWER FILLS THE DRUM</span>
+      <!-- 13 ending -->
+      <section class="chapter chapter-end" id="endChapter">
+        <div class="sticky end-room">
+          <div class="end-copy">
+            <span>CHANGE IT BEFORE</span>
+            <strong>IT'S TOO LATE</strong>
+            <p>Make the invisible visible. Then make one routine smaller.</p>
+            <button id="restartBtn">START AGAIN</button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
 
-    <!-- 06 result -->
-    <section class="chapter chapter-result" id="resultChapter">
-      <div class="sticky result-room">
-        <div class="tiny-label top-left">06 / YOUR WATER STORY</div>
-        <div class="result-kicker">BASED ON YOUR ROUTINE</div>
-        <div class="result-number"><span id="personalLitres">118</span><small>L / DAY</small></div>
-        <p class="result-copy">This estimate only uses the habits you answered above. The Dutch average is around <strong>118 L per person per day</strong>.</p>
-        <div class="marker-strip">
-          <span>YOU</span>
-          <i></i>
-          <span>NL AVG 118 L</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 07 glasses -->
-    <section class="chapter chapter-glasses" id="glassesChapter">
-      <div class="sticky glasses-room">
-        <div class="tiny-label top-left light">07 / MAKE IT VISIBLE</div>
-        <div class="full-text light">
-          <span>THAT IS ABOUT</span>
-          <strong><span id="glassCount">236</span> GLASSES</strong>
-          <p>if one glass holds 500 ml.</p>
-        </div>
-        <div class="flying-glasses" id="flyingGlasses" aria-hidden="true"></div>
-        <img class="figma-grid figma-glasses" src="assets/figma_0.png" alt="" aria-hidden="true">
-      </div>
-    </section>
-
-    <!-- 08 money -->
-    <section class="chapter chapter-money" id="moneyChapter">
-      <div class="sticky money-room">
-        <div class="tiny-label top-left">08 / WHAT DOES THAT MEAN?</div>
-        <div class="money-title">
-          <span>WATER + HEATING</span>
-          <strong>€<span id="monthlyCost">54</span><br>A MONTH</strong>
-          <p>Prototype example. Replace this with your final researched calculation.</p>
-        </div>
-        <div class="money-rain" id="moneyRain" aria-hidden="true"></div>
-        <img class="figma-grid figma-euros" src="assets/figma_1.png" alt="" aria-hidden="true">
-      </div>
-    </section>
-
-    <!-- 09 saving -->
-    <section class="chapter chapter-saving" id="savingChapter">
-      <div class="sticky saving-room">
-        <div class="tiny-label top-left">09 / SMALL CHANGE</div>
-        <div class="saving-big">2 MIN<br>SHORTER</div>
-        <div class="saving-arrow">↓</div>
-        <div class="saving-result">
-          <strong>YOU CAN SAVE</strong>
-          <span>€12 / MONTH</span>
-          <small>Example value from the concept. Replace when your final calculation is ready.</small>
-        </div>
-
-        <img class="meme meme-one" src="assets/figma_4.png" alt="placeholder meme">
-        <img class="meme meme-two" src="assets/figma_5.png" alt="placeholder meme">
-      </div>
-    </section>
-
-    <!-- 10 relatable value -->
-    <section class="chapter chapter-value" id="valueChapter">
-      <div class="sticky value-room">
-        <div class="tiny-label top-left">10 / PUT IT IN CONTEXT</div>
-        <div class="value-copy">
-          <strong>€12</strong>
-          <span>is not just a number.</span>
-        </div>
-
-        <div class="doner-comparison">
-          <img src="assets/figma_2.png" alt="placeholder food comparison">
-          <img src="assets/figma_2.png" alt="placeholder food comparison">
-          <p>That can be roughly <b>two meals</b>.</p>
-        </div>
-
-        <div class="outfit-comparison">
-          <img src="assets/figma_3.png" alt="placeholder outfit comparison">
-          <p>And across a year, the saving starts to look like real spending money.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 11 actions -->
-    <section class="chapter chapter-actions" id="actionsChapter">
-      <div class="sticky actions-room">
-        <div class="tiny-label top-left">11 / START HERE</div>
-        <h2>LET'S GET<br>THAT BAG</h2>
-
-        <div class="action-cards">
-          <article class="action-card lime">
-            <span>01</span>
-            <strong>SHOWER 2 MIN LESS</strong>
-            <p>Make the final song in your playlist your cue to finish.</p>
-          </article>
-          <article class="action-card pink">
-            <span>02</span>
-            <strong>PAUSE THE TAP</strong>
-            <p>Turn it off while shampooing, brushing your teeth, or soaping dishes.</p>
-          </article>
-          <article class="action-card blue">
-            <span>03</span>
-            <strong>RUN FULL LOADS</strong>
-            <p>Wait until the dishwasher or washing machine is actually full.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- 12 future -->
-    <section class="chapter chapter-future" id="futureChapter">
-      <div class="sticky future-room">
-        <div class="future-headline">
-          <span>OTHERWISE...</span>
-          <strong><em>THIS</em> WILL BE<br>THE NEW WORLD</strong>
-        </div>
-
-        <div class="future-collage collage-dry">
-          <img src="assets/figma_7.png" alt="placeholder drought visual">
-          <img src="assets/figma_9.png" alt="placeholder dry landscape">
-        </div>
-
-        <div class="future-collage collage-before-after">
-          <img src="assets/figma_10.png" alt="green landscape">
-          <img src="assets/figma_11.png" alt="dry landscape">
-        </div>
-
-        <img class="future-meme" src="assets/figma_6.png" alt="placeholder reaction meme">
-      </div>
-    </section>
-
-    <!-- 13 ending -->
-    <section class="chapter chapter-end" id="endChapter">
-      <div class="sticky end-room">
-        <div class="end-copy">
-          <span>CHANGE IT BEFORE</span>
-          <strong>IT'S TOO LATE</strong>
-          <p>Make the invisible visible. Then make one routine smaller.</p>
-          <button id="restartBtn">START AGAIN</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
