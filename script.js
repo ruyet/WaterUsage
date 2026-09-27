@@ -1,4 +1,4 @@
-/* Water Story v31 — touch-safe controls + iPhone-stable held chapters */
+/* Water Story v32 — viewport-true pins + research-grounded personalization */
 
 const state = {
   showerMinutes: 2,
@@ -31,6 +31,18 @@ const FUTURE_STORY_STEP = 2.05;
 /* Hidden pin buffer for autoplay chapters. It prevents a fast swipe/wheel from
    skipping across the whole chapter before its input gate can activate. */
 const AUTO_GATE_VIEWPORTS = 2.2;
+
+/* v32 calculation assumptions. Keep these centralized so the storytelling numbers
+   can be adjusted without hunting through the UI code.
+   - 2026 Brabant Water variable tariff: €1.51 / m³.
+   - Milieu Centraal: going from 7.4 to 5 min/day saves about €36/year.
+     That is roughly €15/year per daily shower-minute avoided.
+   - €25 phone plan and €9 kapsalon are illustrative comparison values, not averages. */
+const WATER_EUR_PER_M3 = 1.51;
+const SHOWER_WARM_WATER_EUR_PER_DAILY_MINUTE_YEAR = 15;
+const PHONE_PLAN_EUR = 25;
+const KAPSALON_EUR = 9;
+const SHOWER_TARGET_MINUTES = 5;
 
 const clamp = (n, a = 0, b = 1) => Math.max(a, Math.min(b, n));
 const qs = (selector, root = document) => root.querySelector(selector);
@@ -102,7 +114,8 @@ function unlockPageScroll() {
   scrollGate.locked = false;
   document.documentElement.classList.remove("interaction-locked");
   document.body.classList.remove("interaction-locked");
-  touchNormalizer?.enable?.();
+  /* v32: touch normalization is managed only while a held/pinned chapter is active.
+     Normal scrolling between chapters stays native. */
 }
 
 function setupSmoothScrolling() {
@@ -114,18 +127,17 @@ function setupSmoothScrolling() {
     autoRefreshEvents: "visibilitychange,DOMContentLoaded,load"
   });
 
-  /* Real iPhones keep native momentum on a separate scrolling thread. A fast flick
-     can therefore enter a pinned chapter and continue through its whole pin before
-     ScrollTrigger visibly settles. normalizeScroll keeps touch scrolling and the
-     pinned GSAP story on the same thread. It is deliberately enabled only on real
-     coarse/touch devices, so desktop/mobile DevTools keeps its existing behaviour. */
+  /* Keep normal iPhone scrolling between chapters. A normalizer exists only as a
+     temporary pin helper: it is disabled by default, enabled while a held stage is
+     active, and disabled again the moment that stage releases. */
   if (isTouchLike && !reducedMotion && ScrollTrigger.normalizeScroll) {
     touchNormalizer = ScrollTrigger.normalizeScroll({
       allowNestedScroll: true,
       lockAxis: true,
-      ignore: ".shower-range",
-      momentum: self => Math.min(0.18, Math.max(0.06, Math.abs(self.velocityY || 0) / 9000))
+      ignore: ".shower-range, button, input, select, textarea",
+      momentum: () => 0.42
     });
+    touchNormalizer.disable?.();
   }
 }
 
@@ -648,6 +660,8 @@ function bindLaundry() {
       /* The laundry chapter is a required answer. Only after the user deliberately
          chooses one of the circles do we give scrolling back to the pinned story. */
       unlockPageScroll();
+      const laundryPin = ScrollTrigger.getById?.("laundry-pin");
+      if (laundryPin?.isActive) activateHeldTouch(laundryPin);
       setGlobalScrollCueVisible(true, "SCROLL TO RUN THE WASH");
     });
   });
@@ -673,12 +687,132 @@ function updateLaundry() {
 /* Estimate                                                                    */
 /* -------------------------------------------------------------------------- */
 
+function estimateBreakdown(snapshot = state) {
+  const showerMinutesPerDay = (Number(snapshot.showerMinutes) * Number(snapshot.showersPerWeek)) / 7;
+  const shower = showerMinutesPerDay * 8;
+  const dishPerSession = { dishwasher: 10, basin: 18, running: 34 }[snapshot.dishMethod] ?? 18;
+  const dishes = (dishPerSession * Number(snapshot.dishesPerWeek)) / 7;
+  const laundry = (50 * (Number(snapshot.laundryPerWeek) || 0)) / 7;
+  const base = 28;
+  return {
+    showerMinutesPerDay,
+    shower,
+    dishes,
+    laundry,
+    base,
+    total: shower + dishes + laundry + base
+  };
+}
+
 function estimateDailyLitres() {
-  const shower = (state.showerMinutes * 8 * state.showersPerWeek) / 7;
-  const dishPerSession = { dishwasher: 10, basin: 18, running: 34 }[state.dishMethod];
-  const dishes = (dishPerSession * state.dishesPerWeek) / 7;
-  const laundry = (50 * (Number(state.laundryPerWeek) || 0)) / 7;
-  return Math.round(shower + dishes + laundry + 28);
+  return Math.round(estimateBreakdown(state).total);
+}
+
+function estimateMonthlyRoutineCost(snapshot = state) {
+  const usage = estimateBreakdown(snapshot);
+  /* The Milieu Centraal shower benchmark already represents warm-water cost, so
+     only non-shower litres get the separate drinking-water tariff here. */
+  const nonShowerDailyLitres = Math.max(0, usage.total - usage.shower);
+  const nonShowerWaterAnnual = (nonShowerDailyLitres * 365 / 1000) * WATER_EUR_PER_M3;
+  const showerWarmWaterAnnual = usage.showerMinutesPerDay * SHOWER_WARM_WATER_EUR_PER_DAILY_MINUTE_YEAR;
+  return (nonShowerWaterAnnual + showerWarmWaterAnnual) / 12;
+}
+
+function estimateSavingScenario() {
+  const current = { ...state };
+  const improved = { ...state };
+
+  improved.showerMinutes = Math.min(Number(current.showerMinutes), SHOWER_TARGET_MINUTES);
+  if (current.dishMethod === "running") improved.dishMethod = "basin";
+  /* We only model fewer laundry cycles for the highest-frequency answer. We do
+     not assume that someone doing 1–3 loads can safely wash less. */
+  if ((Number(current.laundryPerWeek) || 0) >= 4) improved.laundryPerWeek = 3;
+
+  const currentBreakdown = estimateBreakdown(current);
+  const improvedBreakdown = estimateBreakdown(improved);
+  const monthlyCurrent = estimateMonthlyRoutineCost(current);
+  const monthlyImproved = estimateMonthlyRoutineCost(improved);
+  const monthlySaving = Math.max(0, monthlyCurrent - monthlyImproved);
+  const annualSaving = monthlySaving * 12;
+  const annualLitresSaved = Math.max(0, (currentBreakdown.total - improvedBreakdown.total) * 365);
+
+  return { monthlyCurrent, monthlySaving, annualSaving, annualLitresSaved, improved };
+}
+
+function formatCompactNumber(value, digits = 1) {
+  const rounded = Number(value.toFixed(digits));
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(digits);
+}
+
+function updatePersonalizedStory() {
+  const saving = estimateSavingScenario();
+  const monthly = saving.monthlySaving;
+  const annual = saving.annualSaving;
+  const kapsalons = annual / KAPSALON_EUR;
+  const phoneMonths = annual / PHONE_PLAN_EUR;
+
+  const monthlyLine = qs("#savingMonthlyLine");
+  const foodLine = qs("#savingFoodLine");
+  const phoneLine = qs("#savingPhoneLine");
+  const yearLine = qs("#savingYearLine");
+  const waterLine = qs("#savingYearWaterLine");
+
+  if (monthlyLine) {
+    monthlyLine.textContent = monthly >= 0.5
+      ? `YOU COULD SAVE ABOUT €${formatCompactNumber(monthly)} MONTHLY`
+      : "YOUR ROUTINE IS ALREADY CLOSE TO OUR SAVING TARGET";
+  }
+  if (foodLine) {
+    foodLine.textContent = annual >= KAPSALON_EUR
+      ? `THAT'S ABOUT ${formatCompactNumber(kapsalons)} KAPSALONS A YEAR`
+      : `THAT'S ABOUT €${formatCompactNumber(annual)} BACK A YEAR`;
+  }
+  if (phoneLine) {
+    phoneLine.textContent = phoneMonths >= 0.25
+      ? `OR ${formatCompactNumber(phoneMonths)} MONTHS OF A €25 PHONE PLAN`
+      : "SMALL SAVINGS STILL ADD UP OVER TIME";
+  }
+  if (yearLine) yearLine.textContent = `THAT'S ABOUT €${formatCompactNumber(annual)} A YEAR SAVED`;
+  if (waterLine) waterLine.textContent = `${Math.round(saving.annualLitresSaved).toLocaleString("en-US")} LITRES LESS WATER`;
+}
+
+function updatePersonalizedTips() {
+  const showerTitle = qs("#tipShowerTitle");
+  const showerCopy = qs("#tipShowerCopy");
+  const dishesTitle = qs("#tipDishesTitle");
+  const dishesCopy = qs("#tipDishesCopy");
+  const laundryTitle = qs("#tipLaundryTitle");
+  const laundryCopy = qs("#tipLaundryCopy");
+
+  const minutes = Number(state.showerMinutes);
+  if (minutes > SHOWER_TARGET_MINUTES) {
+    const difference = minutes - SHOWER_TARGET_MINUTES;
+    if (showerTitle) showerTitle.innerHTML = "AIM FOR A<br />5 MIN SHOWER";
+    if (showerCopy) showerCopy.textContent = `That is ${difference} minute${difference === 1 ? "" : "s"} shorter than your answer. Shorter showers save warm water and energy.`;
+  } else {
+    if (showerTitle) showerTitle.innerHTML = "KEEP IT AROUND<br />5 MINUTES";
+    if (showerCopy) showerCopy.textContent = "You are already at or below the 5-minute recommendation.";
+  }
+
+  if (state.dishMethod === "running") {
+    if (dishesTitle) dishesTitle.innerHTML = "STOP THE<br />RUNNING TAP";
+    if (dishesCopy) dishesCopy.textContent = "For hand washing, use a filled sink or basin instead of leaving warm water running.";
+  } else if (state.dishMethod === "dishwasher") {
+    if (dishesTitle) dishesTitle.innerHTML = "RUN IT FULL<br />+ USE ECO";
+    if (dishesCopy) dishesCopy.textContent = "Only run the dishwasher when it is full and choose the eco programme.";
+  } else {
+    if (dishesTitle) dishesTitle.innerHTML = "KEEP USING A<br />FILLED SINK";
+    if (dishesCopy) dishesCopy.textContent = "A basin avoids the extra warm water used by washing under a running tap.";
+  }
+
+  const laundry = Number(state.laundryPerWeek) || 0;
+  if (laundry >= 4) {
+    if (laundryTitle) laundryTitle.innerHTML = "COMBINE LOADS<br />WHEN YOU CAN";
+    if (laundryCopy) laundryCopy.textContent = "A typical washing-machine cycle uses about 50 litres. Full loads can mean fewer cycles.";
+  } else {
+    if (laundryTitle) laundryTitle.innerHTML = "WASH FULL<br />AND USE ECO";
+    if (laundryCopy) laundryCopy.textContent = "A typical washing-machine cycle uses about 50 litres. Full loads and eco avoid unnecessary use.";
+  }
 }
 
 function updateResultNumberFill(progress) {
@@ -691,9 +825,11 @@ function updateResultNumberFill(progress) {
 function updateEstimate() {
   const litres = estimateDailyLitres();
   qs("#personalLitres").textContent = litres;
-  qs("#glassCount").textContent = Math.round(litres / 0.5);
-  const cost = Math.max(18, Math.round(litres * 0.46));
-  qs("#monthlyCostLine").innerHTML = `€${cost}<br>A MONTH`;
+  qs("#glassCount").textContent = Math.round(litres / 0.2);
+
+  const saving = estimateSavingScenario();
+  const currentCost = Math.max(1, Math.round(saving.monthlyCurrent));
+  qs("#monthlyCostLine").innerHTML = `€${currentCost}<br>A MONTH`;
 
   const comparison = qs("#resultComparison");
   if (comparison) {
@@ -704,6 +840,9 @@ function updateEstimate() {
     qs("#resultYouLabel").textContent = `${litres} L / DAY`;
     gsap.set(qs(".user-fill", comparison), { width: `${userPos}%` });
   }
+
+  updatePersonalizedStory();
+  updatePersonalizedTips();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -728,7 +867,7 @@ function buildAutoStoryTimeline({ slides, progressRoot, stepDuration, onComplete
   slides.forEach((slide, index) => {
     const start = index * stepDuration;
     const words = qsa(".gsap-word", slide);
-    const media = qsa(".saving-face, .beer-meme, .food-row, .future-reference-image", slide);
+    const media = qsa(".saving-face, .phone-plan-visual, .food-row, .future-reference-image", slide);
 
     tl.set(slide, { autoAlpha: 1, visibility: "visible" }, start);
     animateWordsIn(words, tl, start + 0.03);
@@ -823,17 +962,17 @@ function setupAutomaticStories() {
     end: pinDistance(AUTO_GATE_VIEWPORTS),
     pin: true,
     pinSpacing: true,
-    anticipatePin: 1,
+    anticipatePin: 0,
     invalidateOnRefresh: true,
     refreshPriority: 60,
-    onEnter: () => playLockedStory({
+    onEnter: self => { activateHeldTouch(self); playLockedStory({
       slides: savingSlides,
       progress: savingProgress,
       stepDuration: AUTO_STORY_STEP,
       kind: "saving",
       releaseCue: "#savingReleaseCue",
       gateTrigger: savingGate
-    }),
+    }); },
     onEnterBack: () => {
       if (storyState.savingPlayed) showStoryReleaseCue("#savingReleaseCue", true);
     }
@@ -854,17 +993,17 @@ function setupAutomaticStories() {
     end: pinDistance(AUTO_GATE_VIEWPORTS),
     pin: true,
     pinSpacing: true,
-    anticipatePin: 1,
+    anticipatePin: 0,
     invalidateOnRefresh: true,
     refreshPriority: 40,
-    onEnter: () => playLockedStory({
+    onEnter: self => { activateHeldTouch(self); playLockedStory({
       slides: futureSlides,
       progress: futureProgress,
       stepDuration: FUTURE_STORY_STEP,
       kind: "future",
       releaseCue: "#futureReleaseCue",
       gateTrigger: futureGate
-    }),
+    }); },
     onEnterBack: () => {
       if (storyState.futurePlayed) showStoryReleaseCue("#futureReleaseCue", true);
     }
@@ -874,6 +1013,25 @@ function setupAutomaticStories() {
 /* -------------------------------------------------------------------------- */
 /* Held scroll stages — viewport stays put while scroll advances the story     */
 /* -------------------------------------------------------------------------- */
+
+function activateHeldTouch(self) {
+  if (!isTouchLike || !touchNormalizer || scrollGate.locked) return;
+
+  /* Do not anticipate the pin. Once the trigger has genuinely reached the top,
+     settle it to its exact start and then let GSAP own momentum only for the held
+     chapter. This prevents a single iPhone flick from carrying straight through. */
+  const targetY = Math.round(self.start + 1);
+  if (Math.abs(window.scrollY - targetY) > 1) {
+    window.scrollTo(0, targetY);
+    ScrollTrigger.update();
+  }
+  touchNormalizer.enable?.();
+}
+
+function deactivateHeldTouch() {
+  if (!isTouchLike || !touchNormalizer) return;
+  touchNormalizer.disable?.();
+}
 
 function stageCue(self, activeLabel, releaseLabel) {
   setGlobalScrollCueVisible(true, self.progress > 0.88 ? releaseLabel : activeLabel);
@@ -922,13 +1080,15 @@ function setupHeldStages() {
       end: pinDistance(0.88),
       pin: true,
       pinSpacing: true,
-      anticipatePin: 1,
+      anticipatePin: 0,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 100,
-      onEnter: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"),
-      onEnterBack: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"),
-      onUpdate: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY")
+      onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"); },
+      onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"); },
+      onUpdate: self => stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY"),
+      onLeave: deactivateHeldTouch,
+      onLeaveBack: deactivateHeldTouch
     }
   })
     .fromTo(washer, { scale: 0.94, y: 14 }, { scale: 1.045, y: 0, ease: "none" }, 0)
@@ -945,24 +1105,26 @@ function setupHeldStages() {
       end: pinDistance(0.78),
       pin: true,
       pinSpacing: true,
-      anticipatePin: 1,
+      anticipatePin: 0,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 90,
-      onEnter: self => { updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
-      onEnterBack: self => { updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
+      onEnter: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
+      onEnterBack: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
       onUpdate: self => {
         /* Fill the litres themselves from bottom to top before the comparison card
            is fully revealed, so the number becomes part of the scroll interaction. */
-        updateResultNumberFill(clamp(self.progress / 0.72));
+        updateResultNumberFill(clamp(self.progress / 0.45));
         stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE");
-      }
+      },
+      onLeave: deactivateHeldTouch,
+      onLeaveBack: deactivateHeldTouch
     }
   })
     .fromTo("#resultChapter .result-number", { scale: 0.92 }, { scale: 1, ease: "none" }, 0)
-    .to(resultComparison, { y: 0, autoAlpha: 1, ease: "power2.out" }, 0.30)
-    .fromTo(qs(".user-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.46)
-    .fromTo(qs(".average-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.56);
+    .to(resultComparison, { y: 0, autoAlpha: 1, ease: "power2.out" }, 0.12)
+    .fromTo(qs(".user-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.19)
+    .fromTo(qs(".average-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.24);
 
   const glasses = qsa(".fly-glass");
   const glassTl = gsap.timeline({
@@ -973,15 +1135,15 @@ function setupHeldStages() {
       end: pinDistance(1.02),
       pin: true,
       pinSpacing: true,
-      anticipatePin: 1,
+      anticipatePin: 0,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 80,
-      onEnter: self => { setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
-      onEnterBack: self => { setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
+      onEnter: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
+      onEnterBack: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
       onUpdate: self => stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"),
-      onLeave: () => setBrowserTheme("#f4efe7"),
-      onLeaveBack: () => setBrowserTheme("#f4efe7")
+      onLeave: () => { deactivateHeldTouch(); setBrowserTheme("#f4efe7"); },
+      onLeaveBack: () => { deactivateHeldTouch(); setBrowserTheme("#f4efe7"); }
     }
   });
   glasses.forEach((glass, index) => {
@@ -1005,13 +1167,15 @@ function setupHeldStages() {
       end: pinDistance(0.84),
       pin: true,
       pinSpacing: true,
-      anticipatePin: 1,
+      anticipatePin: 0,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 70,
-      onEnter: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"),
-      onEnterBack: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"),
-      onUpdate: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE")
+      onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"); },
+      onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"); },
+      onUpdate: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"),
+      onLeave: deactivateHeldTouch,
+      onLeaveBack: deactivateHeldTouch
     }
   })
     .fromTo(moneyTitle, { y: 30, scale: 0.94, opacity: 0.65 }, { y: 0, scale: 1, opacity: 1, ease: "none" }, 0)
@@ -1024,16 +1188,18 @@ function setupHeldStages() {
       id: "actions-pin",
       trigger: "#actionsChapter",
       start: "top top",
-      end: pinDistance(1.08),
+      end: pinDistance(1.24),
       pin: true,
       pinSpacing: true,
-      anticipatePin: 1,
+      anticipatePin: 0,
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 50,
-      onEnter: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"),
-      onEnterBack: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"),
-      onUpdate: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS")
+      onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"); },
+      onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"); },
+      onUpdate: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"),
+      onLeave: deactivateHeldTouch,
+      onLeaveBack: deactivateHeldTouch
     }
   });
   cards.forEach((card, i) => actionsTl.fromTo(card, { y: 45, opacity: 0 }, { y: 0, opacity: 1, ease: "power2.out" }, i * 0.23));
@@ -1049,12 +1215,12 @@ function setupHeldStages() {
     end: pinDistance(1.85),
     pin: true,
     pinSpacing: true,
-    anticipatePin: 1,
+    anticipatePin: 0,
     scrub: reducedMotion ? false : 0.32,
     invalidateOnRefresh: true,
     refreshPriority: 30,
-    onEnter: self => stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"),
-    onEnterBack: self => stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"),
+    onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"); },
+    onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"); },
     onUpdate: self => {
       const p = clamp(self.progress);
       const intro = clamp(p / 0.16);
@@ -1066,7 +1232,9 @@ function setupHeldStages() {
         morphFrame.dataset.frame = String(frameIndex);
       }
       stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH");
-    }
+    },
+    onLeave: deactivateHeldTouch,
+    onLeaveBack: deactivateHeldTouch
   });
 
   const endHeading = qs("#endMessage h2");
