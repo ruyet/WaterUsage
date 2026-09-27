@@ -3066,3 +3066,394 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+
+/* =========================================================
+   v24 — GSAP interaction + motion system
+   ========================================================= */
+:root {
+  /* The two auto-story sections only need one short scroll to enter. */
+  --saving-auto-height: 125svh;
+  --future-auto-height: 125svh;
+  /* Scroll distance used to scrub the waterfall morph. */
+  --morph-scroll: 245svh;
+}
+
+html {
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+}
+
+/* Scroll locking is handled by input-gating in JS so GSAP can still move the page. */
+html.interaction-locked,
+body.interaction-locked {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: none;
+}
+body.interaction-locked {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  width: auto !important;
+}
+
+#smooth-wrapper,
+#smooth-content {
+  width: 100%;
+}
+#smooth-wrapper {
+  overflow: hidden;
+}
+
+/* GSAP now owns the moving parts. Keep CSS as the static visual fallback. */
+.new-shower-rain .water-line,
+.answer-dial.is-active:before,
+.basin-water,
+.basin-water:before,
+.basin-water:after,
+.washer-water,
+.washer-water:before,
+.washer-water:after,
+.euro,
+.global-scroll-hint i,
+.result-scroll-cue i,
+.laundry-scroll-cue i,
+.shower-transition.is-running .transition-water,
+.shower-transition.is-running .transition-copy {
+  animation: none !important;
+}
+
+/* ---------- shower: mobile-first tap answers ---------- */
+.chapter-shower {
+  height: 100svh !important;
+}
+.shower-console {
+  top: 438px;
+  min-height: 224px;
+  padding: 15px 92px 15px;
+}
+.console-question {
+  min-height: 194px;
+  justify-content: flex-start;
+  padding-top: 5px;
+  transition: none !important;
+}
+.console-question h2 {
+  max-width: 178px;
+  font-size: 14px;
+  line-height: 1.08;
+}
+.console-question p {
+  margin-top: 5px;
+  max-width: 174px;
+}
+.active-control-label {
+  font-size: 7px;
+}
+.answer-dial {
+  width: 86px;
+  height: 122px;
+  pointer-events: none !important;
+  touch-action: auto;
+  cursor: default;
+}
+.flow-dial { left: 7px; }
+.time-dial { right: 7px; }
+.dial-scale {
+  width: 79px;
+  height: 79px;
+}
+.dial-knob {
+  top: 13px;
+  width: 66px;
+  height: 66px;
+  transition: none !important;
+}
+.dial-marker {
+  height: 27px;
+  transition: none !important;
+}
+.answer-dial.is-active:before {
+  width: 83px;
+  height: 83px;
+  opacity: .42;
+}
+.answer-dial.is-inactive {
+  opacity: .28;
+  filter: grayscale(.65);
+}
+.dial-action {
+  display: none !important;
+}
+.flow-dial .dial-caption:empty,
+.flow-dial .dial-value:empty {
+  visibility: hidden;
+}
+
+.shower-answer-options {
+  width: 178px;
+  margin-top: 11px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.shower-answer-options button {
+  min-width: 0;
+  height: 34px;
+  padding: 0 6px;
+  border: 1.7px solid var(--ink);
+  border-radius: 11px;
+  background: rgba(255,255,255,.72);
+  color: var(--ink);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .015em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.shower-answer-options button.is-selected {
+  background: var(--shower-blue);
+  color: #fff;
+}
+.shower-answer-options button:focus-visible {
+  outline: 3px solid rgba(45, 143, 255, .25);
+  outline-offset: 2px;
+}
+
+.shower-next {
+  z-index: 30;
+  top: 681px;
+  bottom: auto;
+  opacity: 1;
+  transition: none !important;
+  touch-action: manipulation;
+}
+.shower-next:disabled {
+  opacity: .32;
+  cursor: default;
+  box-shadow: 0 3px 0 rgba(13,13,13,.08);
+}
+.shower-next:active:not(:disabled) {
+  transform: translateX(-50%) translateY(2px);
+}
+
+/* ---------- guided chapter handoff ---------- */
+.chapter-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+}
+.chapter-transition-water {
+  position: absolute;
+  inset: -6%;
+  background:
+    linear-gradient(180deg, rgba(125,214,255,.96), rgba(35,128,255,.97));
+  transform: translateY(105%);
+  box-shadow: 0 -24px 70px rgba(23,105,255,.18);
+}
+.chapter-transition-copy {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: min(82vw, 320px);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+}
+.chapter-transition-copy span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+.chapter-transition-copy strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: clamp(38px, 13vw, 58px);
+  line-height: .9;
+  letter-spacing: -.055em;
+}
+
+/* Sink UI state changes are animated by GSAP instead of CSS transitions. */
+.sink-next,
+.sink-question-two,
+.kitchen-room .sink-copy,
+.kitchen-room .sink-scene,
+.method-plate,
+.basin-water,
+.washer-water,
+.compare-fill,
+#restartBtn {
+  transition: none !important;
+}
+
+/* ---------- 08: one scroll-in, then an automatic GSAP story ---------- */
+.saving-story {
+  height: var(--saving-auto-height) !important;
+  min-height: var(--saving-auto-height);
+  position: relative;
+  overflow: clip;
+}
+.saving-scroll-beat.saving-auto-slide {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100%;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  scroll-snap-align: none !important;
+}
+.saving-auto-slide .saving-beat-sticky {
+  position: absolute !important;
+  inset: 0;
+  top: 0 !important;
+  height: 100svh;
+  min-height: 100svh;
+}
+.saving-auto-slide .saving-beat-content {
+  will-change: transform, opacity;
+}
+
+.auto-story-progress {
+  position: absolute;
+  z-index: 50;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  pointer-events: none;
+}
+.auto-story-progress i {
+  display: block;
+  width: 20px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(13,13,13,.16);
+}
+.auto-story-progress i:after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--ink);
+}
+.auto-story-progress i.is-done:after {
+  transform: scaleX(1);
+}
+.auto-story-progress i.is-active:after {
+  transform: scaleX(var(--dot-progress, .45));
+}
+
+.gsap-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: .04em;
+}
+.gsap-word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* ---------- future examples: title + 2 comparisons autoplay ---------- */
+.future-auto-stage {
+  position: relative;
+  height: var(--future-auto-height);
+  min-height: var(--future-auto-height);
+  overflow: clip;
+  background: #f5f1e9;
+}
+.future-auto-stage .future-auto-slide {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100%;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  pointer-events: none;
+  scroll-snap-align: none !important;
+}
+.future-auto-stage .future-screen-inner {
+  position: absolute !important;
+  inset: 0;
+  top: 0 !important;
+  width: 100%;
+  height: 100svh !important;
+  min-height: 100svh !important;
+}
+.future-auto-progress {
+  position: absolute;
+}
+.future-morph-chapter {
+  height: var(--morph-scroll) !important;
+  scroll-snap-align: none !important;
+}
+
+@media (max-width: 600px) {
+  .chapter-shower {
+    height: 100svh !important;
+  }
+  .shower-fixture {
+    top: 10px;
+    height: 390px;
+  }
+  .shower-fixture-svg {
+    top: 18px;
+    height: 390px;
+  }
+  .new-shower-rain {
+    top: 96px;
+    height: 315px;
+  }
+  .shower-console {
+    top: 423px;
+    min-height: 218px;
+  }
+  .shower-next {
+    top: 657px;
+  }
+}
+
+@media (max-height: 720px) {
+  .shower-fixture {
+    transform: scale(.88);
+    transform-origin: top center;
+    top: 6px;
+  }
+  .shower-console {
+    top: 376px;
+    min-height: 210px;
+  }
+  .shower-next {
+    top: 600px;
+  }
+  .console-question {
+    min-height: 180px;
+  }
+  .shower-answer-options button {
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #smooth-wrapper {
+    overflow: visible;
+  }
+}

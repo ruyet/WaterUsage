@@ -1,76 +1,49 @@
-# Water You Don't See v23
+# Water You Don't See — v24
 
-This version continues from v14 and focuses on the transition from the sink into the scrolling story.
+v24 moves the interaction and storytelling motion to GSAP 3.15.0 using ScrollTrigger, ScrollToPlugin and ScrollSmoother.
 
-## Changes in v16
+## What changed
 
-- After Q4 is answered, a clear **SCROLL TO CONTINUE** cue appears so the interaction pattern deliberately changes from clicking back to scrolling.
-- The old **Down the Drain / Follow It** 3D tunnel chapter was removed completely.
-- Laundry now follows the sink directly and becomes the start of the scrolling part of the story.
-- The washing-machine water now has a subtle moving surface, shimmer, and small vertical movement similar to the sink water.
-- Only the laundry/clothes rotate during the scroll animation; the water stays level like real water.
-- The laundry screen was visually refined to use the same warm paper, grid, black-line and soft metal language as the shower and sink screens.
-- The daily-result screen was redesigned as a cleaner measurement card with a large litres-per-day value and a readable comparison to the Dutch average.
-- The result comparison updates with the user's calculated value.
-- The glasses particle section and money section keep their existing scroll behaviour.
-- The later savings content was otherwise left alone for a later pass.
+- Replaced the old manual scroll-animation loop with GSAP ScrollTrigger timelines.
+- Added ScrollSmoother for smoother page movement, including light touch smoothing on mobile.
+- Shower answers no longer require dragging a rotary control. The knobs are now visual feedback and answers use large tap targets.
+- The inactive shower knob is non-interactive and no longer says `FLOW` before question 2.
+- Shower questions require an actual answer before the Next button is enabled.
+- Moved the shower Next button below the control panel, matching the sink interaction pattern.
+- Shower → Sink and Sink → Laundry now use a GSAP transition plus a locked, animated page movement instead of jumping to the next chapter.
+- Screen 08 is now an automatic story: €12 monthly → kapsalons → beers → yearly saving changes automatically after entering the section.
+- The automatic savings text uses staggered rolling word motion rather than simple fades.
+- The “Otherwise... this will be the new world” title and the two lake comparisons now form one automatic sequence, so users do not have to scroll through three separate long screens.
+- The waterfall morph is still controlled by scrolling, but its range is shorter and uses ScrollTrigger scrubbing.
+- Decorative water, money rain and scroll-cue movement are driven by GSAP instead of CSS keyframe animations.
+- The site still respects `prefers-reduced-motion`.
 
-## Prototype calculations
+## Easy timing adjustments
 
-The water-use calculation remains the same prototype model as v14. Replace prototype assumptions with the final sourced values before presenting them as factual data.
+In `script.js` near the top:
 
+```js
+const AUTO_STORY_STEP = 1.08;
+const FUTURE_STORY_STEP = 1.55;
+```
 
-Additional changes in v16:
-- Rebuilt the money/savings/future ending flow to match the Gen Z Figma direction.
-- Added GIF placeholder cards for sections where you will replace them later.
-- Added a single sticky savings-story sequence (monthly savings, kapsalons, beers, yearly amount, outfit).
-- Kept action cards as the practical follow-up section.
-- Reworked the future section into staged drought visuals, a waterfall before/after change, and a reaction panel.
-- Rebuilt the end into a dark 'before changes' screen transitioning into a bright 'after changes' screen with restart button.
+- `AUTO_STORY_STEP` controls how quickly the Screen 08 saving messages change.
+- `FUTURE_STORY_STEP` controls the title/Lake Mead/Lake Urmia automatic sequence.
 
+In `styles.css` inside the `v24` section:
 
-## v18 ending sequence
-- Rebuilt the final future section to match the user's red-border storyboard: every non-morph beat is a full 100svh screen.
-- Added exact comparison visuals cropped from the supplied storyboard image.
-- `morph.gif` is decoded into 29 lightweight WebP frames so scroll position can scrub the animation deterministically.
-- The morph chapter is 360svh, making frame progression deliberately slower than a normal GIF playback.
-- The reaction visual is centered on its own full screen. The uploaded ZIP only contained `figma_6.png` for this reaction, not an animated GIF, so that still is used as the fallback.
-- The warning copy has its own full screen.
-- The final before/after section uses `before.png` and `after.png` in the exact same position and crossfades with opacity only. No vertical movement or scaling is applied.
-- The Start Again button is absolutely positioned below the image/title composition and fades in later, so it never pushes the final visual upward.
+```css
+--saving-auto-height: 125svh;
+--future-auto-height: 125svh;
+--morph-scroll: 245svh;
+```
 
+The first two control how much page distance the two automatic sections occupy. `--morph-scroll` controls how much scrolling is needed to scrub through the waterfall morph.
 
-## v19
-- Rebuilt savings beats as individual 240svh sticky scenes so each answer/meme remains truly centered and requires deliberate scrolling.
-- Added lightweight native proximity snapping; no GSAP dependency or heavy effects.
-- Rebuilt future title/comparison/reaction/warning beats as 220svh sticky scenes.
-- Cropped comparison source screenshots to imagery only and recreated captions as real italic HTML text.
-- Preserved the existing scroll-scrubbed morph animation and slowed its scroll range further.
-- Shortened the shower fixture and raised the control unit on mobile so Safari browser chrome does not cover as much of the controls.
+## GSAP dependency
 
+GSAP and the three GSAP plugins are loaded from jsDelivr in `index.html`. The project therefore needs an internet connection when opened locally, or those CDN files can later be hosted with the site.
 
-## v22
-Based on v21. Kept the existing animation architecture and morph scrubbing.
+## Prototype calculation
 
-Changes:
-- Removed TURN / CHOOSE / NEXT footer.
-- Hid Q1/Q2/Q3/Q4/Q5 and question-count UI without deleting JS-dependent shower nodes.
-- Extended the shower-to-sink transition by about one second.
-- Added blur/dim treatment behind the sink method step.
-- Removed the redundant sink answer-saved bar; global scroll cue remains.
-- Global cue now says SCROLL TO CONTINUE and its arrow is much slower.
-- Removed laundry helper/result/keep-scrolling copy.
-- Replaced overlapping YOU vs NL pins with two explicit comparison bars.
-- Removed result instruction copy.
-- Made the outfit character large and flush to the right edge.
-- Extended the final before/after scroll distance and fades the global cue away there.
-- Added lightweight dynamic browser theme-color changes for light, navy, and black sections.
-
-
-## v23
-- Locked scrolling on the shower screen so users must use the question flow and cannot skip the transition.
-- Locked scrolling on both sink questions. After answering the popup question, the same NEXT QUESTION button returns and takes the user to laundry.
-- Removed the default laundry selection. Laundry stays locked until the user chooses an option; only then does SCROLL TO CONTINUE appear and normal scrolling begin.
-- Reduced Screen 08 savings/meme beat height from 240svh to 165svh. Adjust `--saving-beat-scroll` near the top of `styles.css` to tune it.
-- Removed the “THAT'S A WHOLE NEW OUTFIT TO GET YO” savings beat.
-- Start Again now resets the full questionnaire state.
+The water-use calculation is still the existing prototype model. Replace prototype assumptions with final sourced values before presenting them as factual data.
