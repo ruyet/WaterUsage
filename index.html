@@ -31,7 +31,7 @@
       </div>
     </div>
     <div aria-hidden="true" class="global-scroll-hint" id="globalScrollHint">
-      <span>SCROLL TO CONTINUE</span><i>↓</i>
+      <span>SCROLL DOWN TO CONTINUE</span><i>↓</i>
     </div>
     <div aria-hidden="true" class="grain"></div>
     <div aria-hidden="true" class="chapter-transition" id="chapterTransition">
@@ -652,7 +652,7 @@
               class="story-release-cue"
               id="savingReleaseCue"
             >
-              <span>SCROLL DOWN TO SEE HOW TO USE LESS WATER</span><i>↓</i>
+              <span>SCROLL DOWN TO CONTINUE</span><i>↓</i>
             </div>
           </section>
           <!-- 09 actions -->
@@ -745,17 +745,22 @@
                 class="story-release-cue"
                 id="futureReleaseCue"
               >
-                <span>SCROLL DOWN TO SEE THE WORLD CHANGE</span><i>↓</i>
+                <span>SCROLL DOWN TO CONTINUE</span><i>↓</i>
               </div>
             </section>
             <section class="future-morph-chapter" id="morphChapterVeluwe">
               <div class="sticky future-morph-room">
                 <div class="morph-frame-shell">
-                  <img
-                    alt="Nationaal Park Veluwezoom changing while scrolling"
-                    id="morphFrameVeluwe"
-                    src="assets/morph_veluwe_frames_webp/frame_00.webp"
-                  />
+                  <video
+                    aria-label="Nationaal Park Veluwezoom changing while scrolling"
+                    id="morphVideoVeluwe"
+                    muted
+                    playsinline
+                    webkit-playsinline
+                    preload="auto"
+                    poster="assets/morph_veluwe_poster.webp"
+                    src="assets/morph_veluwe_scrub.mp4"
+                  ></video>
                 </div>
                 <div class="morph-caption">Nationaal Park Veluwezoom</div>
               </div>
@@ -763,11 +768,16 @@
             <section class="future-morph-chapter" id="morphChapterNauyaca">
               <div class="sticky future-morph-room">
                 <div class="morph-frame-shell">
-                  <img
-                    alt="Nauyaca Waterfalls changing from green to dry while scrolling"
-                    id="morphFrameNauyaca"
-                    src="assets/morph_frames_webp/frame_00.webp"
-                  />
+                  <video
+                    aria-label="Nauyaca Waterfalls changing from green to dry while scrolling"
+                    id="morphVideoNauyaca"
+                    muted
+                    playsinline
+                    webkit-playsinline
+                    preload="auto"
+                    poster="assets/morph_nauyaca_poster.webp"
+                    src="assets/morph_nauyaca_scrub.mp4"
+                  ></video>
                 </div>
                 <div class="morph-caption">Nauyaca Waterfalls</div>
               </div>

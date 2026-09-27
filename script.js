@@ -31,7 +31,17 @@ const FUTURE_STORY_STEP = 2.05;
 /* Hidden pin buffer for autoplay chapters. It prevents a fast swipe/wheel from
    skipping across the whole chapter before its input gate can activate. */
 const AUTO_GATE_VIEWPORTS = 2.2;
+/* Morph pacing is deliberately different on touch. A finger swipe produces much
+   larger scroll deltas than a mouse wheel, so giving the 120-frame sequence more
+   physical scroll distance on phones prevents it from jumping across many frames
+   at once. Desktop keeps the original, quicker distance. */
 const MORPH_SCROLL_VIEWPORTS = 1.85;
+const MORPH_SCROLL_VIEWPORTS_TOUCH = 2.75;
+const MORPH_TOUCH_SCRUB = 0.18;
+const MORPH_DESKTOP_SCRUB = 0.08;
+const MORPH_FRAME_COUNT = 120;
+const MORPH_VIDEO_FPS = 25;
+const SCROLL_CUE_LABEL = "SCROLL DOWN TO CONTINUE";
 
 /* v32 calculation assumptions. Keep these centralized so the storytelling numbers
    can be adjusted without hunting through the UI code.
@@ -64,6 +74,7 @@ const isTouchLike = Boolean(
   (navigator.maxTouchPoints || 0) > 1
 );
 let touchNormalizer = null;
+let morphTouchActive = false;
 
 let activeTransition = null;
 let savingTimeline = null;
@@ -138,7 +149,14 @@ function setupSmoothScrolling() {
       allowNestedScroll: true,
       lockAxis: true,
       ignore: ".shower-range, button, input, select, textarea",
-      momentum: self => Math.min(0.38, Math.max(0.16, Math.abs(self.velocityY) / 8000))
+      momentum: self => {
+        const speed = Math.abs(self.velocityY);
+        /* Only inside a morph, let an iPhone flick glide a little longer. Combined
+           with the longer morph distance this feels closer to a fine mouse wheel,
+           without making the rest of the story shoot through multiple chapters. */
+        if (morphTouchActive) return Math.min(0.72, Math.max(0.34, speed / 5600));
+        return Math.min(0.38, Math.max(0.16, speed / 8000));
+      }
     });
   }
 }
@@ -152,10 +170,33 @@ function alignTo(target) {
   window.ScrollTrigger?.update();
 }
 
-function setGlobalScrollCueVisible(visible, label = null) {
+/* Safari's visible page height changes depending on whether its address/tool bars
+   are expanded. CSS viewport units can still describe a taller layout viewport in
+   that state, so the first-screen controls are positioned from visualViewport.
+   Only the shower's inner room uses this value; chapter flow height stays stable. */
+function setupShowerViewportSizing() {
+  let raf = 0;
+  const sync = () => {
+    raf = 0;
+    const height = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 760);
+    if (height > 0) document.documentElement.style.setProperty("--shower-vvh", `${height}px`);
+  };
+  const schedule = () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(sync);
+  };
+
+  sync();
+  window.visualViewport?.addEventListener("resize", schedule, { passive: true });
+  window.addEventListener("resize", schedule, { passive: true });
+  window.addEventListener("orientationchange", () => setTimeout(schedule, 120), { passive: true });
+}
+
+function setGlobalScrollCueVisible(visible) {
   const cue = qs("#globalScrollHint");
   if (!cue) return;
-  if (label) qs("span", cue).textContent = label;
+  const label = qs("span", cue);
+  if (label) label.textContent = SCROLL_CUE_LABEL;
   cue.classList.toggle("is-visible", visible);
   cue.setAttribute("aria-hidden", String(!visible));
   gsap.to(cue, {
@@ -767,7 +808,7 @@ function bindLaundry() {
       unlockPageScroll();
       const laundryPin = ScrollTrigger.getById?.("laundry-pin");
       if (laundryPin?.isActive) activateHeldTouch(laundryPin);
-      setGlobalScrollCueVisible(true, "SCROLL TO RUN THE WASH");
+      setGlobalScrollCueVisible(true, SCROLL_CUE_LABEL);
     });
   });
 }
@@ -1127,8 +1168,8 @@ function deactivateHeldTouch() {
      it on release allows the remainder of an iOS flick to shoot through sections. */
 }
 
-function stageCue(self, activeLabel, releaseLabel) {
-  setGlobalScrollCueVisible(true, self.progress > 0.88 ? releaseLabel : activeLabel);
+function stageCue() {
+  setGlobalScrollCueVisible(true);
 }
 
 function pinDistance(multiplier) {
@@ -1136,49 +1177,113 @@ function pinDistance(multiplier) {
 }
 
 
-function setupMorphStage({ id, trigger, frameSelector, shellSelector, framePath, frameCount, cueLabel, exitLabel, refreshPriority = 30 }) {
-  const morphFrame = qs(frameSelector);
+function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount, fps = MORPH_VIDEO_FPS, cueLabel, exitLabel, refreshPriority = 30 }) {
+  const morphVideo = qs(videoSelector);
   const morphShell = qs(shellSelector);
-  if (!morphFrame || !morphShell) return;
+  if (!morphVideo || !morphShell) return;
 
+  morphVideo.muted = true;
+  morphVideo.playsInline = true;
+  morphVideo.preload = "auto";
   gsap.set(morphShell, { y: 76, scale: 0.86, opacity: 0.72 });
-  ScrollTrigger.create({
-    id,
-    trigger,
-    start: "top top",
-    end: pinDistance(MORPH_SCROLL_VIEWPORTS),
-    pin: true,
-    pinSpacing: true,
-    anticipatePin: 0,
-    scrub: reducedMotion ? false : 0.32,
-    invalidateOnRefresh: true,
-    refreshPriority,
-    onEnter: self => { activateHeldTouch(self); stageCue(self, cueLabel, exitLabel); },
-    onEnterBack: self => { activateHeldTouch(self); stageCue(self, cueLabel, exitLabel); },
-    onUpdate: self => {
-      const p = clamp(self.progress);
-      const intro = clamp(p / 0.16);
-      gsap.set(morphShell, { y: 76 * (1 - intro), scale: 0.86 + 0.14 * intro, opacity: 0.72 + 0.28 * intro });
-      const morphProgress = clamp((p - 0.16) / 0.84);
-      const frameIndex = Math.round(morphProgress * (frameCount - 1));
-      if (morphFrame.dataset.frame !== String(frameIndex)) {
-        morphFrame.src = `${framePath}${String(frameIndex).padStart(2, "0")}.webp`;
-        morphFrame.dataset.frame = String(frameIndex);
+
+  /* v44: use one hardware-decoded H.264 MP4 instead of swapping 120 WebP files.
+     The videos are all-intra (every frame is a keyframe), so arbitrary scroll
+     positions are cheap to seek to. Only one seek is allowed in flight; if the
+     finger moves again while Safari is decoding, we remember only the newest
+     target instead of building a seek queue. */
+  const playhead = { progress: 0 };
+  let wantedFrame = 0;
+  let requestedFrame = -1;
+  let metadataReady = morphVideo.readyState >= 1;
+
+  const seekToWantedFrame = () => {
+    if (!metadataReady || morphVideo.seeking || wantedFrame === requestedFrame) return;
+    requestedFrame = wantedFrame;
+    const maxTime = Math.max(0, (frameCount - 1) / fps);
+    const target = Math.min(maxTime, requestedFrame / fps);
+    try {
+      morphVideo.currentTime = target;
+    } catch (_) {
+      requestedFrame = -1;
+    }
+  };
+
+  const markReady = () => {
+    metadataReady = true;
+    seekToWantedFrame();
+  };
+  morphVideo.addEventListener("loadeddata", markReady, { once: true });
+  morphVideo.addEventListener("canplay", markReady, { once: true });
+  morphVideo.addEventListener("seeked", () => {
+    if (wantedFrame !== requestedFrame) seekToWantedFrame();
+  });
+
+  const renderMorph = () => {
+    const p = clamp(playhead.progress);
+    const intro = clamp(p / 0.16);
+    gsap.set(morphShell, {
+      y: 76 * (1 - intro),
+      scale: 0.86 + 0.14 * intro,
+      opacity: 0.72 + 0.28 * intro
+    });
+
+    const morphProgress = clamp((p - 0.16) / 0.84);
+    wantedFrame = Math.round(morphProgress * (frameCount - 1));
+    seekToWantedFrame();
+  };
+
+  const morphTween = gsap.to(playhead, {
+    progress: 1,
+    ease: "none",
+    paused: false,
+    onUpdate: renderMorph,
+    scrollTrigger: {
+      id,
+      trigger,
+      start: "top top",
+      end: pinDistance(isTouchLike ? MORPH_SCROLL_VIEWPORTS_TOUCH : MORPH_SCROLL_VIEWPORTS),
+      pin: true,
+      pinSpacing: true,
+      anticipatePin: isTouchLike ? 1 : 0,
+      scrub: reducedMotion ? false : (isTouchLike ? MORPH_TOUCH_SCRUB : MORPH_DESKTOP_SCRUB),
+      invalidateOnRefresh: true,
+      refreshPriority,
+      onEnter: self => {
+        morphTouchActive = true;
+        showStoryReleaseCue("#futureReleaseCue", false);
+        activateHeldTouch(self);
+        stageCue(self, cueLabel, exitLabel);
+      },
+      onEnterBack: self => {
+        morphTouchActive = true;
+        showStoryReleaseCue("#futureReleaseCue", false);
+        activateHeldTouch(self);
+        stageCue(self, cueLabel, exitLabel);
+      },
+      onUpdate: self => stageCue(self, cueLabel, exitLabel),
+      onLeave: () => {
+        playhead.progress = 1;
+        renderMorph();
+        morphTouchActive = false;
+        deactivateHeldTouch();
+        setGlobalScrollCueVisible(false);
+        if (id === "morph-nauyaca") setBrowserTheme("#070707");
+      },
+      onLeaveBack: () => {
+        playhead.progress = 0;
+        renderMorph();
+        morphTouchActive = false;
+        deactivateHeldTouch();
+        setGlobalScrollCueVisible(false);
+        if (id === "morph-nauyaca") setBrowserTheme("#f4efe7");
       }
-      stageCue(self, cueLabel, exitLabel);
-    },
-    onLeave: self => {
-      deactivateHeldTouch();
-      setGlobalScrollCueVisible(false);
-      if (id === "morph-nauyaca") setBrowserTheme("#070707");
-    },
-    onLeaveBack: self => {
-      deactivateHeldTouch();
-      if (id === "morph-nauyaca") setBrowserTheme("#f4efe7");
     }
   });
-}
 
+  renderMorph();
+  return morphTween;
+}
 function setupHeldStages() {
   if (!window.ScrollTrigger) return;
 
@@ -1224,16 +1329,16 @@ function setupHeldStages() {
       refreshPriority: 100,
       onEnter: self => {
         activateHeldTouch(self);
-        if (laundryUI.chosen) stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY");
+        if (laundryUI.chosen) stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
         else setGlobalScrollCueVisible(false);
       },
       onEnterBack: self => {
         activateHeldTouch(self);
-        if (laundryUI.chosen) stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY");
+        if (laundryUI.chosen) stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
         else setGlobalScrollCueVisible(false);
       },
       onUpdate: self => {
-        if (laundryUI.chosen) stageCue(self, "SCROLL TO RUN THE WASH", "SCROLL TO SEE YOUR WATER STORY");
+        if (laundryUI.chosen) stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
         else setGlobalScrollCueVisible(false);
       },
       onLeave: deactivateHeldTouch,
@@ -1258,13 +1363,13 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 90,
-      onEnter: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
-      onEnterBack: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
+      onEnter: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onEnterBack: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
       onUpdate: self => {
         /* Fill the litres themselves from bottom to top before the comparison card
            is fully revealed, so the number becomes part of the scroll interaction. */
         updateResultNumberFill(clamp(self.progress / 0.34));
-        stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE");
+        stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
       },
       onLeave: deactivateHeldTouch,
       onLeaveBack: deactivateHeldTouch
@@ -1288,9 +1393,9 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 80,
-      onEnter: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
-      onEnterBack: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"); },
-      onUpdate: self => stageCue(self, "SCROLL TO MAKE IT VISIBLE", "SCROLL TO SEE WHAT THAT MEANS"),
+      onEnter: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onEnterBack: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onUpdate: self => stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL),
       onLeave: () => { deactivateHeldTouch(); setBrowserTheme("#f4efe7"); },
       onLeaveBack: () => { deactivateHeldTouch(); setBrowserTheme("#f4efe7"); }
     }
@@ -1320,9 +1425,9 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 70,
-      onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"); },
-      onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"); },
-      onUpdate: self => stageCue(self, "SCROLL TO REVEAL THE COST", "SCROLL TO SEE WHAT YOU COULD SAVE"),
+      onEnter: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onEnterBack: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onUpdate: self => stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL),
       onLeave: deactivateHeldTouch,
       onLeaveBack: deactivateHeldTouch
     }
@@ -1344,9 +1449,9 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 50,
-      onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"); },
-      onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"); },
-      onUpdate: self => stageCue(self, "SCROLL THROUGH THE TIPS", "SCROLL TO SEE WHY IT MATTERS"),
+      onEnter: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onEnterBack: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onUpdate: self => stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL),
       onLeave: deactivateHeldTouch,
       onLeaveBack: deactivateHeldTouch
     }
@@ -1357,24 +1462,22 @@ function setupHeldStages() {
   setupMorphStage({
     id: "morph-veluwe",
     trigger: "#morphChapterVeluwe",
-    frameSelector: "#morphFrameVeluwe",
+    videoSelector: "#morphVideoVeluwe",
     shellSelector: "#morphChapterVeluwe .morph-frame-shell",
-    framePath: "assets/morph_veluwe_frames_webp/frame_",
-    frameCount: 30,
-    cueLabel: "SCROLL TO CHANGE THE WORLD",
-    exitLabel: "SCROLL FOR THE NEXT EXAMPLE",
+    frameCount: MORPH_FRAME_COUNT,
+    cueLabel: SCROLL_CUE_LABEL,
+    exitLabel: SCROLL_CUE_LABEL,
     refreshPriority: 35
   });
 
   setupMorphStage({
     id: "morph-nauyaca",
     trigger: "#morphChapterNauyaca",
-    frameSelector: "#morphFrameNauyaca",
+    videoSelector: "#morphVideoNauyaca",
     shellSelector: "#morphChapterNauyaca .morph-frame-shell",
-    framePath: "assets/morph_frames_webp/frame_",
-    frameCount: 29,
-    cueLabel: "SCROLL TO CHANGE THE WORLD",
-    exitLabel: "SCROLL TO FINISH",
+    frameCount: MORPH_FRAME_COUNT,
+    cueLabel: SCROLL_CUE_LABEL,
+    exitLabel: SCROLL_CUE_LABEL,
     refreshPriority: 30
   });
 
@@ -1414,17 +1517,17 @@ function setBrowserTheme(color) {
   document.body.style.backgroundColor = color;
 }
 
-function preloadMorphFrames() {
-  for (let i = 0; i < 30; i++) {
-    const img = new Image();
-    img.src = `assets/morph_veluwe_frames_webp/frame_${String(i).padStart(2, "0")}.webp`;
-  }
-  for (let i = 0; i < 29; i++) {
-    const img = new Image();
-    img.src = `assets/morph_frames_webp/frame_${String(i).padStart(2, "0")}.webp`;
-  }
+function preloadMorphVideos() {
+  /* v44: two short all-intra H.264 videos replace 240 independent WebP requests.
+     The native media pipeline can keep compressed video data and use the hardware
+     decoder instead of Safari repeatedly decoding/replacing DOM images. */
+  qsa("#morphVideoVeluwe, #morphVideoNauyaca").forEach(video => {
+    video.preload = "auto";
+    video.muted = true;
+    video.playsInline = true;
+    try { video.load(); } catch (_) {}
+  });
 }
-
 function resetInitialVisuals() {
   setGlobalScrollCueVisible(false);
   setSinkNextVisible(true, "NEXT QUESTION");
@@ -1450,6 +1553,7 @@ function init() {
     setTimeout(() => window.scrollTo(0, 0), 80);
   }
 
+  setupShowerViewportSizing();
   buildNewShowerRain();
   buildFlyingGlasses();
   buildMoneyRain();
@@ -1463,7 +1567,7 @@ function init() {
   updateLaundry();
   updateEstimate();
   resetInitialVisuals();
-  preloadMorphFrames();
+  preloadMorphVideos();
   setupLoopingDecorations();
 
   /* Build every chapter trigger first, then perform ONE ordered refresh. Explicit
