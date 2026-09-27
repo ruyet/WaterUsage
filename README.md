@@ -1,4 +1,4 @@
-# Water You Don't See v16
+# Water You Don't See v23
 
 This version continues from v14 and focuses on the transition from the sink into the scrolling story.
 
@@ -47,3 +47,30 @@ Additional changes in v16:
 - Cropped comparison source screenshots to imagery only and recreated captions as real italic HTML text.
 - Preserved the existing scroll-scrubbed morph animation and slowed its scroll range further.
 - Shortened the shower fixture and raised the control unit on mobile so Safari browser chrome does not cover as much of the controls.
+
+
+## v22
+Based on v21. Kept the existing animation architecture and morph scrubbing.
+
+Changes:
+- Removed TURN / CHOOSE / NEXT footer.
+- Hid Q1/Q2/Q3/Q4/Q5 and question-count UI without deleting JS-dependent shower nodes.
+- Extended the shower-to-sink transition by about one second.
+- Added blur/dim treatment behind the sink method step.
+- Removed the redundant sink answer-saved bar; global scroll cue remains.
+- Global cue now says SCROLL TO CONTINUE and its arrow is much slower.
+- Removed laundry helper/result/keep-scrolling copy.
+- Replaced overlapping YOU vs NL pins with two explicit comparison bars.
+- Removed result instruction copy.
+- Made the outfit character large and flush to the right edge.
+- Extended the final before/after scroll distance and fades the global cue away there.
+- Added lightweight dynamic browser theme-color changes for light, navy, and black sections.
+
+
+## v23
+- Locked scrolling on the shower screen so users must use the question flow and cannot skip the transition.
+- Locked scrolling on both sink questions. After answering the popup question, the same NEXT QUESTION button returns and takes the user to laundry.
+- Removed the default laundry selection. Laundry stays locked until the user chooses an option; only then does SCROLL TO CONTINUE appear and normal scrolling begin.
+- Reduced Screen 08 savings/meme beat height from 240svh to 165svh. Adjust `--saving-beat-scroll` near the top of `styles.css` to tune it.
+- Removed the “THAT'S A WHOLE NEW OUTFIT TO GET YO” savings beat.
+- Start Again now resets the full questionnaire state.

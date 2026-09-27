@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
-    <meta name="theme-color" content="#f4efe7" />
+    <meta name="theme-color" id="themeColorMeta" content="#f4efe7" />
     <title>Water You Don't See</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,15 +17,19 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="global-scroll-hint" id="globalScrollHint" aria-hidden="true">
+      <span>SCROLL TO CONTINUE</span><i>↓</i>
+    </div>
     <div class="grain" aria-hidden="true"></div>
     <main class="phone">
       <!-- 01 shower: two-question interaction -->
       <section class="chapter chapter-shower" id="showerStart">
         <div class="sticky shower-room">
           <div class="tiny-label top-left">01 / YOUR ROUTINE</div>
-          <div class="tiny-label top-right shower-step-top" id="showerStepTop">
-            QUESTION 1 / 2
-          </div>
+          <div
+            class="tiny-label top-right shower-step-top"
+            id="showerStepTop"
+          ></div>
 
           <div class="shower-fixture" aria-hidden="true">
             <svg
@@ -181,10 +185,6 @@
               <strong>NEXT: THE SINK</strong>
             </div>
           </div>
-
-          <div class="shower-footnote" id="showerFootnote">
-            <span>TURN</span><i></i><span>CHOOSE</span><i></i><span>NEXT</span>
-          </div>
         </div>
       </section>
 
@@ -193,7 +193,6 @@
         <div class="sticky kitchen-room">
           <div class="tiny-label top-left">03 / THE SINK</div>
           <div class="sink-copy">
-            <span class="question-count">Q3</span>
             <h2>How many times a week do you wash dishes?</h2>
             <p>Choose how often.</p>
           </div>
@@ -437,7 +436,6 @@
             id="dishMethodPanel"
             aria-hidden="true"
           >
-            <span class="question-count">Q4</span>
             <h3>How do you usually wash them?</h3>
             <div class="method-plates" id="dishMethod">
               <button class="method-plate" data-value="dishwasher">
@@ -450,17 +448,6 @@
                 Running tap
               </button>
             </div>
-            <button
-              class="sink-scroll-cue"
-              id="sinkScrollCue"
-              type="button"
-              aria-hidden="true"
-              tabindex="-1"
-            >
-              <span>ANSWER SAVED</span>
-              <strong>SCROLL TO CONTINUE</strong>
-              <i aria-hidden="true">↓</i>
-            </button>
           </div>
         </div>
       </section>
@@ -470,15 +457,13 @@
         <div class="sticky laundry-room">
           <div class="tiny-label top-left">04 / LAUNDRY</div>
           <div class="laundry-copy">
-            <span class="question-count">Q5</span>
             <h2>How many times a week do you do laundry?</h2>
-            <p>Use the machine buttons.</p>
           </div>
 
           <div class="washer">
             <div class="washer-panel" id="laundryButtons">
               <button data-value="1">1×</button>
-              <button class="active" data-value="2.5">2 to 3×</button>
+              <button data-value="2.5">2 to 3×</button>
               <button data-value="4">4+×</button>
               <div class="washer-dial" aria-hidden="true"></div>
             </div>
@@ -495,12 +480,7 @@
             <div class="washer-handle"></div>
           </div>
 
-          <div class="washer-result" id="washerResult">
-            <span>YOUR ANSWER FILLS THE DRUM</span>
-          </div>
-          <div class="laundry-scroll-cue" aria-hidden="true">
-            <span>KEEP SCROLLING</span><i>↓</i>
-          </div>
+          <div class="washer-result" id="washerResult" aria-hidden="true"></div>
         </div>
       </section>
 
@@ -525,20 +505,26 @@
               the Dutch average below.
             </p>
 
-            <div class="marker-strip" id="resultComparison">
-              <div class="result-scale" aria-hidden="true">
-                <span class="result-user-pin"></span>
-                <span class="result-average-pin"></span>
+            <div class="marker-strip result-compare-card" id="resultComparison">
+              <div class="compare-row compare-you">
+                <div class="compare-label">
+                  <strong>YOUR ROUTINE</strong>
+                  <span id="resultYouLabel">118 L / DAY</span>
+                </div>
+                <div class="compare-track" aria-hidden="true">
+                  <i class="compare-fill user-fill"></i>
+                </div>
               </div>
-              <div class="result-scale-labels">
-                <span id="resultYouLabel">YOU • 118 L</span>
-                <span>NL AVG • 118 L</span>
+              <div class="compare-row compare-average">
+                <div class="compare-label">
+                  <strong>NL AVERAGE</strong>
+                  <span>118 L / DAY</span>
+                </div>
+                <div class="compare-track" aria-hidden="true">
+                  <i class="compare-fill average-fill"></i>
+                </div>
               </div>
             </div>
-          </div>
-
-          <div class="result-scroll-cue" aria-hidden="true">
-            <span>MAKE THAT NUMBER VISIBLE</span><i>↓</i>
           </div>
         </div>
       </section>
@@ -575,7 +561,7 @@
           <div class="money-stack">
             <div class="money-title">
               <span>WATER + HEATING</span>
-              <strong>€<span id="monthlyCost">54</span><br />A MONTH</strong>
+              <strong id="monthlyCostLine">€54<br />A MONTH</strong>
               <p>
                 That is what your current routine could be costing every month.
               </p>
@@ -640,18 +626,6 @@
           </div>
         </section>
 
-        <section class="saving-scroll-beat beat-outfit" data-saving-beat>
-          <div class="saving-beat-sticky">
-            <div class="saving-beat-content outfit-layout">
-              <div class="outfit-copy">THAT'S A WHOLE NEW OUTFIT TO GET YO</div>
-              <img
-                class="outfit-visual"
-                src="assets/figma_3.png"
-                alt="Outfit meme"
-              />
-            </div>
-          </div>
-        </section>
       </section>
 
       <!-- 09 actions -->
@@ -740,9 +714,6 @@
                 src="assets/morph_frames_webp/frame_00.webp"
                 alt="Waterfall changing from green to dry while scrolling"
               />
-            </div>
-            <div class="morph-scroll-hint" aria-hidden="true">
-              KEEP SCROLLING ↓
             </div>
           </div>
         </section>

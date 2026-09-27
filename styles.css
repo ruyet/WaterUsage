@@ -12,6 +12,9 @@
   --red: #ff321d;
   --navy: #071b37;
   --line: rgba(13, 13, 13, 0.18);
+
+  /* v23: change this one value to make each Screen 08 meme beat shorter/longer. */
+  --saving-beat-scroll: 165svh;
 }
 html {
   scroll-behavior: smooth;
@@ -22,6 +25,17 @@ body {
   color: var(--ink);
   background: var(--paper);
   overflow-x: hidden;
+}
+html.interaction-locked,
+body.interaction-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.interaction-locked {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
 }
 button {
   font: inherit;
@@ -919,7 +933,7 @@ p {
   z-index: 4;
   left: 18px;
   top: 201px;
-  width: 220px;
+  width: 190px;
   height: 205px;
   border: 3px solid var(--ink);
   border-radius: 24px 24px 78px 78px;
@@ -953,8 +967,10 @@ p {
       transparent 2px 8px
     ),
     linear-gradient(rgba(121, 207, 255, 0.72), rgba(36, 140, 255, 0.94));
-  background-size: auto 18px, auto;
-  transition: height 0.46s cubic-bezier(.2,.8,.2,1);
+  background-size:
+    auto 18px,
+    auto;
+  transition: height 0.46s cubic-bezier(0.2, 0.8, 0.2, 1);
   animation: basin-water-shimmer 5.8s linear infinite;
   will-change: height;
 }
@@ -981,16 +997,34 @@ p {
   animation: basin-wave-back 5.1s ease-in-out infinite reverse;
 }
 @keyframes basin-wave-front {
-  0%,100% { transform: translateX(-2%) translateY(0) scaleX(1.02); }
-  50% { transform: translateX(2%) translateY(2px) scaleX(.98); }
+  0%,
+  100% {
+    transform: translateX(-2%) translateY(0) scaleX(1.02);
+  }
+  50% {
+    transform: translateX(2%) translateY(2px) scaleX(0.98);
+  }
 }
 @keyframes basin-wave-back {
-  0%,100% { transform: translateX(-4%) translateY(1px) scaleX(.99); }
-  50% { transform: translateX(3%) translateY(-1px) scaleX(1.02); }
+  0%,
+  100% {
+    transform: translateX(-4%) translateY(1px) scaleX(0.99);
+  }
+  50% {
+    transform: translateX(3%) translateY(-1px) scaleX(1.02);
+  }
 }
 @keyframes basin-water-shimmer {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 0 18px, 0 0; }
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 18px,
+      0 0;
+  }
 }
 .basin-drain {
   position: absolute;
@@ -1319,15 +1353,18 @@ p {
   justify-content: space-between;
   gap: 14px;
   font-size: 9px;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 6px 0 rgba(13,13,13,.12);
+  box-shadow: 0 6px 0 rgba(13, 13, 13, 0.12);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transform: translate(-50%, 12px);
-  transition: opacity .2s ease, transform .22s ease, visibility 0s linear .22s;
+  transition:
+    opacity 0.2s ease,
+    transform 0.22s ease,
+    visibility 0s linear 0.22s;
 }
 .sink-next.is-visible {
   opacity: 1;
@@ -1345,7 +1382,7 @@ p {
   transform: translate(-50%, 3px);
 }
 .sink-next:focus-visible {
-  outline: 3px solid rgba(45,143,255,.28);
+  outline: 3px solid rgba(45, 143, 255, 0.28);
   outline-offset: 3px;
 }
 
@@ -1353,7 +1390,7 @@ p {
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: 18px;
+  bottom: 10%;
   border-top: 2px solid var(--ink);
   padding-top: 12px;
   z-index: 26;
@@ -1362,7 +1399,10 @@ p {
   visibility: hidden;
   pointer-events: none;
   transform: translateY(42px);
-  transition: opacity .25s ease, transform .32s cubic-bezier(.2,.8,.2,1), visibility 0s linear .32s;
+  transition:
+    opacity 0.25s ease,
+    transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.32s;
 }
 .sink-question-two.is-visible {
   opacity: 1;
@@ -1388,7 +1428,7 @@ p {
   display: none;
 }
 .method-plate {
-  flex: 0 0 112px;
+  flex: 0 0 100px;
   height: 48px;
   border: 2px solid var(--ink);
   border-radius: 999px;
@@ -1396,77 +1436,22 @@ p {
   font-size: 10px;
   font-weight: 900;
   cursor: pointer;
-  transition: background .18s ease, transform .18s ease;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 .method-plate.active {
   background: var(--pink);
   transform: translateY(-2px);
 }
-.sink-scroll-cue {
-  width: 100%;
-  min-height: 46px;
-  margin-top: 10px;
-  padding: 7px 13px 7px 15px;
-  border: 2px solid var(--ink);
-  border-radius: 15px;
-  background: var(--ink);
-  color: #fff;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "small arrow"
-    "main arrow";
-  align-items: center;
-  text-align: left;
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity .2s ease, transform .22s ease, visibility 0s linear .22s;
-}
-.sink-scroll-cue.is-visible {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0);
-  transition-delay: 0s;
-}
-.sink-scroll-cue span {
-  grid-area: small;
-  font-size: 6px;
-  line-height: 1;
-  letter-spacing: .14em;
-  font-weight: 900;
-  opacity: .58;
-}
-.sink-scroll-cue strong {
-  grid-area: main;
-  margin-top: 3px;
-  font-size: 9px;
-  line-height: 1;
-  letter-spacing: .09em;
-  font-weight: 900;
-}
-.sink-scroll-cue i {
-  grid-area: arrow;
-  font-style: normal;
-  font-size: 22px;
-  line-height: 1;
-  animation: sink-scroll-arrow 1.2s ease-in-out infinite;
-}
-@keyframes sink-scroll-arrow {
-  0%,100% { transform: translateY(-2px); }
-  50% { transform: translateY(4px); }
-}
 .kitchen-room.is-method-step .plate-rack {
-  opacity: .58;
+  opacity: 0.58;
   pointer-events: none;
-  transition: opacity .22s ease;
+  transition: opacity 0.22s ease;
 }
 .kitchen-room.is-method-step .sink-copy {
-  opacity: .58;
-  transition: opacity .22s ease;
+  opacity: 0.58;
+  transition: opacity 0.22s ease;
 }
 
 @media (max-height: 760px) {
@@ -1481,7 +1466,7 @@ p {
     bottom: 14px;
   }
   .sink-question-two {
-    bottom: 10px;
+    bottom: 10%;
   }
 }
 
@@ -1493,19 +1478,32 @@ p {
   }
   .sink-next,
   .sink-question-two {
-    transition-duration: .01ms;
+    transition-duration: 0.01ms;
   }
 }
 
 /* laundry */
 .laundry-room {
   background:
-    radial-gradient(circle at 22% 10%, rgba(255,255,255,.88), transparent 30%),
-    linear-gradient(rgba(13,13,13,.042) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.042) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.012) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 22% 10%,
+      rgba(255, 255, 255, 0.88),
+      transparent 30%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.042) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.042) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.012) 0 2px,
+      transparent 2px 6px
+    ),
     #f4efe7;
-  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .laundry-copy {
   position: absolute;
@@ -1519,13 +1517,13 @@ p {
   max-width: 330px;
   margin: 0 auto;
   font-size: 35px;
-  line-height: .94;
+  line-height: 0.94;
 }
 .laundry-copy p {
   font-size: 10px;
   margin-top: 9px;
   font-weight: 700;
-  color: rgba(13,13,13,.58);
+  color: rgba(13, 13, 13, 0.58);
 }
 .washer {
   position: absolute;
@@ -1537,9 +1535,15 @@ p {
   border: 2.5px solid var(--ink);
   border-radius: 25px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.08)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.75),
+      rgba(255, 255, 255, 0.08)
+    ),
     #ebe8e1;
-  box-shadow: 9px 11px 0 rgba(13,13,13,.07), 0 20px 36px rgba(13,13,13,.06);
+  box-shadow:
+    9px 11px 0 rgba(13, 13, 13, 0.07),
+    0 20px 36px rgba(13, 13, 13, 0.06);
   overflow: hidden;
   will-change: transform;
 }
@@ -1550,7 +1554,7 @@ p {
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: rgba(255,255,255,.26);
+  background: rgba(255, 255, 255, 0.26);
 }
 .washer-panel button {
   height: 39px;
@@ -1562,12 +1566,15 @@ p {
   font-size: 9px;
   font-weight: 900;
   cursor: pointer;
-  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .washer-panel button.active {
   background: var(--lime);
   transform: translateY(-2px);
-  box-shadow: 0 4px 0 rgba(13,13,13,.1);
+  box-shadow: 0 4px 0 rgba(13, 13, 13, 0.1);
 }
 .washer-dial {
   margin-left: auto;
@@ -1577,7 +1584,11 @@ p {
   border: 2.5px solid var(--ink);
   background:
     radial-gradient(circle at center, #f6f2eb 0 55%, transparent 56%),
-    repeating-conic-gradient(from -110deg, var(--ink) 0 2deg, transparent 2deg 18deg);
+    repeating-conic-gradient(
+      from -110deg,
+      var(--ink) 0 2deg,
+      transparent 2deg 18deg
+    );
 }
 .washer-door {
   position: absolute;
@@ -1590,7 +1601,7 @@ p {
   border: 15px solid var(--ink);
   background: #d7dadb;
   padding: 13px;
-  box-shadow: inset 0 0 0 4px rgba(255,255,255,.35);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.35);
 }
 .washer-drum {
   position: relative;
@@ -1599,7 +1610,11 @@ p {
   border-radius: 50%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 42%, rgba(255,255,255,.45), transparent 38%),
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(255, 255, 255, 0.45),
+      transparent 38%
+    ),
     #c8cdd0;
   box-shadow: inset 0 0 0 7px #a1a9ad;
 }
@@ -1611,11 +1626,19 @@ p {
   bottom: -2px;
   height: 22%;
   background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.12) 0 2px, transparent 2px 9px),
-    linear-gradient(rgba(121,207,255,.78), rgba(36,140,255,.95));
-  background-size: auto 18px, auto;
-  transition: height .45s cubic-bezier(.2,.8,.2,1);
-  animation: washer-water-bob 4.8s ease-in-out infinite, washer-water-shimmer 6s linear infinite;
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.12) 0 2px,
+      transparent 2px 9px
+    ),
+    linear-gradient(rgba(121, 207, 255, 0.78), rgba(36, 140, 255, 0.95));
+  background-size:
+    auto 18px,
+    auto;
+  transition: height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation:
+    washer-water-bob 4.8s ease-in-out infinite,
+    washer-water-shimmer 6s linear infinite;
   will-change: height, transform;
 }
 .washer-water:before,
@@ -1630,30 +1653,53 @@ p {
 .washer-water:before {
   top: -8px;
   height: 17px;
-  background: rgba(127,210,255,.86);
+  background: rgba(127, 210, 255, 0.86);
   animation: washer-wave-front 4.1s ease-in-out infinite;
 }
 .washer-water:after {
   top: -5px;
   height: 12px;
-  background: rgba(220,244,255,.38);
+  background: rgba(220, 244, 255, 0.38);
   animation: washer-wave-back 5.2s ease-in-out infinite reverse;
 }
 @keyframes washer-water-bob {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
 }
 @keyframes washer-wave-front {
-  0%,100% { transform: translateX(-3%) translateY(0) scaleX(1.02); }
-  50% { transform: translateX(3%) translateY(2px) scaleX(.98); }
+  0%,
+  100% {
+    transform: translateX(-3%) translateY(0) scaleX(1.02);
+  }
+  50% {
+    transform: translateX(3%) translateY(2px) scaleX(0.98);
+  }
 }
 @keyframes washer-wave-back {
-  0%,100% { transform: translateX(-4%) translateY(1px) scaleX(.99); }
-  50% { transform: translateX(4%) translateY(-1px) scaleX(1.02); }
+  0%,
+  100% {
+    transform: translateX(-4%) translateY(1px) scaleX(0.99);
+  }
+  50% {
+    transform: translateX(4%) translateY(-1px) scaleX(1.02);
+  }
 }
 @keyframes washer-water-shimmer {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 0 18px, 0 0; }
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 18px,
+      0 0;
+  }
 }
 .washer-load {
   position: absolute;
@@ -1666,10 +1712,10 @@ p {
   position: absolute;
   width: 90px;
   height: 50px;
-  border: 2px solid rgba(13,13,13,.6);
+  border: 2px solid rgba(13, 13, 13, 0.6);
   border-radius: 45%;
   background: var(--pink);
-  opacity: .9;
+  opacity: 0.9;
 }
 .piece-a {
   left: 38px;
@@ -1707,8 +1753,8 @@ p {
   text-align: center;
   font-size: 8px;
   font-weight: 900;
-  letter-spacing: .12em;
-  color: rgba(13,13,13,.55);
+  letter-spacing: 0.12em;
+  color: rgba(13, 13, 13, 0.55);
 }
 .laundry-scroll-cue {
   position: absolute;
@@ -1719,9 +1765,9 @@ p {
   align-items: center;
   gap: 7px;
   font-size: 7px;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   font-weight: 900;
-  color: rgba(13,13,13,.52);
+  color: rgba(13, 13, 13, 0.52);
   white-space: nowrap;
 }
 .laundry-scroll-cue i {
@@ -1730,8 +1776,13 @@ p {
   animation: laundry-scroll-arrow 1.2s ease-in-out infinite;
 }
 @keyframes laundry-scroll-arrow {
-  0%,100% { transform: translateY(-2px); }
-  50% { transform: translateY(3px); }
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1739,18 +1790,30 @@ p {
   .washer-water:before,
   .washer-water:after,
   .laundry-scroll-cue i,
-  .sink-scroll-cue i { animation: none; }
 }
 
 /* results */
 .result-room {
   background:
-    radial-gradient(circle at 78% 16%, rgba(121,207,255,.15), transparent 25%),
-    linear-gradient(rgba(13,13,13,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.04) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.012) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 78% 16%,
+      rgba(121, 207, 255, 0.15),
+      transparent 25%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.04) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.012) 0 2px,
+      transparent 2px 6px
+    ),
     var(--paper);
-  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .result-heading {
   position: absolute;
@@ -1764,14 +1827,14 @@ p {
   display: inline-block;
   margin-bottom: 8px;
   font-size: 8px;
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
   font-weight: 900;
-  color: rgba(13,13,13,.55);
+  color: rgba(13, 13, 13, 0.55);
 }
 .result-heading h2 {
   font-size: 34px;
-  line-height: .94;
-  letter-spacing: -.045em;
+  line-height: 0.94;
+  letter-spacing: -0.045em;
 }
 .result-card {
   position: absolute;
@@ -1783,18 +1846,20 @@ p {
   padding: 24px 22px 22px;
   border: 2px solid var(--ink);
   border-radius: 30px;
-  background: rgba(247,244,238,.9);
-  box-shadow: 9px 11px 0 rgba(13,13,13,.07), 0 18px 34px rgba(13,13,13,.05);
+  background: rgba(247, 244, 238, 0.9);
+  box-shadow:
+    9px 11px 0 rgba(13, 13, 13, 0.07),
+    0 18px 34px rgba(13, 13, 13, 0.05);
   overflow: hidden;
 }
 .result-card-grid {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: .45;
+  opacity: 0.45;
   background:
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px);
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 .result-card:after {
@@ -1805,7 +1870,11 @@ p {
   bottom: -58px;
   height: 178px;
   border-radius: 50% 50% 0 0;
-  background: linear-gradient(180deg, rgba(121,207,255,.34), rgba(36,140,255,.16));
+  background: linear-gradient(
+    180deg,
+    rgba(121, 207, 255, 0.34),
+    rgba(36, 140, 255, 0.16)
+  );
   pointer-events: none;
 }
 .result-kicker {
@@ -1814,8 +1883,8 @@ p {
   text-align: center;
   font-size: 8px;
   font-weight: 900;
-  letter-spacing: .15em;
-  color: rgba(13,13,13,.55);
+  letter-spacing: 0.15em;
+  color: rgba(13, 13, 13, 0.55);
 }
 .result-number {
   position: relative;
@@ -1824,8 +1893,8 @@ p {
   text-align: center;
   font-family: "Archivo Black";
   font-size: clamp(92px, 28vw, 120px);
-  line-height: .75;
-  letter-spacing: -.075em;
+  line-height: 0.75;
+  letter-spacing: -0.075em;
   transform-origin: 50% 50%;
   will-change: transform;
 }
@@ -1835,7 +1904,7 @@ p {
   font-family: Inter, system-ui, sans-serif;
   font-size: 11px;
   line-height: 1;
-  letter-spacing: .15em;
+  letter-spacing: 0.15em;
   font-weight: 900;
   color: var(--blue);
 }
@@ -1847,7 +1916,7 @@ p {
   font-size: 12px;
   line-height: 1.45;
   text-align: center;
-  color: rgba(13,13,13,.68);
+  color: rgba(13, 13, 13, 0.68);
   font-weight: 600;
 }
 .marker-strip {
@@ -1869,7 +1938,7 @@ p {
   right: 0;
   top: 9px;
   height: 2px;
-  background: rgba(13,13,13,.22);
+  background: rgba(13, 13, 13, 0.22);
 }
 .result-scale:after {
   content: "";
@@ -1908,11 +1977,11 @@ p {
   font-size: 8px;
   line-height: 1;
   font-weight: 900;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 .result-scale-labels span:last-child {
   text-align: right;
-  color: rgba(13,13,13,.58);
+  color: rgba(13, 13, 13, 0.58);
 }
 .result-scroll-cue {
   position: absolute;
@@ -1924,8 +1993,8 @@ p {
   gap: 8px;
   font-size: 7px;
   font-weight: 900;
-  letter-spacing: .12em;
-  color: rgba(13,13,13,.5);
+  letter-spacing: 0.12em;
+  color: rgba(13, 13, 13, 0.5);
   white-space: nowrap;
 }
 .result-scroll-cue i {
@@ -1934,18 +2003,37 @@ p {
   animation: result-scroll-arrow 1.2s ease-in-out infinite;
 }
 @keyframes result-scroll-arrow {
-  0%,100% { transform: translateY(-2px); }
-  50% { transform: translateY(3px); }
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
 }
 @media (max-height: 760px) {
-  .result-heading { top: 54px; }
-  .result-heading h2 { font-size: 30px; }
-  .result-card { top: 174px; min-height: 412px; padding-top: 20px; }
-  .result-copy { margin-top: 18px; }
-  .marker-strip { margin-top: 20px; }
+  .result-heading {
+    top: 54px;
+  }
+  .result-heading h2 {
+    font-size: 30px;
+  }
+  .result-card {
+    top: 174px;
+    min-height: 412px;
+    padding-top: 20px;
+  }
+  .result-copy {
+    margin-top: 18px;
+  }
+  .marker-strip {
+    margin-top: 20px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .result-scroll-cue i { animation: none; }
+  .result-scroll-cue i {
+    animation: none;
+  }
 }
 
 /* glasses */
@@ -2022,12 +2110,25 @@ p {
 }
 .money-room {
   background:
-    radial-gradient(circle at 22% 14%, rgba(255,255,255,.72), transparent 26%),
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.014) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 22% 14%,
+      rgba(255, 255, 255, 0.72),
+      transparent 26%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.014) 0 2px,
+      transparent 2px 6px
+    ),
     #f5f1e9;
-  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .money-rain {
   position: absolute;
@@ -2044,8 +2145,12 @@ p {
   animation: eurofall linear infinite;
 }
 @keyframes eurofall {
-  from { transform: translateY(0) rotate(0deg); }
-  to { transform: translateY(128svh) rotate(12deg); }
+  from {
+    transform: translateY(0) rotate(0deg);
+  }
+  to {
+    transform: translateY(128svh) rotate(12deg);
+  }
 }
 .money-stack {
   position: absolute;
@@ -2065,41 +2170,45 @@ p {
   display: block;
   font-size: 9px;
   font-weight: 900;
-  letter-spacing: .16em;
-  color: rgba(13,13,13,.52);
+  letter-spacing: 0.16em;
+  color: rgba(13, 13, 13, 0.52);
 }
 .money-title strong {
   display: block;
   margin-top: 10px;
   font-family: "Archivo Black";
   font-size: clamp(54px, 20vw, 92px);
-  line-height: .84;
-  letter-spacing: -.065em;
+  line-height: 0.84;
+  letter-spacing: -0.065em;
 }
 .money-title p {
   max-width: 240px;
   margin: 12px auto 0;
   font-size: 11px;
   line-height: 1.35;
-  color: rgba(13,13,13,.46);
+  color: rgba(13, 13, 13, 0.46);
 }
 .money-gif-card {
   width: 184px;
   padding: 10px;
   border: 2px solid var(--ink);
   border-radius: 18px;
-  background: rgba(255,255,255,.93);
-  box-shadow: 0 10px 28px rgba(13,13,13,.08);
+  background: rgba(255, 255, 255, 0.93);
+  box-shadow: 0 10px 28px rgba(13, 13, 13, 0.08);
   opacity: 0;
   transform: translateY(20px);
 }
 .gif-slot-frame {
   width: 100%;
   aspect-ratio: 4 / 3;
-  border: 2px dashed rgba(13,13,13,.35);
+  border: 2px dashed rgba(13, 13, 13, 0.35);
   border-radius: 14px;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(230,238,255,.7), rgba(255,255,255,.9));
+  background: linear-gradient(
+    180deg,
+    rgba(230, 238, 255, 0.7),
+    rgba(255, 255, 255, 0.9)
+  );
 }
 .gif-slot-frame img,
 .warning-gif-card img {
@@ -2115,12 +2224,25 @@ p {
 }
 .savings-story-room {
   background:
-    radial-gradient(circle at 80% 12%, rgba(255,255,255,.7), transparent 25%),
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.014) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 80% 12%,
+      rgba(255, 255, 255, 0.7),
+      transparent 25%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.014) 0 2px,
+      transparent 2px 6px
+    ),
     #f5f1e9;
-  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .saving-beat {
   position: absolute;
@@ -2136,14 +2258,13 @@ p {
   gap: 18px;
 }
 .saving-main-line,
-.outfit-copy,
 .waterfall-copy strong,
 .future-headline strong,
 .future-warning-copy strong {
   font-family: "Archivo Black";
   font-size: clamp(34px, 12vw, 54px);
-  line-height: .96;
-  letter-spacing: -.055em;
+  line-height: 0.96;
+  letter-spacing: -0.055em;
   text-align: center;
 }
 .saving-face,
@@ -2155,7 +2276,7 @@ p {
   border: 2px solid var(--ink);
   border-radius: 18px;
   background: #fff;
-  box-shadow: 0 10px 24px rgba(13,13,13,.08);
+  box-shadow: 0 10px 24px rgba(13, 13, 13, 0.08);
 }
 .food-row {
   display: flex;
@@ -2167,30 +2288,12 @@ p {
   height: 92px;
   object-fit: contain;
   border-radius: 18px;
-  background: rgba(255,255,255,.75);
+  background: rgba(255, 255, 255, 0.75);
   border: 2px solid var(--ink);
   padding: 8px;
 }
 .beat-year .saving-main-line {
   max-width: 300px;
-}
-.outfit-layout {
-  width: min(100%, 320px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-.outfit-copy {
-  flex: 1 1 0;
-  text-align: left;
-  font-size: clamp(28px, 8.5vw, 42px);
-}
-.outfit-visual {
-  width: 128px;
-  height: 220px;
-  object-fit: contain;
-  flex: 0 0 128px;
 }
 
 /* actions */
@@ -2199,12 +2302,25 @@ p {
 }
 .actions-room {
   background:
-    radial-gradient(circle at 15% 12%, rgba(255,255,255,.78), transparent 22%),
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.014) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 15% 12%,
+      rgba(255, 255, 255, 0.78),
+      transparent 22%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.014) 0 2px,
+      transparent 2px 6px
+    ),
     #f5f1e9;
-  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .actions-intro {
   position: absolute;
@@ -2216,8 +2332,8 @@ p {
 .actions-intro h2 {
   margin-top: 0;
   font-size: clamp(40px, 14vw, 60px);
-  line-height: .92;
-  letter-spacing: -.055em;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
 }
 .action-cards {
   position: absolute;
@@ -2232,7 +2348,7 @@ p {
   border: 2px solid var(--ink);
   border-radius: 22px;
   background: #fff;
-  box-shadow: 0 8px 0 rgba(13,13,13,.06);
+  box-shadow: 0 8px 0 rgba(13, 13, 13, 0.06);
   opacity: 0;
 }
 .action-card span {
@@ -2258,9 +2374,15 @@ p {
   font-size: 12px;
   line-height: 1.35;
 }
-.action-card.lime { background: #dbff59; }
-.action-card.pink { background: #ffd4df; }
-.action-card.blue { background: #d7efff; }
+.action-card.lime {
+  background: #dbff59;
+}
+.action-card.pink {
+  background: #ffd4df;
+}
+.action-card.blue {
+  background: #d7efff;
+}
 
 /* future: one full viewport per beat */
 .future-story {
@@ -2273,12 +2395,25 @@ p {
   height: 100svh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 12%, rgba(255,255,255,.72), transparent 26%),
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.014) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 20% 12%,
+      rgba(255, 255, 255, 0.72),
+      transparent 26%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.014) 0 2px,
+      transparent 2px 6px
+    ),
     #f5f1e9;
-  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .future-screen-inner {
   position: absolute;
@@ -2296,8 +2431,8 @@ p {
   display: block;
   font-family: "Archivo Black";
   font-size: clamp(34px, 12vw, 52px);
-  line-height: .96;
-  letter-spacing: -.055em;
+  line-height: 0.96;
+  letter-spacing: -0.055em;
   text-align: center;
 }
 .future-headline em {
@@ -2341,22 +2476,6 @@ p {
   object-fit: cover;
   display: block;
 }
-.morph-scroll-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  z-index: 4;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.5);
-  color: #fff;
-  font-size: 8px;
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: .13em;
-  backdrop-filter: blur(5px);
-}
 
 .future-reaction-screen .future-screen-inner {
   place-items: center;
@@ -2387,7 +2506,7 @@ p {
   --end-bg-mix: 0;
   background: #070707;
   overflow: hidden;
-  transition: background-color .08s linear;
+  transition: background-color 0.08s linear;
 }
 .end-stage {
   position: absolute;
@@ -2422,23 +2541,29 @@ p {
   margin-top: 16px;
   font-family: "Archivo Black";
   font-size: clamp(32px, 11vw, 48px);
-  line-height: .96;
-  letter-spacing: -.045em;
+  line-height: 0.96;
+  letter-spacing: -0.045em;
 }
 .end-face-shell {
   width: 210px;
   height: 210px;
   border-radius: 28px;
   overflow: hidden;
-  border: 2px solid rgba(255,255,255,.1);
-  box-shadow: 0 16px 30px rgba(0,0,0,.25);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
 }
 .end-face-shell.dark {
-  background: radial-gradient(circle at 50% 20%, rgba(255,255,255,.08), transparent 30%), #101010;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(255, 255, 255, 0.08),
+      transparent 30%
+    ),
+    #101010;
 }
 .end-face-shell.bright {
   background: linear-gradient(135deg, #ff66cb, #8ad4ff 58%, #ffe56c);
-  border-color: rgba(13,13,13,.14);
+  border-color: rgba(13, 13, 13, 0.14);
 }
 .end-face-img {
   width: 100%;
@@ -2447,7 +2572,7 @@ p {
   display: block;
 }
 .end-face-img.before {
-  filter: grayscale(1) contrast(1.12) brightness(.64);
+  filter: grayscale(1) contrast(1.12) brightness(0.64);
 }
 #restartBtn {
   position: absolute;
@@ -2463,11 +2588,11 @@ p {
   color: #fff;
   font-size: 10px;
   font-weight: 900;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .12s linear;
+  transition: opacity 0.12s linear;
 }
 #restartBtn.is-visible {
   opacity: 1;
@@ -2475,19 +2600,29 @@ p {
 }
 
 @media (max-height: 700px) {
-  .end-stage { top: 42%; }
-  #restartBtn { top: calc(42% + 176px); }
-  .end-face-shell { width: 184px; height: 184px; }
+  .end-stage {
+    top: 42%;
+  }
+  #restartBtn {
+    top: calc(42% + 176px);
+  }
+  .end-face-shell {
+    width: 184px;
+    height: 184px;
+  }
   .end-before-panel span,
-  .end-after-panel span { font-size: clamp(28px, 9.5vw, 42px); }
+  .end-after-panel span {
+    font-size: clamp(28px, 9.5vw, 42px);
+  }
 }
 @media (max-width: 380px) {
-  .money-title strong { font-size: clamp(52px, 18vw, 82px); }
-  .saving-main-line, .outfit-copy { font-size: clamp(30px, 10.7vw, 44px); }
+  .money-title strong {
+    font-size: clamp(52px, 18vw, 82px);
+  }
   .future-headline strong,
-  .future-warning-copy strong { font-size: clamp(30px, 10.7vw, 44px); }
-  .outfit-layout { gap: 8px; }
-  .outfit-visual { width: 112px; height: 200px; flex-basis: 112px; }
+  .future-warning-copy strong {
+    font-size: clamp(30px, 10.7vw, 44px);
+  }
 }
 
 /* v19: deliberate mobile pacing + true viewport centering */
@@ -2497,14 +2632,27 @@ p {
 }
 .saving-scroll-beat {
   position: relative;
-  height: 240svh;
+  height: var(--saving-beat-scroll);
   background:
-    radial-gradient(circle at 80% 12%, rgba(255,255,255,.7), transparent 25%),
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.014) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 80% 12%,
+      rgba(255, 255, 255, 0.7),
+      transparent 25%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.014) 0 2px,
+      transparent 2px 6px
+    ),
     #f5f1e9;
-  background-size: auto,39px 39px,39px 39px,auto,auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .saving-beat-sticky {
   position: sticky;
@@ -2540,17 +2688,6 @@ p {
 .saving-scroll-beat .food-row {
   margin: 0;
 }
-.saving-scroll-beat .outfit-layout {
-  width: min(88vw, 350px);
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  text-align: left;
-}
-.saving-scroll-beat .outfit-copy {
-  text-align: left;
-}
 
 /* Each future beat owns multiple viewport-heights, while its content stays centered. */
 .future-hold-screen {
@@ -2571,12 +2708,25 @@ p {
   padding: 24px 18px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 12%, rgba(255,255,255,.72), transparent 26%),
-    linear-gradient(rgba(13,13,13,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,13,13,.045) 1px, transparent 1px),
-    repeating-linear-gradient(155deg, rgba(13,13,13,.014) 0 2px, transparent 2px 6px),
+    radial-gradient(
+      circle at 20% 12%,
+      rgba(255, 255, 255, 0.72),
+      transparent 26%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.045) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.014) 0 2px,
+      transparent 2px 6px
+    ),
     #f5f1e9;
-  background-size: auto,39px 39px,39px 39px,auto,auto;
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
 }
 .future-comparison-figure {
   width: min(88vw, 350px);
@@ -2601,26 +2751,318 @@ p {
   font-weight: 600;
   text-align: left;
 }
-.future-morph-chapter { height: 420svh; }
+.future-morph-chapter {
+  height: 420svh;
+}
 .future-reaction-screen .reaction-media,
 .future-warning-copy,
-.future-headline { margin: 0 auto; }
+.future-headline {
+  margin: 0 auto;
+}
 
 /* Mobile: shorten the shower composition so the controls remain visible above Safari chrome. */
 @media (max-width: 600px) {
-  .chapter-shower { height: 128svh; }
-  .shower-fixture { top: 20px; height: 400px; }
-  .shower-fixture-svg { top: 24px; height: 398px; }
-  .new-shower-rain { top: 101px; height: 325px; }
-  .shower-console { top: 458px; min-height: 178px; }
-  .console-question { min-height: 108px; }
+  .chapter-shower {
+    height: 128svh;
+  }
+  .shower-fixture {
+    top: 20px;
+    height: 400px;
+  }
+  .shower-fixture-svg {
+    top: 24px;
+    height: 398px;
+  }
+  .new-shower-rain {
+    top: 101px;
+    height: 325px;
+  }
+  .shower-console {
+    top: 458px;
+    min-height: 178px;
+  }
+  .console-question {
+    min-height: 108px;
+  }
 }
 
 /* Lightweight snap assistance only for the long-form story beats. */
-html { scroll-snap-type: y proximity; }
+html {
+  scroll-snap-type: y proximity;
+}
 .saving-scroll-beat,
 .future-hold-screen,
 .future-morph-chapter {
   scroll-snap-align: start;
   scroll-snap-stop: normal;
 }
+
+/* v21 requested refinements — intentionally no animation architecture changes. */
+
+/* The calculated amount is now part of the same strong element as the euro sign
+   and "A MONTH", so it inherits exactly the same display typography. */
+#monthlyCostLine {
+  display: block;
+  margin-top: 10px;
+  font-family: "Archivo Black";
+  font-size: clamp(54px, 20vw, 92px);
+  line-height: 0.84;
+  letter-spacing: -0.065em;
+}
+
+/* Keep the scroll instruction present throughout the story once scrolling begins. */
+.global-scroll-hint {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translate(-50%, 8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1.5px solid rgba(13, 13, 13, 0.72);
+  border-radius: 999px;
+  background: rgba(245, 241, 233, 0.88);
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(13, 13, 13, 0.08);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0s linear 0.2s;
+}
+.global-scroll-hint.is-visible {
+  opacity: 0.82;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+.global-scroll-hint i {
+  font-style: normal;
+  font-size: 13px;
+  animation: result-scroll-arrow 1.2s ease-in-out infinite;
+}
+
+/* Morph stays scroll-scrubbed exactly as in v19, but is presented as a card
+   instead of filling the entire viewport. */
+.future-morph-room {
+  padding: 72px 18px 62px;
+}
+.morph-frame-shell {
+  width: min(88vw, 350px);
+  height: min(68svh, 560px);
+  border: 2px solid var(--ink);
+  border-radius: 24px;
+  overflow: hidden;
+  background: #102316;
+  box-shadow:
+    0 10px 0 rgba(13, 13, 13, 0.06),
+    0 18px 34px rgba(13, 13, 13, 0.09);
+}
+.morph-frame-shell img {
+  object-fit: cover;
+}
+
+@media (max-width: 600px) {
+  #monthlyCostLine {
+    font-size: clamp(52px, 19vw, 84px);
+  }
+  .morph-frame-shell {
+    width: min(86vw, 340px);
+    height: min(64svh, 520px);
+  }
+  .global-scroll-hint {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-scroll-hint i {
+    animation: none;
+  }
+}
+
+/* =========================================================
+   v22 — requested UX cleanup, without replacing scroll logic
+   ========================================================= */
+
+/* Question numbering is intentionally hidden; JS-dependent elements remain in DOM. */
+.question-count,
+.shower-step-top {
+  display: none !important;
+}
+
+/* The Q1/Q2 action labels are no longer needed. */
+.dial-action:empty {
+  display: none;
+}
+
+/* Sink question 2 reads as a modal layer: dim/soften the previous scene behind it. */
+.kitchen-room .sink-copy,
+.kitchen-room .sink-scene {
+  transition:
+    filter 0.28s ease,
+    opacity 0.28s ease;
+}
+.kitchen-room.is-method-step .sink-copy,
+.kitchen-room.is-method-step .sink-scene {
+  filter: blur(2.2px) brightness(0.72);
+  opacity: 0.58;
+}
+.sink-question-two {
+  background: rgba(244, 239, 231, 0.94);
+  border: 2px solid var(--ink);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: 0 18px 42px rgba(13, 13, 13, 0.16);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+/* Laundry cleanup requested. */
+.washer-result,
+.laundry-scroll-cue {
+  display: none !important;
+}
+
+/* Clear result comparison: two named bars, never overlapping. */
+.result-compare-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+  padding: 15px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 7px 0 rgba(13, 13, 13, 0.055);
+}
+.compare-row {
+  display: grid;
+  gap: 7px;
+}
+.compare-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 9px;
+  line-height: 1;
+}
+.compare-label strong {
+  font-family: "Archivo Black";
+  font-size: 10px;
+  letter-spacing: -0.02em;
+}
+.compare-label span {
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.compare-track {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: rgba(13, 13, 13, 0.08);
+}
+.compare-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.28s ease;
+}
+.user-fill {
+  width: var(--user-position);
+  background: var(--blue);
+}
+.average-fill {
+  width: var(--avg-position);
+  background: rgba(13, 13, 13, 0.32);
+}
+
+/* Remove the old comparison geometry completely. */
+.result-scale,
+.result-scale-labels {
+  display: none !important;
+}
+
+/* Global cue is calmer and uses the requested wording. */
+.global-scroll-hint i {
+  animation-duration: 2.8s;
+}
+.global-scroll-hint.is-ending {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: translate(-50%, 8px) !important;
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease,
+    visibility 0s linear 0.45s;
+}
+
+/* Let the final before/after story breathe a little longer. */
+.chapter-end {
+  height: 360svh;
+}
+
+/* Longer sink transition: preserve the existing wipe, simply hold it long enough to read. */
+.shower-transition.is-running .transition-water {
+  animation-duration: 2.12s;
+}
+.shower-transition.is-running .transition-copy {
+  animation-duration: 2.12s;
+}
+@keyframes shower-water-wipe {
+  0% {
+    transform: translateY(0);
+  }
+  24% {
+    transform: translateY(-100%);
+  }
+  72% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes shower-transition-copy {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translate(-50%, -42%);
+  }
+  30%,
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  82%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -58%);
+  }
+}
+
+/* Use the full safe viewport while keeping content clear of iPhone UI chrome. */
+html,
+body {
+  min-height: 100%;
+}
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+

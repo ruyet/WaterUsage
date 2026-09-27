@@ -3,11 +3,63 @@ const state = {
   showersPerWeek: 5,
   dishesPerWeek: 5,
   dishMethod: "basin",
-  laundryPerWeek: 2.5
+  laundryPerWeek: null
 };
 
 const clamp = (n,a=0,b=1)=>Math.max(a,Math.min(b,n));
 const lerp = (a,b,t)=>a+(b-a)*t;
+
+// Interaction gates for the question screens. While locked, touch/wheel scrolling
+// cannot skip a question. Programmatic navigation briefly unlocks, moves to the
+// next chapter, then locks again when that chapter still needs an answer.
+const scrollGate = {
+  locked: false,
+  y: 0
+};
+
+function lockPageScroll(){
+  if(scrollGate.locked) return;
+  scrollGate.y = window.scrollY;
+  scrollGate.locked = true;
+  document.documentElement.classList.add("interaction-locked");
+  document.body.classList.add("interaction-locked");
+  document.body.style.top = `-${scrollGate.y}px`;
+}
+
+function jumpToY(y){
+  const html = document.documentElement;
+  const previousBehavior = html.style.scrollBehavior;
+  html.style.scrollBehavior = "auto";
+  window.scrollTo(0, y);
+  html.style.scrollBehavior = previousBehavior;
+}
+
+function unlockPageScroll(){
+  if(!scrollGate.locked) return;
+  const y = scrollGate.y;
+  scrollGate.locked = false;
+  document.documentElement.classList.remove("interaction-locked");
+  document.body.classList.remove("interaction-locked");
+  document.body.style.top = "";
+  jumpToY(y);
+}
+
+function moveToLockedChapter(id){
+  unlockPageScroll();
+  const target = document.getElementById(id);
+  if(!target) return;
+  jumpToY(target.offsetTop);
+  scrollGate.y = window.scrollY;
+  lockPageScroll();
+  updateScrollAnimations();
+}
+
+function setGlobalScrollCueVisible(visible){
+  const cue = document.getElementById("globalScrollHint");
+  if(!cue) return;
+  cue.classList.toggle("is-visible", visible);
+  cue.setAttribute("aria-hidden", String(!visible));
+}
 
 function progress(id){
   const el=document.getElementById(id);
@@ -191,7 +243,7 @@ function setShowerStep(step){
     timeCaption.textContent = "DURATION";
     flowCaption.textContent = "FLOW";
     timeAction.textContent = "TURN";
-    flowAction.textContent = "Q2";
+    flowAction.textContent = "";
     flowValue.textContent = "FLOW";
   } else {
     setDialEnabled(timeDial, false);
@@ -204,7 +256,7 @@ function setShowerStep(step){
     next.textContent = "NEXT: THE SINK";
     timeCaption.textContent = "TEMP";
     flowCaption.textContent = "FREQUENCY";
-    timeAction.textContent = "Q1";
+    timeAction.textContent = "";
     flowAction.textContent = "TURN";
     flowValue.innerHTML = `${state.showersPerWeek}<span>× / week</span>`;
   }
@@ -235,8 +287,8 @@ function runShowerExitTransition(){
   setTimeout(()=>{
     transition.classList.remove("is-running");
     showerUI.transitioning = false;
-    document.getElementById("sinkChapter").scrollIntoView({behavior:"smooth", block:"start"});
-  }, 1160);
+    moveToLockedChapter("sinkChapter");
+  }, 2160);
 }
 
 function bindShowerNext(){
@@ -256,19 +308,12 @@ function setSinkNextVisible(visible){
   next.tabIndex = visible ? 0 : -1;
 }
 
-function setSinkScrollCueVisible(visible){
-  const cue = document.getElementById("sinkScrollCue");
-  cue.classList.toggle("is-visible", visible);
-  cue.setAttribute("aria-hidden", String(!visible));
-  cue.tabIndex = visible ? 0 : -1;
-}
-
 function showDishMethodStep(){
   if(!sinkUI.plateChosen || sinkUI.methodStepVisible) return;
   sinkUI.methodStepVisible = true;
   sinkUI.methodChosen = false;
   setSinkNextVisible(false);
-  setSinkScrollCueVisible(false);
+  setGlobalScrollCueVisible(false);
 
   const panel = document.getElementById("dishMethodPanel");
   panel.classList.add("is-visible");
@@ -292,7 +337,17 @@ function bindPlates(){
     });
   });
 
-  document.getElementById("sinkNext").addEventListener("click", showDishMethodStep);
+  document.getElementById("sinkNext").addEventListener("click",()=>{
+    if(!sinkUI.methodStepVisible){
+      showDishMethodStep();
+      return;
+    }
+    if(!sinkUI.methodChosen) return;
+
+    setSinkNextVisible(false);
+    setGlobalScrollCueVisible(false);
+    moveToLockedChapter("laundryChapter");
+  });
 
   const method=document.getElementById("dishMethod");
   [...method.querySelectorAll(".method-plate")].forEach(btn=>{
@@ -300,14 +355,11 @@ function bindPlates(){
       selectInGroup(method,btn);
       state.dishMethod=btn.dataset.value;
       sinkUI.methodChosen=true;
-      setSinkScrollCueVisible(true);
+      // Keep this screen locked. Continue with the same button pattern as Q1.
+      setSinkNextVisible(true);
       updateSink();
       updateEstimate();
     });
-  });
-
-  document.getElementById("sinkScrollCue").addEventListener("click",()=>{
-    document.getElementById("laundryChapter").scrollIntoView({behavior:"smooth", block:"start"});
   });
 }
 
@@ -319,6 +371,10 @@ function bindLaundry(){
       state.laundryPerWeek=Number(btn.dataset.value);
       updateLaundry();
       updateEstimate();
+
+      // Laundry is the hand-off from click-through questions to the scrolling story.
+      setGlobalScrollCueVisible(true);
+      unlockPageScroll();
     });
   });
 }
@@ -344,7 +400,8 @@ function updateSink(){
 }
 
 function updateLaundry(){
-  const h=18+clamp(state.laundryPerWeek/4,0,1)*54;
+  const chosen = state.laundryPerWeek !== null;
+  const h = chosen ? 18+clamp(state.laundryPerWeek/4,0,1)*54 : 18;
   document.getElementById("washerWater").style.height=`${h}%`;
 }
 
@@ -353,7 +410,8 @@ function estimateDailyLitres(){
   const shower=(state.showerMinutes*8*state.showersPerWeek)/7;
   const dishPerSession={dishwasher:10,basin:18,running:34}[state.dishMethod];
   const dishes=(dishPerSession*state.dishesPerWeek)/7;
-  const laundry=(50*state.laundryPerWeek)/7;
+  const laundryPerWeek = state.laundryPerWeek ?? 2.5;
+  const laundry=(50*laundryPerWeek)/7;
   const baseline=28; // toilet, drinking, cooking and other household use placeholder
   return Math.round(shower+dishes+laundry+baseline);
 }
@@ -363,7 +421,7 @@ function updateEstimate(){
   document.getElementById("personalLitres").textContent=litres;
   document.getElementById("glassCount").textContent=Math.round(litres/0.5);
   const cost=Math.max(18,Math.round(litres*.46));
-  document.getElementById("monthlyCost").textContent=cost;
+  document.getElementById("monthlyCostLine").innerHTML=`€${cost}<br />A MONTH`;
 
   const comparison=document.getElementById("resultComparison");
   const youLabel=document.getElementById("resultYouLabel");
@@ -373,7 +431,7 @@ function updateEstimate(){
     const avgPos=clamp(118/scaleMax,0,1)*100;
     comparison.style.setProperty("--user-position",`${userPos}%`);
     comparison.style.setProperty("--avg-position",`${avgPos}%`);
-    youLabel.textContent=`YOU • ${litres} L`;
+    youLabel.textContent=`${litres} L / DAY`;
   }
 }
 
@@ -404,6 +462,7 @@ function buildMoneyRain(){
 }
 
 function updateScrollAnimations(){
+  updateBrowserThemeColor();
   const p1=progress("showerStart");
   const fixture=document.querySelector(".shower-fixture");
   const console=document.querySelector(".shower-console");
@@ -473,6 +532,10 @@ function updateScrollAnimations(){
   const beforePanel=document.querySelector('.end-before-panel');
   const afterPanel=document.querySelector('.end-after-panel');
   const restartBtn=document.getElementById('restartBtn');
+  const globalScrollHint=document.getElementById('globalScrollHint');
+  if(globalScrollHint){
+    globalScrollHint.classList.toggle('is-ending', p12 > .035);
+  }
 
   // Final before/after transition is opacity-only: nothing moves or rescales.
   const fade=clamp((p12-.34)/.34);
@@ -491,6 +554,34 @@ function updateScrollAnimations(){
 
 }
 
+
+let lastThemeColor = "";
+function updateBrowserThemeColor(){
+  const meta=document.getElementById("themeColorMeta");
+  if(!meta) return;
+
+  const end=document.getElementById("endChapter");
+  const glasses=document.getElementById("glassesChapter");
+  const viewportMid=window.innerHeight*.5;
+
+  const containsMid=(el)=>{
+    if(!el) return false;
+    const r=el.getBoundingClientRect();
+    return r.top <= viewportMid && r.bottom >= viewportMid;
+  };
+
+  let color="#f4efe7";
+  if(containsMid(glasses)) color="#061935";
+  if(containsMid(end)) color="#070707";
+
+  if(color!==lastThemeColor){
+    meta.setAttribute("content", color);
+    document.documentElement.style.backgroundColor=color;
+    document.body.style.backgroundColor=color;
+    lastThemeColor=color;
+  }
+}
+
 const timeDialController = bindAnswerDial({
   id:"timeDial",
   values:showerUI.timeValues,
@@ -505,6 +596,8 @@ const flowDialController = bindAnswerDial({
   valueId:"flowValue",
   formatter:(value, aria)=>aria ? `${value} showers per week` : `${value}<span>× / week</span>`
 });
+if("scrollRestoration" in history) history.scrollRestoration = "manual";
+jumpToY(0);
 buildNewShowerRain();
 setShowerStep(1);
 bindShowerNext();
@@ -521,6 +614,7 @@ updateSink();
 updateLaundry();
 updateEstimate();
 updateScrollAnimations();
+lockPageScroll();
 
 let ticking=false;
 addEventListener("scroll",()=>{
@@ -534,4 +628,8 @@ addEventListener("scroll",()=>{
 },{passive:true});
 addEventListener("resize",updateScrollAnimations);
 
-document.getElementById("restartBtn").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
+document.getElementById("restartBtn").addEventListener("click",()=>{
+  unlockPageScroll();
+  jumpToY(0);
+  window.location.reload();
+});
