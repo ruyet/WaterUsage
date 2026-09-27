@@ -1,52 +1,143 @@
-# Water Story Mobile v33
+# Water You Don't See
 
-Changes in v33:
+**Final commit: production-ready hand-in build**
 
-- Shorter, consistent touch momentum on mobile so a single iPhone flick does not jump across several pinned chapters.
-- Pinned chapters still begin at `top top`; no forced early scroll-to alignment.
-- Action/tip cards are back to compact, content-driven card heights instead of stretched full-screen rows.
-- Savings story is now only two beats: personalized yearly saving, then a rounded phone-plan / Spotify comparison, then straight to the tips.
-- Spotify Premium Individual NL comparison uses EUR 13.99/month (checked September 2026). Phone plan remains an illustrative EUR 25/month assumption.
-- Daily-estimate comparison starts earlier while the litre number is still filling.
-- Existing 200 ml glass calculation remains in place.
-- Existing morph now has an `EXAMPLE NAME` caption underneath, ready to replace with the official location/source name.
+This repository contains the final version of **Water You Don't See**, a mobile-first interactive visual story about everyday household water use in the Netherlands. The experience asks users about familiar routines, translates those answers into understandable water and cost estimates, and ends with practical actions and environmental consequences.
 
-Easy values in `script.js`:
+The final build is the result of iterative usability testing on real mobile devices. The interaction flow, chapter pacing, scroll behavior, iOS viewport handling, and environmental morphs should be treated as validated behavior unless a future requirement explicitly calls for a redesign.
 
-- `PHONE_PLAN_EUR = 25`
-- `SPOTIFY_EUR = 13.99`
-- Touch momentum is controlled in `setupSmoothScrolling()` by the `momentum` callback.
+## Project goal
 
-## v35 morph sequencing hotfix
-- Nationaal Park Veluwezoom and Nauyaca Waterfalls now use one shared `MORPH_SCROLL_VIEWPORTS` value.
-- Pin refresh order follows DOM order: Veluwezoom is measured before Nauyaca, so Nauyaca includes the first morph's pin spacing.
-- The final morph hides the scroll cue and hands the background directly to the black ending when it releases.
+The project is designed to make personal water use feel concrete rather than abstract. Instead of only presenting statistics, the story lets users enter parts of their own routine and then connects those choices to litres, familiar comparisons, estimated costs, possible yearly savings, and environmental examples.
 
+The primary experience is mobile. Desktop is supported, but layout and interaction decisions prioritize touch devices and mobile Safari.
 
-## v41 final scroll-cue cleanup
-- Every scroll instruction now says `SCROLL DOWN TO CONTINUE`.
-- Morph progress no longer swaps between different cue messages.
-- Scroll cues are no longer pill-shaped: border, background, blur and shadow-card styling were removed.
-- The cue is now a small vertical instruction with a down arrow, making it read as a scroll affordance instead of a button.
+## Experience structure
 
+1. **Shower routine:** shower duration and showers per week.
+2. **Sink routine:** dishwashing frequency and washing method.
+3. **Laundry routine:** laundry frequency.
+4. **Personal result:** estimated daily water use and comparison with the Dutch average.
+5. **Make it visible:** daily litres translated into 200 ml glasses.
+6. **Cost:** rough monthly water + shower-heating estimate.
+7. **Savings:** potential yearly savings and relatable subscription comparisons.
+8. **Actions:** personalized suggestions based on the user's answers.
+9. **Future story:** real-world environmental comparisons followed by two scroll-scrubbed drought morphs.
+10. **Closing message:** final call to reduce unnecessary water use and restart the story.
 
-## v42 final morph + iOS shower fit
-- Replaced both environmental morph sequences with the two supplied 120-frame GIF sources, exported as 120 WebP frames each.
-- Both morph ScrollTriggers now scrub all 120 frames while keeping the existing scroll distance.
-- Morph files are cache-warmed with a six-request worker pool instead of retaining 240 decoded images in memory.
-- The shower controls use `visualViewport.height` for Safari/in-app browser chrome. The shower fixture stays fixed; mixer, answer panel, and Next Question move upward only when the actually visible viewport is shorter.
+## Technology
 
-## v43 — smoother touch morph scrubbing
-- Mobile morphs use a longer 2.75-viewport scroll distance; desktop keeps 1.85 viewports.
-- The 120-frame morph sequence now runs from a real GSAP playhead tween. Numeric scrub therefore smooths touch deltas instead of reading raw ScrollTrigger progress frame-by-frame.
-- Touch morphs use 0.18s scrub smoothing; desktop uses 0.08s.
-- iPhone/Android flick momentum is slightly longer only while a morph is active; all other chapters keep the existing short momentum behavior.
-- Final/first frames are forced at section boundaries so smoothing cannot bleed into the next chapter.
+The project intentionally has no build step or framework. It uses:
 
+- Semantic HTML for the complete story structure.
+- CSS for the visual system, responsive layout, chapter scenes, and non-critical decorative motion.
+- Vanilla JavaScript for state, calculations, interactions, and accessibility state.
+- GSAP + ScrollTrigger for chapter transitions, pinned storytelling, autoplay sequences, and scroll-driven motion.
+- H.264 MP4 morph videos for efficient scroll scrubbing on mobile browsers.
 
-## v45
-Replaced both morph sources with the user-supplied higher-quality MP4s. They are re-encoded as H.264/yuv420p all-intra video (every frame a keyframe) at their native 25 fps / 120 frames so the existing iOS scroll-scrub seeking remains responsive while avoiding extra quality loss. Posters were regenerated from the new videos.
+GSAP and ScrollTrigger are loaded from jsDelivr in `index.html`. Google Fonts provides Inter and Archivo Black.
 
+## File structure
 
-## v46
-Prevents Safari from briefly flashing the upcoming morph canvas during the Lake Urmia autoplay-to-scroll handoff. Morph chapters remain laid out for ScrollTrigger but are paint-hidden until their own trigger actually starts.
+```text
+water-story-mobile-final/
+├── index.html
+├── styles.css
+├── script.js
+├── README.md
+└── assets/
+    ├── lake_mead_only.png
+    ├── lake_urmia_only.png
+    ├── payday-cash.gif
+    ├── shocked dog.gif
+    ├── morph_veluwe_poster.webp
+    ├── morph_veluwe_scrub.mp4
+    ├── morph_nauyaca_poster.webp
+    └── morph_nauyaca_scrub.mp4
+```
+
+## Running the project
+
+No installation is required. For development, serve the folder through a local HTTP server rather than opening `index.html` directly. For example:
+
+```bash
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000` in a browser on the same machine. For mobile testing, use the computer's local network address or deploy the folder to the project web server.
+
+## Interaction architecture
+
+### Scroll control
+
+`script.js` keeps native scrolling as the base behavior and uses ScrollTrigger only where the story needs a held or pinned viewport. Touch normalization is enabled on coarse-pointer devices to prevent one iPhone flick from accidentally crossing several chapters.
+
+Some chapters deliberately lock manual scrolling while the user must answer a question or while a guided transition is active. Programmatic chapter alignment still works while that input gate is active.
+
+### iOS viewport handling
+
+Mobile Safari changes the visible viewport when its browser bars expand or collapse. The shower chapter therefore reads `visualViewport.height` and stores it in `--shower-vvh`. Only the lower shower controls move upward when the visible area becomes short; the shower fixture remains visually anchored.
+
+This behavior is important for smaller screens and in-app browsers and should not be replaced with a simple `100vh` assumption.
+
+### Environmental morphs
+
+The two final morphs use scroll-scrubbed H.264 videos rather than image sequences:
+
+- `morph_veluwe_scrub.mp4`
+- `morph_nauyaca_scrub.mp4`
+
+Both files contain 120 frames at 25 fps and are encoded all-intra, meaning every frame is a keyframe. This allows Safari to seek directly to requested frames while scrolling without decoding a long chain of dependent frames.
+
+JavaScript allows only one video seek at a time. If the user moves again while a frame is decoding, only the newest requested frame is kept. This prevents a backlog of obsolete seek requests and is important for smooth mobile performance.
+
+The morph chapters are also hidden from painting until their own ScrollTrigger becomes active. This prevents Safari from briefly flashing the upcoming morph during the handoff from the Lake Urmia autoplay chapter.
+
+## Calculation assumptions
+
+The calculation constants are grouped near the top of `script.js` so they can be reviewed without searching through UI code.
+
+Current assumptions include:
+
+- Water tariff: **€1.51 per m³**.
+- Shower target used for the savings story: **5 minutes**.
+- Warm-water shower saving approximation: **€15 per avoided daily shower-minute per year**.
+- Illustrative phone plan: **€25 per month**.
+- Spotify Premium Individual comparison: **€13.99 per month**.
+- Glass comparison: **200 ml per glass**.
+
+The result is an educational estimate, not a utility-bill calculator. Research and story content were informed by Dutch government/CBS water-use data, Milieu Centraal guidance, and the project's own user research.
+
+## Code conventions
+
+- CSS classes use descriptive kebab-case names.
+- JavaScript variables and functions use camelCase.
+- State classes use the `is-*` convention, for example `is-selected` and `is-active`.
+- Modifier classes describe their component, for example `action-card--lime` and `laundry-piece--shirt-pink`.
+- IDs are reserved for unique interactive elements, chapter anchors, and JavaScript targets.
+- Comments explain architecture, browser workarounds, calculations, or non-obvious interaction decisions rather than documenting version history.
+
+## Maintenance notes
+
+The current CSS cascade has been cleaned of unused prototype selectors while preserving the tested declaration order. Do not casually reorder later responsive/interaction overrides: several of them intentionally refine earlier chapter styles without changing the underlying visual composition.
+
+When changing chapter heights or ScrollTrigger pin distances, always test the complete story from the beginning. Pin spacers affect the measured positions of every chapter below them, so changes to one held section can influence later handoffs.
+
+When replacing a morph video, keep the same filename or update both `index.html` and the corresponding poster. For best mobile scrubbing performance, keep the source H.264-compatible and all-intra/keyframe-per-frame.
+
+## Final QA checklist
+
+Before deployment, verify the following on a real iPhone as well as desktop:
+
+- The opening sequence remains visible long enough to read.
+- Both shower questions are usable with touch dragging and the ± controls.
+- The Next Question button remains visible with Safari browser chrome expanded.
+- Sink and laundry answer gates cannot be skipped.
+- Pinned chapters do not leave blank gaps or jump across multiple sections.
+- Only one scroll instruction is visible at a time.
+- Both environmental morphs scrub smoothly and do not flash before entry.
+- The final black closing screen appears correctly and Start Over returns to the beginning.
+
+---
+
+**Status: FINAL.** This is the cleaned and documented final commit of the tested experience.

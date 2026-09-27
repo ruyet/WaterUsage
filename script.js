@@ -1,4 +1,4 @@
-/* Water Story v33 — shorter touch momentum + concise yearly savings story */
+/* Water You Don't See — interaction, calculation, and scroll orchestration. */
 
 const state = {
   showerMinutes: 2,
@@ -25,7 +25,7 @@ const laundryUI = {
   chosen: false
 };
 
-/* Easy pacing controls. Autoplay is intentionally slower than v24. */
+/* Story pacing controls. Keep these centralized so timing changes remain predictable. */
 const AUTO_STORY_STEP = 1.55;
 const FUTURE_STORY_STEP = 2.05;
 /* Hidden pin buffer for autoplay chapters. It prevents a fast swipe/wheel from
@@ -43,7 +43,7 @@ const MORPH_FRAME_COUNT = 120;
 const MORPH_VIDEO_FPS = 25;
 const SCROLL_CUE_LABEL = "SCROLL DOWN TO CONTINUE";
 
-/* v32 calculation assumptions. Keep these centralized so the storytelling numbers
+/* Calculation assumptions. Keep these centralized so the storytelling numbers
    can be adjusted without hunting through the UI code.
    - 2026 Brabant Water variable tariff: €1.51 / m³.
    - Milieu Centraal: going from 7.4 to 5 min/day saves about €36/year.
@@ -77,8 +77,6 @@ let touchNormalizer = null;
 let morphTouchActive = false;
 
 let activeTransition = null;
-let savingTimeline = null;
-let futureTimeline = null;
 const showerRainLoops = [];
 const moneyRainLoops = [];
 const storyState = {
@@ -130,7 +128,7 @@ function unlockPageScroll() {
   if (isTouchLike && !reducedMotion) touchNormalizer?.enable?.();
 }
 
-function setupSmoothScrolling() {
+function setupScrollBehavior() {
   if (!window.ScrollTrigger) return;
 
   ScrollTrigger.config({
@@ -139,7 +137,7 @@ function setupSmoothScrolling() {
     autoRefreshEvents: "visibilitychange,DOMContentLoaded,load"
   });
 
-  /* v33: normalize touch scrolling for the whole experience, but keep momentum
+  /* Normalize touch scrolling for the whole experience, but keep momentum
      deliberately short. iOS native momentum can carry one flick through several
      pinned chapters before ScrollTrigger has time to settle. This preserves a
      smooth drag while making a flick travel closer to an app-style feed. */
@@ -217,9 +215,9 @@ function playStoryLoader() {
   const progress = qs("#storyLoaderProgress");
   if (!loader || !water || !copy || !status) return;
 
-  /* v40: this intro NEVER skips because of a URL parameter, reduced-motion,
-     history state, or browser restoration. Safari may preserve both URLs and DOM
-     state via its back/forward cache, so the old ?restart shortcut was not safe.
+  /* The intro never skips because of a URL parameter, reduced-motion, history
+     state, or browser restoration. Safari may preserve both URLs and DOM state
+     via its back/forward cache, so restart state must not bypass this sequence.
 
      CSS makes the loader visible before JavaScript executes. The animation starts
      only when the page is actually visible. A real setTimeout controls the exit,
@@ -311,7 +309,7 @@ function playStoryLoader() {
   else document.addEventListener("visibilitychange", visibilityHandler, { passive: true });
 }
 
-function runGuidedTransition({ kicker, title, target, lockAfter = true, releaseCue = null }) {
+function runGuidedTransition({ kicker, title, target }) {
   if (activeTransition?.isActive()) return;
 
   const overlay = qs("#chapterTransition");
@@ -330,10 +328,7 @@ function runGuidedTransition({ kicker, title, target, lockAfter = true, releaseC
     gsap.set(water, { yPercent: 0, opacity: 1 });
     gsap.set(copy, { xPercent: -50, yPercent: -50, autoAlpha: 0, y: 14 });
 
-    if (lockAfter) lockPageScroll();
-    else unlockPageScroll();
-
-    if (!lockAfter && releaseCue) setGlobalScrollCueVisible(true, releaseCue);
+    lockPageScroll();
     activeTransition = null;
   };
 
@@ -384,14 +379,14 @@ function runGuidedTransition({ kicker, title, target, lockAfter = true, releaseC
 /* Reusable motion helpers                                                     */
 /* -------------------------------------------------------------------------- */
 
-function selectInGroup(container, button) {
-  qsa("button", container).forEach(b => b.classList.remove("active"));
-  button.classList.add("active");
+function selectButtonInGroup(container, button) {
+  qsa("button", container).forEach(b => b.classList.remove("is-selected"));
+  button.classList.add("is-selected");
   gsap.fromTo(button, { scale: 0.96 }, { scale: 1, duration: 0.32, ease: "back.out(2)" });
 
   if (container.id === "dishFrequency") {
     qsa(".plate", container).forEach(plate => {
-      plate.querySelector(".plate-fill")?.setAttribute("fill", plate.classList.contains("active") ? "#c9ff38" : "#f8f4ed");
+      plate.querySelector(".plate-fill")?.setAttribute("fill", plate.classList.contains("is-selected") ? "#c9ff38" : "#f8f4ed");
     });
   }
 }
@@ -451,8 +446,8 @@ function animateWordsOut(words, timeline, at) {
 /* Decorative builds                                                          */
 /* -------------------------------------------------------------------------- */
 
-function buildNewShowerRain() {
-  const container = qs("#newShowerRain");
+function buildShowerRain() {
+  const container = qs("#showerRain");
   if (!container) return;
   container.innerHTML = "";
   const lanes = [8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 80, 86, 92];
@@ -470,7 +465,7 @@ function buildNewShowerRain() {
 }
 
 function updateShowerRainIntensity() {
-  const lines = qsa("#newShowerRain .water-line");
+  const lines = qsa("#showerRain .water-line");
   if (!lines.length) return;
 
   const durationProgress = clamp(
@@ -492,7 +487,7 @@ function updateShowerRainIntensity() {
     line.style.visibility = index < visibleCount ? "visible" : "hidden";
   });
 
-  const rain = qs("#newShowerRain");
+  const rain = qs("#showerRain");
   if (rain) rain.style.setProperty("--rain-intensity", intensity.toFixed(3));
 }
 
@@ -532,7 +527,7 @@ function buildMoneyRain() {
 }
 
 function setupLoopingDecorations() {
-  qsa("#newShowerRain .water-line").forEach((line, index) => {
+  qsa("#showerRain .water-line").forEach((line, index) => {
     const alpha = Number(line.style.getPropertyValue("--alpha")) || 0.62;
     const speed = Number.parseFloat(line.style.getPropertyValue("--speed")) || 1.05;
     const delay = -(index % 15) * 0.07;
@@ -670,7 +665,6 @@ function setShowerStep(step) {
   showerUI.step = step;
   const timeDial = qs("#timeDial");
   const flowDial = qs("#flowDial");
-  const label = qs("#activeControlLabel");
   const question = qs("#showerQuestion");
   const helper = qs("#showerHelper");
   const nextText = qs("#showerNextText");
@@ -711,7 +705,7 @@ function advanceShowerToQuestionTwo() {
 function bindShower() {
   qs("#showerNext").addEventListener("click", () => {
     if (showerUI.step === 1) return advanceShowerToQuestionTwo();
-    runGuidedTransition({ kicker: "ROUTINE SAVED", title: "NEXT: THE SINK", target: "#sinkChapter", lockAfter: true });
+    runGuidedTransition({ kicker: "ROUTINE SAVED", title: "NEXT: THE SINK", target: "#sinkChapter" });
   });
 }
 
@@ -736,7 +730,7 @@ function showDishMethodStep() {
 
   const method = qs("#dishMethod");
   const first = qs(".method-plate", method);
-  if (first) selectInGroup(method, first);
+  if (first) selectButtonInGroup(method, first);
   state.dishMethod = first?.dataset.value || "dishwasher";
   updateSink();
   updateEstimate();
@@ -753,11 +747,11 @@ function showDishMethodStep() {
     .fromTo(panel, { autoAlpha: 0, y: 36, scale: 0.97 }, { autoAlpha: 1, y: 0, scale: 1, duration: reducedMotion ? 0.01 : 0.4, ease: "power3.out" }, 0.03);
 }
 
-function bindPlates() {
+function bindSinkControls() {
   const group = qs("#dishFrequency");
   qsa(".plate", group).forEach(btn => {
     btn.addEventListener("click", () => {
-      selectInGroup(group, btn);
+      selectButtonInGroup(group, btn);
       state.dishesPerWeek = Number(btn.dataset.value);
       sinkUI.plateChosen = true;
       updateSink();
@@ -770,15 +764,14 @@ function bindPlates() {
     runGuidedTransition({
       kicker: "DISHES SAVED",
       title: "NEXT: LAUNDRY",
-      target: "#laundryChapter",
-      lockAfter: true
+      target: "#laundryChapter"
     });
   });
 
   const method = qs("#dishMethod");
   qsa(".method-plate", method).forEach(btn => {
     btn.addEventListener("click", () => {
-      selectInGroup(method, btn);
+      selectButtonInGroup(method, btn);
       state.dishMethod = btn.dataset.value;
       sinkUI.methodChosen = true;
       updateSink();
@@ -794,7 +787,7 @@ function bindLaundry() {
 
   qsa("button[data-value]", group).forEach(btn => {
     btn.addEventListener("click", () => {
-      selectInGroup(group, btn);
+      selectButtonInGroup(group, btn);
       state.laundryPerWeek = Number(btn.dataset.value);
       laundryUI.chosen = true;
       room?.classList.add("has-answer");
@@ -807,8 +800,8 @@ function bindLaundry() {
          chooses one of the circles do we give scrolling back to the pinned story. */
       unlockPageScroll();
       const laundryPin = ScrollTrigger.getById?.("laundry-pin");
-      if (laundryPin?.isActive) activateHeldTouch(laundryPin);
-      setGlobalScrollCueVisible(true, SCROLL_CUE_LABEL);
+      if (laundryPin?.isActive) enablePinnedTouchScroll();
+      setGlobalScrollCueVisible(true);
     });
   });
 }
@@ -885,10 +878,6 @@ function estimateSavingScenario() {
   return { monthlyCurrent, monthlySaving, annualSaving, annualLitresSaved, improved };
 }
 
-function formatCompactNumber(value, digits = 1) {
-  const rounded = Number(value.toFixed(digits));
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(digits);
-}
 
 function updatePersonalizedStory() {
   const saving = estimateSavingScenario();
@@ -987,7 +976,7 @@ function updateEstimate() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Locked automatic stories                                                    */
+/* Autoplay story chapters                                                    */
 /* -------------------------------------------------------------------------- */
 
 function updateStoryDots(root, activeIndex, progress = 0) {
@@ -998,7 +987,7 @@ function updateStoryDots(root, activeIndex, progress = 0) {
   });
 }
 
-function buildAutoStoryTimeline({ slides, progressRoot, stepDuration, onComplete }) {
+function buildAutoplayTimeline({ slides, progressRoot, stepDuration, onComplete }) {
   slides.forEach(slide => {
     const line = qs(".saving-main-line, .future-headline strong, .future-comparison-figure figcaption", slide);
     if (line) splitWords(line);
@@ -1081,13 +1070,11 @@ function playLockedStory({ slides, progress, stepDuration, kind, releaseCue, gat
     unlockPageScroll();
   };
 
-  const tl = buildAutoStoryTimeline({ slides, progressRoot: progress, stepDuration, onComplete });
-  if (isSaving) savingTimeline = tl;
-  else futureTimeline = tl;
+  const tl = buildAutoplayTimeline({ slides, progressRoot: progress, stepDuration, onComplete });
   tl.play(0);
 }
 
-function setupAutomaticStories() {
+function setupAutoplayStories() {
   const saving = qs("#savingChapter");
   const savingSlides = qsa(".saving-auto-slide", saving);
   const savingProgress = qs(".saving-auto-progress", saving);
@@ -1106,7 +1093,7 @@ function setupAutomaticStories() {
     anticipatePin: 0,
     invalidateOnRefresh: true,
     refreshPriority: 60,
-    onEnter: self => { activateHeldTouch(self); playLockedStory({
+    onEnter: self => { enablePinnedTouchScroll(); playLockedStory({
       slides: savingSlides,
       progress: savingProgress,
       stepDuration: AUTO_STORY_STEP,
@@ -1137,7 +1124,7 @@ function setupAutomaticStories() {
     anticipatePin: 0,
     invalidateOnRefresh: true,
     refreshPriority: 40,
-    onEnter: self => { activateHeldTouch(self); playLockedStory({
+    onEnter: self => { enablePinnedTouchScroll(); playLockedStory({
       slides: futureSlides,
       progress: futureProgress,
       stepDuration: FUTURE_STORY_STEP,
@@ -1152,38 +1139,31 @@ function setupAutomaticStories() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Held scroll stages — viewport stays put while scroll advances the story     */
+/* Pinned scroll stages — viewport stays put while scroll advances the story   */
 /* -------------------------------------------------------------------------- */
 
-function activateHeldTouch(self) {
+function enablePinnedTouchScroll() {
   if (!isTouchLike || !touchNormalizer || scrollGate.locked) return;
   /* The global normalizer already keeps iOS momentum short and synchronized.
-     Do not force-scroll to self.start here; pinning begins only at `top top`, so
-     the previous chapter cannot be visible when the held stage becomes active. */
+     Do not force-scroll at pin entry; the trigger begins at `top top`, so the
+     previous chapter cannot remain visible when the held stage becomes active. */
   touchNormalizer.enable?.();
 }
 
-function deactivateHeldTouch() {
-  /* Keep the same normalized, short-momentum scroll between chapters. Disabling
-     it on release allows the remainder of an iOS flick to shoot through sections. */
-}
 
-function stageCue() {
-  setGlobalScrollCueVisible(true);
-}
 
 function pinDistance(multiplier) {
   return () => `+=${Math.max(320, Math.round(window.innerHeight * multiplier))}`;
 }
 
 
-function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount, fps = MORPH_VIDEO_FPS, cueLabel, exitLabel, refreshPriority = 30 }) {
+function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount, fps = MORPH_VIDEO_FPS, refreshPriority = 30 }) {
   const morphChapter = qs(trigger);
   const morphVideo = qs(videoSelector);
   const morphShell = qs(shellSelector);
   if (!morphChapter || !morphVideo || !morphShell) return;
 
-  /* v46: keep the next morph canvas out of the paint tree until its own
+  /* Keep the next morph canvas out of the paint tree until its own
      ScrollTrigger actually starts. Safari can briefly expose the following
      section while settleAutoplayGate() moves the pinned Lake Urmia chapter to
      the end of its invisible release buffer. Visibility preserves layout and
@@ -1195,7 +1175,7 @@ function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount
   morphVideo.preload = "auto";
   gsap.set(morphShell, { y: 76, scale: 0.86, opacity: 0.72 });
 
-  /* v44: use one hardware-decoded H.264 MP4 instead of swapping 120 WebP files.
+  /* Use one hardware-decoded, all-intra H.264 MP4 instead of swapping image frames.
      The videos are all-intra (every frame is a keyframe), so arbitrary scroll
      positions are cheap to seek to. Only one seek is allowed in flight; if the
      finger moves again while Safari is decoding, we remember only the newest
@@ -1261,22 +1241,21 @@ function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount
         gsap.set(morphChapter, { visibility: "visible" });
         morphTouchActive = true;
         showStoryReleaseCue("#futureReleaseCue", false);
-        activateHeldTouch(self);
-        stageCue(self, cueLabel, exitLabel);
+        enablePinnedTouchScroll();
+        setGlobalScrollCueVisible(true);
       },
       onEnterBack: self => {
         gsap.set(morphChapter, { visibility: "visible" });
         morphTouchActive = true;
         showStoryReleaseCue("#futureReleaseCue", false);
-        activateHeldTouch(self);
-        stageCue(self, cueLabel, exitLabel);
+        enablePinnedTouchScroll();
+        setGlobalScrollCueVisible(true);
       },
-      onUpdate: self => stageCue(self, cueLabel, exitLabel),
+      onUpdate: self => setGlobalScrollCueVisible(true),
       onLeave: () => {
         playhead.progress = 1;
         renderMorph();
         morphTouchActive = false;
-        deactivateHeldTouch();
         setGlobalScrollCueVisible(false);
         if (id === "morph-nauyaca") setBrowserTheme("#070707");
       },
@@ -1284,7 +1263,6 @@ function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount
         playhead.progress = 0;
         renderMorph();
         morphTouchActive = false;
-        deactivateHeldTouch();
         setGlobalScrollCueVisible(false);
         /* Once the morph is fully back below its start point, hide it again so
            the previous pinned chapter can never reveal it during a handoff. */
@@ -1297,7 +1275,7 @@ function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount
   renderMorph();
   return morphTween;
 }
-function setupHeldStages() {
+function setupPinnedScrollStages() {
   if (!window.ScrollTrigger) return;
 
   const toggleLoops = (loops, playing) => loops.forEach(loop => playing ? loop.play() : loop.pause());
@@ -1341,21 +1319,19 @@ function setupHeldStages() {
       invalidateOnRefresh: true,
       refreshPriority: 100,
       onEnter: self => {
-        activateHeldTouch(self);
-        if (laundryUI.chosen) stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
+        enablePinnedTouchScroll();
+        if (laundryUI.chosen) setGlobalScrollCueVisible(true);
         else setGlobalScrollCueVisible(false);
       },
       onEnterBack: self => {
-        activateHeldTouch(self);
-        if (laundryUI.chosen) stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
+        enablePinnedTouchScroll();
+        if (laundryUI.chosen) setGlobalScrollCueVisible(true);
         else setGlobalScrollCueVisible(false);
       },
       onUpdate: self => {
-        if (laundryUI.chosen) stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
+        if (laundryUI.chosen) setGlobalScrollCueVisible(true);
         else setGlobalScrollCueVisible(false);
       },
-      onLeave: deactivateHeldTouch,
-      onLeaveBack: deactivateHeldTouch
     }
   })
     .fromTo(washer, { scale: 0.94, y: 14 }, { scale: 1.045, y: 0, ease: "none" }, 0)
@@ -1376,16 +1352,14 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 90,
-      onEnter: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onEnterBack: self => { activateHeldTouch(self); updateResultNumberFill(self.progress); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
+      onEnter: self => { enablePinnedTouchScroll(); updateResultNumberFill(self.progress); setGlobalScrollCueVisible(true); },
+      onEnterBack: self => { enablePinnedTouchScroll(); updateResultNumberFill(self.progress); setGlobalScrollCueVisible(true); },
       onUpdate: self => {
         /* Fill the litres themselves from bottom to top before the comparison card
            is fully revealed, so the number becomes part of the scroll interaction. */
         updateResultNumberFill(clamp(self.progress / 0.34));
-        stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL);
+        setGlobalScrollCueVisible(true);
       },
-      onLeave: deactivateHeldTouch,
-      onLeaveBack: deactivateHeldTouch
     }
   })
     .fromTo("#resultChapter .result-number", { scale: 0.92 }, { scale: 1, ease: "none" }, 0)
@@ -1406,11 +1380,11 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 80,
-      onEnter: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onEnterBack: self => { activateHeldTouch(self); setBrowserTheme("#061935"); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onUpdate: self => stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL),
-      onLeave: () => { deactivateHeldTouch(); setBrowserTheme("#f4efe7"); },
-      onLeaveBack: () => { deactivateHeldTouch(); setBrowserTheme("#f4efe7"); }
+      onEnter: self => { enablePinnedTouchScroll(); setBrowserTheme("#061935"); setGlobalScrollCueVisible(true); },
+      onEnterBack: self => { enablePinnedTouchScroll(); setBrowserTheme("#061935"); setGlobalScrollCueVisible(true); },
+      onUpdate: self => setGlobalScrollCueVisible(true),
+      onLeave: () => { setBrowserTheme("#f4efe7"); },
+      onLeaveBack: () => { setBrowserTheme("#f4efe7"); }
     }
   });
   glasses.forEach((glass, index) => {
@@ -1438,11 +1412,9 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 70,
-      onEnter: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onEnterBack: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onUpdate: self => stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL),
-      onLeave: deactivateHeldTouch,
-      onLeaveBack: deactivateHeldTouch
+      onEnter: self => { enablePinnedTouchScroll(); setGlobalScrollCueVisible(true); },
+      onEnterBack: self => { enablePinnedTouchScroll(); setGlobalScrollCueVisible(true); },
+      onUpdate: self => setGlobalScrollCueVisible(true),
     }
   })
     .fromTo(moneyTitle, { y: 30, scale: 0.94, opacity: 0.65 }, { y: 0, scale: 1, opacity: 1, ease: "none" }, 0)
@@ -1462,11 +1434,9 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 50,
-      onEnter: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onEnterBack: self => { activateHeldTouch(self); stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL); },
-      onUpdate: self => stageCue(self, SCROLL_CUE_LABEL, SCROLL_CUE_LABEL),
-      onLeave: deactivateHeldTouch,
-      onLeaveBack: deactivateHeldTouch
+      onEnter: self => { enablePinnedTouchScroll(); setGlobalScrollCueVisible(true); },
+      onEnterBack: self => { enablePinnedTouchScroll(); setGlobalScrollCueVisible(true); },
+      onUpdate: self => setGlobalScrollCueVisible(true),
     }
   });
   cards.forEach((card, i) => actionsTl.fromTo(card, { y: 45, opacity: 0 }, { y: 0, opacity: 1, ease: "power2.out" }, i * 0.23));
@@ -1478,8 +1448,6 @@ function setupHeldStages() {
     videoSelector: "#morphVideoVeluwe",
     shellSelector: "#morphChapterVeluwe .morph-frame-shell",
     frameCount: MORPH_FRAME_COUNT,
-    cueLabel: SCROLL_CUE_LABEL,
-    exitLabel: SCROLL_CUE_LABEL,
     refreshPriority: 35
   });
 
@@ -1489,8 +1457,6 @@ function setupHeldStages() {
     videoSelector: "#morphVideoNauyaca",
     shellSelector: "#morphChapterNauyaca .morph-frame-shell",
     frameCount: MORPH_FRAME_COUNT,
-    cueLabel: SCROLL_CUE_LABEL,
-    exitLabel: SCROLL_CUE_LABEL,
     refreshPriority: 30
   });
 
@@ -1531,9 +1497,8 @@ function setBrowserTheme(color) {
 }
 
 function preloadMorphVideos() {
-  /* v44: two short all-intra H.264 videos replace 240 independent WebP requests.
-     The native media pipeline can keep compressed video data and use the hardware
-     decoder instead of Safari repeatedly decoding/replacing DOM images. */
+  /* The all-intra H.264 morphs stay compressed in the native media pipeline and
+     use hardware-assisted seeking instead of repeatedly decoding/replacing images. */
   qsa("#morphVideoVeluwe, #morphVideoNauyaca").forEach(video => {
     video.preload = "auto";
     video.muted = true;
@@ -1548,7 +1513,7 @@ function resetInitialVisuals() {
 
   laundryUI.chosen = false;
   state.laundryPerWeek = null;
-  qsa("#laundryButtons button[data-value]").forEach(btn => btn.classList.remove("active"));
+  qsa("#laundryButtons button[data-value]").forEach(btn => btn.classList.remove("is-selected"));
   qs(".laundry-room")?.classList.remove("has-answer");
   const laundryHint = qs("#laundryAnswerHint");
   laundryHint?.setAttribute("aria-hidden", "false");
@@ -1567,14 +1532,14 @@ function init() {
   }
 
   setupShowerViewportSizing();
-  buildNewShowerRain();
+  buildShowerRain();
   buildFlyingGlasses();
   buildMoneyRain();
-  setupSmoothScrolling();
+  setupScrollBehavior();
 
   setShowerStep(1);
   bindShower();
-  bindPlates();
+  bindSinkControls();
   bindLaundry();
   updateSink();
   updateLaundry();
@@ -1585,9 +1550,9 @@ function init() {
 
   /* Build every chapter trigger first, then perform ONE ordered refresh. Explicit
      refreshPriority values follow DOM order, so every pin spacer is included before
-     positions below it are measured. This is the core v28 anti-jump rule. */
-  setupHeldStages();
-  setupAutomaticStories();
+     positions below it are measured. This prevents pin-spacer measurement jumps. */
+  setupPinnedScrollStages();
+  setupAutoplayStories();
   window.ScrollTrigger?.sort();
   window.ScrollTrigger?.refresh();
 
