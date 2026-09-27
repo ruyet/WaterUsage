@@ -503,7 +503,7 @@ p {
   transform: translate(-50%, -100%) rotate(var(--dial-angle));
   transform-origin: 50% 100%;
   border-radius: 99px;
-  background: rgb(13 13 13 / 51%);
+  background: rgb(13 13 13 / 40%);
   transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .dial-value {
@@ -3135,7 +3135,7 @@ body.interaction-locked {
 }
 .console-question {
   min-height: 194px;
-  justify-content: center;
+  justify-content: flex-start;
   padding-top: 5px;
   transition: none !important;
 }
@@ -3513,7 +3513,6 @@ body.interaction-locked {
 .answer-dial.is-active {
   opacity: 1 !important;
   filter: none !important;
-  /* transform: scale(1) !important; */
 }
 .answer-dial.is-active .dial-knob {
   box-shadow:
@@ -3915,3 +3914,505 @@ body.interaction-locked {
   }
 }
 \n\n/* ==========================================================================\n   v28 stability pass — one native scroll coordinate system\n   ========================================================================== */\n#smooth-wrapper,\n#smooth-content {\n  width: 100%;\n  overflow: visible !important;\n}\n\n/* Autoplay chapters are pinned by ScrollTrigger while their timed story plays.\n   The pin buffer is skipped invisibly at completion, so there is no dead scroll. */\n.saving-story,\n.future-auto-stage {\n  contain: layout paint;\n  isolation: isolate;\n}\n
+/* =========================================================
+   v29 — compact shower mixer + separate centered answer panel
+   ========================================================= */
+.chapter-shower .shower-console {
+  top: 421px;
+  min-height: 154px;
+  height: 154px;
+  padding: 12px 92px;
+  display: flex;
+  align-items: center;
+}
+
+.chapter-shower .console-question {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.chapter-shower .question-meta {
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.chapter-shower .console-question h2 {
+  max-width: 180px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.chapter-shower .console-question p {
+  max-width: 176px;
+  margin: 5px auto 0;
+  text-align: center;
+}
+
+.chapter-shower .answer-dial {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.chapter-shower .flow-dial {
+  left: 10px;
+}
+
+.chapter-shower .time-dial {
+  right: 10px;
+}
+
+/* The answer input is its own piece below the physical shower mixer. */
+.chapter-shower .shower-answer-panel {
+  position: absolute;
+  z-index: 24;
+  top: 592px;
+  left: 50%;
+  width: min(246px, calc(100% - 52px));
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chapter-shower .shower-answer-options {
+  width: 100%;
+  margin: 0;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.chapter-shower .shower-stepper {
+  width: 100%;
+  padding: 9px 11px 8px;
+  border: 1.5px solid rgba(13,13,13,.34);
+  border-radius: 16px;
+  background: rgba(255,255,255,.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 5px 0 rgba(13,13,13,.045);
+}
+
+.chapter-shower .stepper-row {
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  gap: 10px;
+  justify-items: center;
+}
+
+.chapter-shower .stepper-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.chapter-shower .stepper-readout {
+  width: 100%;
+  text-align: center;
+}
+
+.chapter-shower .stepper-readout strong {
+  font-size: 13px;
+  text-align: center;
+}
+
+.chapter-shower .stepper-readout span {
+  margin-top: 4px;
+  text-align: center;
+}
+
+.chapter-shower .shower-range {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.chapter-shower .range-ends {
+  width: 100%;
+}
+
+.chapter-shower .shower-next {
+  top: 711px;
+}
+
+@media (max-width: 600px) {
+  .chapter-shower .shower-console {
+    top: 414px;
+    min-height: 154px;
+    height: 154px;
+  }
+
+  .chapter-shower .shower-answer-panel {
+    top: 584px;
+  }
+
+  .chapter-shower .shower-next {
+    top: 706px;
+  }
+}
+
+@media (max-height: 760px) {
+  .chapter-shower .shower-fixture {
+    transform: scale(.92);
+    transform-origin: top center;
+  }
+
+  .chapter-shower .shower-console {
+    top: 376px;
+    min-height: 146px;
+    height: 146px;
+  }
+
+  .chapter-shower .shower-answer-panel {
+    top: 536px;
+    width: min(236px, calc(100% - 48px));
+  }
+
+  .chapter-shower .shower-next {
+    top: 650px;
+  }
+}
+
+
+/* =========================================================
+   v30 — compact knob area + resilient closing screen
+   ========================================================= */
+
+/* DURATION / FREQUENCY captions are gone. The dial only needs room for the
+   actual knob now, so the physical mixer can be more compact. */
+.chapter-shower .dial-caption {
+  display: none !important;
+}
+
+.chapter-shower .answer-dial {
+  width: 86px;
+  height: 88px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.chapter-shower .dial-scale {
+  top: 4px;
+}
+
+.chapter-shower .dial-knob {
+  top: 10px;
+}
+
+.chapter-shower .answer-dial.is-active:before {
+  top: 0;
+}
+
+.chapter-shower .shower-console {
+  top: 428px;
+  min-height: 132px;
+  height: 132px;
+  padding: 10px 92px;
+}
+
+.chapter-shower .console-question {
+  min-height: 0;
+  height: 100%;
+}
+
+.chapter-shower .console-question h2 {
+  max-width: 182px;
+}
+
+.chapter-shower .shower-answer-panel {
+  top: 576px;
+}
+
+.chapter-shower .shower-next {
+  top: 695px;
+}
+
+@media (max-width: 600px) {
+  .chapter-shower .shower-console {
+    top: 421px;
+    min-height: 132px;
+    height: 132px;
+  }
+
+  .chapter-shower .shower-answer-panel {
+    top: 569px;
+  }
+
+  .chapter-shower .shower-next {
+    top: 690px;
+  }
+}
+
+@media (max-height: 760px) {
+  .chapter-shower .shower-console {
+    top: 382px;
+    min-height: 126px;
+    height: 126px;
+  }
+
+  .chapter-shower .shower-answer-panel {
+    top: 522px;
+  }
+
+  .chapter-shower .shower-next {
+    top: 637px;
+  }
+}
+
+/* Final screen: content is visible without JavaScript. GSAP only enhances the
+   entrance, which prevents another empty-black-screen failure mode. */
+.chapter-end {
+  height: 100svh !important;
+  min-height: 100svh !important;
+  background: #070707;
+}
+
+.chapter-end .end-room {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  width: 100%;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: max(38px, env(safe-area-inset-top)) 24px max(34px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 39%, rgba(36,140,255,.14), transparent 27%),
+    #070707 !important;
+  color: #fff;
+  text-align: center;
+}
+
+.end-orbit {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  flex: 0 0 74px;
+  border: 2px solid rgba(255,255,255,.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px rgba(36,140,255,.08);
+}
+
+.end-orbit::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 28px;
+  transform: translate(-50%, -48%) rotate(45deg);
+  border-radius: 65% 35% 65% 35%;
+  background: linear-gradient(145deg, #79cfff, #248cff 62%, #1769ff);
+  box-shadow: 0 5px 18px rgba(36,140,255,.34);
+}
+
+.end-orbit i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lime);
+}
+.end-orbit i:nth-child(1) { left: 7px; top: 15px; }
+.end-orbit i:nth-child(2) { right: 6px; top: 24px; }
+.end-orbit i:nth-child(3) { left: 19px; bottom: 5px; }
+
+.chapter-end .end-message {
+  width: min(88vw, 350px);
+  margin: 0 auto;
+}
+
+.chapter-end .end-kicker {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .2em;
+  color: var(--lime);
+}
+
+.chapter-end .end-message h2 {
+  margin: 0;
+  color: #fff;
+  font-family: "Archivo Black", Inter, sans-serif;
+  font-size: clamp(34px, 11vw, 50px);
+  line-height: .92;
+  letter-spacing: -.055em;
+}
+
+.chapter-end .end-message p {
+  max-width: 310px;
+  margin: 18px auto 0;
+  color: rgba(255,255,255,.72);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.chapter-end #restartBtn {
+  position: static !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 176px;
+  height: 52px;
+  padding: 0 20px;
+  transform: none !important;
+  border: 0;
+  border-radius: 16px;
+  background: #fff;
+  color: #070707;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  box-shadow: 0 6px 0 rgba(255,255,255,.13);
+  cursor: pointer;
+}
+
+.chapter-end #restartBtn i {
+  font-style: normal;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.chapter-end #restartBtn:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 4px 0 rgba(255,255,255,.11);
+}
+
+/* =========================================================
+   v31 — iPhone touch controls + required laundry answer
+   ========================================================= */
+
+/* Make the native range a proper mobile control. The JS scroll gate explicitly
+   ignores touchmove on this element, so Safari can keep ownership of the drag. */
+.chapter-shower .shower-range {
+  height: 34px !important;
+  margin-top: 4px !important;
+  touch-action: none !important;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.chapter-shower .shower-range::-webkit-slider-runnable-track {
+  height: 6px;
+}
+.chapter-shower .shower-range::-webkit-slider-thumb {
+  width: 27px;
+  height: 27px;
+  margin-top: -11px;
+  border-width: 2px;
+  box-shadow: 0 3px 0 rgba(13,13,13,.12), 0 0 0 5px rgba(36,140,255,.08);
+}
+.chapter-shower .shower-range::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+}
+
+/* The rain density is controlled by JS from both shower answers. Keeping hidden
+   lines in the same layout means changing the amount never shifts the fixture. */
+.new-shower-rain .water-line {
+  transition: visibility 0s linear;
+}
+
+/* Laundry cannot be skipped anymore. Give the controls an explicit visual cue
+   until one of the three answer pills is deliberately tapped. */
+.laundry-answer-hint {
+  position: absolute;
+  z-index: 24;
+  left: 50%;
+  top: 226px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  color: var(--ink);
+  text-align: center;
+}
+.laundry-answer-hint span {
+  padding: 6px 9px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 4px 0 rgba(13,13,13,.06);
+  font-size: 7px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .11em;
+  white-space: nowrap;
+}
+.laundry-answer-hint i {
+  font-style: normal;
+  font-size: 20px;
+  line-height: .9;
+  font-weight: 900;
+  animation: laundry-answer-bounce 1s ease-in-out infinite;
+}
+@keyframes laundry-answer-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+.laundry-room.has-answer .laundry-answer-hint {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* The main litres value fills from the bottom in the same deep blue used by the
+   visualization chapters. JS updates --litre-fill with ScrollTrigger progress. */
+#personalLitres {
+  --litre-fill: 0%;
+  display: inline-block;
+  color: transparent;
+  background: linear-gradient(
+    to top,
+    #061935 0%,
+    #061935 var(--litre-fill),
+    rgba(6,25,53,.12) var(--litre-fill),
+    rgba(6,25,53,.12) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Reduce rubber-band propagation around pinned chapters on touch hardware. GSAP's
+   normalizeScroll in script.js handles the actual iPhone momentum/pin handoff. */
+@media (pointer: coarse) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  .chapter-laundry,
+  .chapter-result,
+  .chapter-glasses,
+  .chapter-money,
+  .chapter-actions,
+  .saving-story,
+  .future-auto-stage,
+  .future-morph-chapter {
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-height: 760px) {
+  .laundry-answer-hint {
+    top: 204px;
+  }
+}

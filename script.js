@@ -1,11 +1,11 @@
-/* Water Story v28 — deterministic chapter pins + overscroll-safe autoplay gates */
+/* Water Story v31 — touch-safe controls + iPhone-stable held chapters */
 
 const state = {
   showerMinutes: 2,
   showersPerWeek: 1,
   dishesPerWeek: 1,
   dishMethod: "dishwasher",
-  laundryPerWeek: 1
+  laundryPerWeek: null
 };
 
 const showerUI = {
@@ -19,6 +19,10 @@ const sinkUI = {
   plateChosen: true,
   methodStepVisible: false,
   methodChosen: true
+};
+
+const laundryUI = {
+  chosen: false
 };
 
 /* Easy pacing controls. Autoplay is intentionally slower than v24. */
@@ -41,6 +45,12 @@ if (!window.gsap) {
 const plugins = [window.ScrollTrigger].filter(Boolean);
 if (plugins.length) gsap.registerPlugin(...plugins);
 
+const isTouchLike = Boolean(
+  window.matchMedia?.("(pointer: coarse)")?.matches ||
+  (navigator.maxTouchPoints || 0) > 1
+);
+let touchNormalizer = null;
+
 let activeTransition = null;
 let savingTimeline = null;
 let futureTimeline = null;
@@ -62,6 +72,12 @@ const blockedKeys = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home
 
 function blockManualScroll(event) {
   if (!scrollGate.locked) return;
+
+  /* The shower screen itself stays locked, but iOS must be allowed to own the
+     native range gesture. Preventing touchmove here was the reason the slider
+     could be tapped but not held and dragged on an iPhone. */
+  if (event.type === "touchmove" && event.target?.closest?.(".shower-range")) return;
+
   if (event.type === "keydown") {
     if (!blockedKeys.has(event.key)) return;
     if (event.target?.closest?.("button, input, select, textarea, [role='button']")) return;
@@ -77,6 +93,7 @@ function lockPageScroll() {
   /* Gate only real user input. Programmatic chapter handoffs can still reposition
      the document while the overlay or pinned autoplay stage hides that movement. */
   scrollGate.locked = true;
+  touchNormalizer?.disable?.();
   document.documentElement.classList.add("interaction-locked");
   document.body.classList.add("interaction-locked");
 }
@@ -85,19 +102,31 @@ function unlockPageScroll() {
   scrollGate.locked = false;
   document.documentElement.classList.remove("interaction-locked");
   document.body.classList.remove("interaction-locked");
+  touchNormalizer?.enable?.();
 }
 
 function setupSmoothScrolling() {
   if (!window.ScrollTrigger) return;
 
-  /* v28 intentionally uses native document scrolling on every device. ScrollSmoother
-     transforms the whole page, which is useful for free-scrolling sites but adds a
-     second scroll coordinate system to a story made mostly from pinned chapters.
-     Native scroll + ScrollTrigger keeps one source of truth and removes handoff jumps. */
   ScrollTrigger.config({
     ignoreMobileResize: true,
+    limitCallbacks: true,
     autoRefreshEvents: "visibilitychange,DOMContentLoaded,load"
   });
+
+  /* Real iPhones keep native momentum on a separate scrolling thread. A fast flick
+     can therefore enter a pinned chapter and continue through its whole pin before
+     ScrollTrigger visibly settles. normalizeScroll keeps touch scrolling and the
+     pinned GSAP story on the same thread. It is deliberately enabled only on real
+     coarse/touch devices, so desktop/mobile DevTools keeps its existing behaviour. */
+  if (isTouchLike && !reducedMotion && ScrollTrigger.normalizeScroll) {
+    touchNormalizer = ScrollTrigger.normalizeScroll({
+      allowNestedScroll: true,
+      lockAxis: true,
+      ignore: ".shower-range",
+      momentum: self => Math.min(0.18, Math.max(0.06, Math.abs(self.velocityY || 0) / 9000))
+    });
+  }
 }
 
 function alignTo(target) {
@@ -269,7 +298,7 @@ function buildNewShowerRain() {
   if (!container) return;
   container.innerHTML = "";
   const lanes = [8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 80, 86, 92];
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 48; i++) {
     const line = document.createElement("i");
     line.className = "water-line";
     const lane = lanes[i % lanes.length];
@@ -280,6 +309,33 @@ function buildNewShowerRain() {
     line.style.setProperty("--alpha", `${0.34 + Math.random() * 0.42}`);
     container.appendChild(line);
   }
+}
+
+function updateShowerRainIntensity() {
+  const lines = qsa("#newShowerRain .water-line");
+  if (!lines.length) return;
+
+  const durationProgress = clamp(
+    (state.showerMinutes - showerUI.duration.min) /
+      (showerUI.duration.max - showerUI.duration.min)
+  );
+  const frequencyProgress = clamp(
+    (state.showersPerWeek - showerUI.frequency.min) /
+      (showerUI.frequency.max - showerUI.frequency.min)
+  );
+
+  /* Minutes build roughly the first 60% of the shower density. Question two then
+     adds the remaining density, so moving either answer upward always adds water
+     instead of the rain becoming weaker when the question changes. */
+  const intensity = clamp(0.18 + durationProgress * 0.42 + frequencyProgress * 0.40);
+  const visibleCount = Math.round(7 + intensity * (lines.length - 7));
+
+  lines.forEach((line, index) => {
+    line.style.visibility = index < visibleCount ? "visible" : "hidden";
+  });
+
+  const rain = qs("#newShowerRain");
+  if (rain) rain.style.setProperty("--rain-intensity", intensity.toFixed(3));
 }
 
 function buildFlyingGlasses() {
@@ -386,6 +442,7 @@ function updateShowerValue(value) {
   const readout = qs("#showerAnswerOptions .stepper-readout strong");
   if (range) range.value = String(value);
   if (readout) readout.textContent = showerUI.step === 1 ? `${value} MIN` : `${value}× / WEEK`;
+  updateShowerRainIntensity();
   updateEstimate();
 }
 
@@ -411,6 +468,40 @@ function renderShowerAnswerControl() {
 
   const range = qs("input[type='range']", group);
   range.addEventListener("input", () => updateShowerValue(range.value));
+  range.addEventListener("change", () => updateShowerValue(range.value));
+
+  /* iOS fallback: explicitly translate the finger position into a range value.
+     This keeps the control draggable even on Safari versions where a native range
+     inside a globally scroll-gated page only reacts to taps. */
+  let activePointer = null;
+  const updateRangeFromPointer = event => {
+    const rect = range.getBoundingClientRect();
+    if (!rect.width) return;
+    const progress = clamp((event.clientX - rect.left) / rect.width);
+    const raw = config.min + progress * (config.max - config.min);
+    const stepped = Math.round((raw - config.min) / config.step) * config.step + config.min;
+    updateShowerValue(clamp(stepped, config.min, config.max));
+  };
+  range.addEventListener("pointerdown", event => {
+    activePointer = event.pointerId;
+    range.setPointerCapture?.(event.pointerId);
+    updateRangeFromPointer(event);
+  });
+  range.addEventListener("pointermove", event => {
+    if (activePointer !== event.pointerId) return;
+    event.preventDefault();
+    updateRangeFromPointer(event);
+  });
+  const finishRangeDrag = event => {
+    if (activePointer !== event.pointerId) return;
+    range.releasePointerCapture?.(event.pointerId);
+    activePointer = null;
+  };
+  range.addEventListener("pointerup", finishRangeDrag);
+  range.addEventListener("pointercancel", finishRangeDrag);
+
+  range.addEventListener("touchstart", event => event.stopPropagation(), { passive: true });
+  range.addEventListener("touchmove", event => event.stopPropagation(), { passive: true });
   qs(".stepper-minus", group).addEventListener("click", () => updateShowerValue(Number(range.value) - config.step));
   qs(".stepper-plus", group).addEventListener("click", () => updateShowerValue(Number(range.value) + config.step));
 
@@ -429,23 +520,17 @@ function setShowerStep(step) {
   if (step === 1) {
     setDialActive(timeDial, true);
     setDialActive(flowDial, false);
-    // label.textContent = "SET YOUR ANSWER";
     question.textContent = "How long is your usual shower?";
     helper.textContent = "Use the slider or the − / + buttons.";
     nextText.textContent = "NEXT QUESTION";
-    qs("#timeCaption").textContent = "DURATION";
-    qs("#flowCaption").textContent = "";
     qs("#flowValue").textContent = "—";
     setDialVisual("timeDial", state.showerMinutes, showerUI.duration, "timeValue", v => `${v}<span> min</span>`);
   } else {
     setDialActive(timeDial, false);
     setDialActive(flowDial, true);
-    // label.textContent = "SET YOUR ANSWER";
     question.textContent = "How many times a week do you shower?";
     helper.textContent = "Use the slider or the − / + buttons.";
     nextText.textContent = "NEXT: THE SINK";
-    qs("#timeCaption").textContent = "DURATION";
-    qs("#flowCaption").textContent = "FREQUENCY";
     setDialVisual("flowDial", state.showersPerWeek, showerUI.frequency, "flowValue", v => `${v}<span>× / week</span>`);
   }
 
@@ -528,8 +613,7 @@ function bindPlates() {
       kicker: "DISHES SAVED",
       title: "NEXT: LAUNDRY",
       target: "#laundryChapter",
-      lockAfter: false,
-      releaseCue: "SCROLL TO RUN THE WASH"
+      lockAfter: true
     });
   });
 
@@ -547,12 +631,24 @@ function bindPlates() {
 
 function bindLaundry() {
   const group = qs("#laundryButtons");
+  const room = qs(".laundry-room");
+  const hint = qs("#laundryAnswerHint");
+
   qsa("button[data-value]", group).forEach(btn => {
     btn.addEventListener("click", () => {
       selectInGroup(group, btn);
       state.laundryPerWeek = Number(btn.dataset.value);
+      laundryUI.chosen = true;
+      room?.classList.add("has-answer");
+      hint?.setAttribute("aria-hidden", "true");
+      if (hint) gsap.to(hint, { autoAlpha: 0, y: -5, duration: reducedMotion ? 0.01 : 0.22, overwrite: true });
       updateLaundry();
       updateEstimate();
+
+      /* The laundry chapter is a required answer. Only after the user deliberately
+         chooses one of the circles do we give scrolling back to the pinned story. */
+      unlockPageScroll();
+      setGlobalScrollCueVisible(true, "SCROLL TO RUN THE WASH");
     });
   });
 }
@@ -568,7 +664,8 @@ function updateSink() {
 
 function updateLaundry() {
   const water = qs("#washerWater");
-  const height = 18 + clamp(state.laundryPerWeek / 4, 0, 1) * 54;
+  const laundryValue = Number(state.laundryPerWeek) || 0;
+  const height = 18 + clamp(laundryValue / 4, 0, 1) * 54;
   gsap.to(water, { height: `${height}%`, duration: reducedMotion ? 0.01 : 0.58, ease: "power3.out", overwrite: "auto" });
 }
 
@@ -580,8 +677,15 @@ function estimateDailyLitres() {
   const shower = (state.showerMinutes * 8 * state.showersPerWeek) / 7;
   const dishPerSession = { dishwasher: 10, basin: 18, running: 34 }[state.dishMethod];
   const dishes = (dishPerSession * state.dishesPerWeek) / 7;
-  const laundry = (50 * state.laundryPerWeek) / 7;
+  const laundry = (50 * (Number(state.laundryPerWeek) || 0)) / 7;
   return Math.round(shower + dishes + laundry + 28);
+}
+
+function updateResultNumberFill(progress) {
+  const value = qs("#personalLitres");
+  if (!value) return;
+  const fill = Math.round(clamp(progress) * 100);
+  value.style.setProperty("--litre-fill", `${fill}%`);
 }
 
 function updateEstimate() {
@@ -789,6 +893,25 @@ function setupHeldStages() {
   /* Pin the CHAPTER itself. ScrollTrigger then creates exactly the scroll space
      the animation needs, instead of us faking it with 185svh sections. */
 
+  ScrollTrigger.create({
+    id: "laundry-answer-gate",
+    trigger: "#laundryChapter",
+    start: "top 2px",
+    refreshPriority: 105,
+    onEnter: () => {
+      if (!laundryUI.chosen) {
+        lockPageScroll();
+        setGlobalScrollCueVisible(false);
+      }
+    },
+    onEnterBack: () => {
+      if (!laundryUI.chosen) {
+        lockPageScroll();
+        setGlobalScrollCueVisible(false);
+      }
+    }
+  });
+
   const washer = qs(".washer");
   const load = qs(".washer-load");
   gsap.timeline({
@@ -826,9 +949,14 @@ function setupHeldStages() {
       scrub: reducedMotion ? false : 0.34,
       invalidateOnRefresh: true,
       refreshPriority: 90,
-      onEnter: self => stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"),
-      onEnterBack: self => stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"),
-      onUpdate: self => stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE")
+      onEnter: self => { updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
+      onEnterBack: self => { updateResultNumberFill(self.progress); stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE"); },
+      onUpdate: self => {
+        /* Fill the litres themselves from bottom to top before the comparison card
+           is fully revealed, so the number becomes part of the scroll interaction. */
+        updateResultNumberFill(clamp(self.progress / 0.72));
+        stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE");
+      }
     }
   })
     .fromTo("#resultChapter .result-number", { scale: 0.92 }, { scale: 1, ease: "none" }, 0)
@@ -943,20 +1071,31 @@ function setupHeldStages() {
 
   const endHeading = qs("#endMessage h2");
   const endWords = splitWords(endHeading);
-  const endTl = gsap.timeline({ paused: true });
-  endTl.fromTo(qs(".end-kicker"), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power2.out" })
-    .add(() => { }, 0.1);
-  animateWordsIn(endWords, endTl, 0.14);
-  endTl.fromTo(qs("#endMessage p"), { y: 22, opacity: 0 }, { y: 0, opacity: 0.72, duration: 0.45, ease: "power2.out" }, 0.55)
-    .fromTo(qs("#restartBtn"), { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, pointerEvents: "auto", duration: 0.4, ease: "back.out(1.4)" }, 0.82);
 
   ScrollTrigger.create({
     id: "end-trigger",
     trigger: "#endChapter",
-    start: "top top",
+    start: "top 82%",
     refreshPriority: 10,
     once: true,
-    onEnter: () => { setBrowserTheme("#070707"); setGlobalScrollCueVisible(false); endTl.play(0); }
+    onEnter: () => {
+      setBrowserTheme("#070707");
+      setGlobalScrollCueVisible(false);
+
+      /* Keep the closing screen visible by default. The animation is created only
+         after the section is actually reached, so a missed trigger can never leave
+         the user staring at an empty black screen. */
+      const endTl = gsap.timeline();
+      endTl.from(qs(".end-orbit"), { scale: 0.72, rotate: -16, autoAlpha: 0, duration: reducedMotion ? 0.01 : 0.55, ease: "back.out(1.5)" })
+        .from(qs(".end-kicker"), { y: 14, autoAlpha: 0, duration: reducedMotion ? 0.01 : 0.3, ease: "power2.out" }, "-=0.28");
+      endTl.fromTo(endWords,
+        { yPercent: 120, rotate: 2, opacity: 0 },
+        { yPercent: 0, rotate: 0, opacity: 1, duration: reducedMotion ? 0.01 : 0.5, stagger: reducedMotion ? 0 : 0.035, ease: "power3.out" },
+        "-=0.08"
+      );
+      endTl.from(qs("#endMessage p"), { y: 18, autoAlpha: 0, duration: reducedMotion ? 0.01 : 0.4, ease: "power2.out" }, "-=0.16")
+        .from(qs("#restartBtn"), { y: 16, scale: 0.96, autoAlpha: 0, duration: reducedMotion ? 0.01 : 0.42, ease: "back.out(1.5)" }, "-=0.12");
+    }
   });
 }
 
@@ -977,12 +1116,26 @@ function resetInitialVisuals() {
   setGlobalScrollCueVisible(false);
   setSinkNextVisible(true, "NEXT QUESTION");
   gsap.set("#dishMethodPanel", { autoAlpha: 0, y: 36, scale: 0.97 });
-  gsap.set("#restartBtn", { autoAlpha: 0, pointerEvents: "none" });
+
+  laundryUI.chosen = false;
+  state.laundryPerWeek = null;
+  qsa("#laundryButtons button[data-value]").forEach(btn => btn.classList.remove("active"));
+  qs(".laundry-room")?.classList.remove("has-answer");
+  const laundryHint = qs("#laundryAnswerHint");
+  laundryHint?.setAttribute("aria-hidden", "false");
+  if (laundryHint) gsap.set(laundryHint, { autoAlpha: 1, y: 0 });
+
+  updateResultNumberFill(0);
+  updateShowerRainIntensity();
 }
 
 function init() {
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   window.scrollTo(0, 0);
+  if (new URLSearchParams(window.location.search).has("restart")) {
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+    setTimeout(() => window.scrollTo(0, 0), 80);
+  }
 
   buildNewShowerRain();
   buildFlyingGlasses();
@@ -1012,7 +1165,12 @@ function init() {
 
   qs("#restartBtn")?.addEventListener("click", () => {
     unlockPageScroll();
-    window.location.reload();
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("restart", Date.now());
+    url.hash = "showerStart";
+    window.location.replace(url.toString());
   });
 
   requestAnimationFrame(() => {

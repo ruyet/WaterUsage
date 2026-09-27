@@ -1,4 +1,4 @@
-# Water Story Mobile v28
+# Water Story Mobile v29
 
 ## Stability changes
 
@@ -19,3 +19,10 @@ const AUTO_GATE_VIEWPORTS = 2.2;
 ```
 
 `AUTO_GATE_VIEWPORTS` is a safety buffer, not visible scroll distance. Do not reduce it too aggressively; it protects autoplay sections against fast-scroll overshoot.
+
+## v29 shower layout refinement
+
+- The shower answer stepper/slider is now a real standalone panel below the shower mixer instead of living inside the mixer DOM.
+- The mixer is shorter, so the two visual knobs and the question use the available space more efficiently.
+- The question, readout, +/- buttons, slider, and labels are horizontally centered for a cleaner mobile layout.
+- Shower behavior and answer logic are unchanged; this version only restructures the first-screen layout.

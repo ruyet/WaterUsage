@@ -128,7 +128,6 @@
                     <span class="dial-marker"></span>
                     <span class="dial-value" id="flowValue">—</span>
                   </div>
-                  <span class="dial-caption" id="flowCaption"></span>
                   <span class="dial-action" id="flowAction">Q2</span>
                 </div>
                 <div
@@ -142,13 +141,7 @@
                     >
                   </div>
                   <h2 id="showerQuestion">How long is your usual shower?</h2>
-                  <p id="showerHelper">Tap one of the answers below.</p>
-                  <div
-                    aria-label="Choose your shower answer"
-                    class="shower-answer-options"
-                    id="showerAnswerOptions"
-                    role="group"
-                  ></div>
+                  <p id="showerHelper">Adjust your answer below.</p>
                 </div>
                 <div
                   aria-hidden="true"
@@ -165,9 +158,16 @@
                       >10<span> min</span></span
                     >
                   </div>
-                  <span class="dial-caption" id="timeCaption">DURATION</span>
                   <span class="dial-action" id="timeAction">TURN</span>
                 </div>
+              </div>
+              <div class="shower-answer-panel" id="showerAnswerPanel">
+                <div
+                  aria-label="Choose your shower answer"
+                  class="shower-answer-options"
+                  id="showerAnswerOptions"
+                  role="group"
+                ></div>
               </div>
               <button class="shower-next" id="showerNext" type="button">
                 <span id="showerNextText">NEXT QUESTION</span>
@@ -467,9 +467,12 @@
               <div class="laundry-copy">
                 <h2>How many times a week do you do laundry?</h2>
               </div>
+              <div class="laundry-answer-hint" id="laundryAnswerHint" aria-hidden="false">
+                <span>CHOOSE YOUR ANSWER</span><i aria-hidden="true">↓</i>
+              </div>
               <div class="washer">
                 <div class="washer-panel" id="laundryButtons">
-                  <button class="active" data-value="1">1×</button>
+                  <button data-value="1">1×</button>
                   <button data-value="2.5">2 to 3×</button>
                   <button data-value="4">4+×</button>
                   <div aria-hidden="true" class="washer-dial"></div>
@@ -769,19 +772,19 @@
               </div>
             </section>
           </section>
-          <!-- 11 ending: fixed composition, fade only -->
+          <!-- 11 ending -->
           <section class="chapter chapter-end" id="endChapter">
             <div class="sticky end-room">
+              <div class="end-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
               <div class="end-message" id="endMessage">
-                <span class="end-kicker">ONE LAST THING</span>
-                <h2>PLEASE THINK CAREFULLY ABOUT YOUR WATER USAGE.</h2>
+                <span class="end-kicker">KEEP IT FLOWING</span>
+                <h2>LET’S KEEP OUR WORLD ALIVE TOGETHER.</h2>
                 <p>
-                  Small choices in your daily routine can save thousands of
-                  litres over time. Use what you just saw the next time you
-                  shower, wash dishes or do laundry.
+                  Waste less water. Enjoy life. Small choices in your everyday
+                  routine help protect the water we all depend on.
                 </p>
               </div>
-              <button id="restartBtn">START AGAIN</button>
+              <button id="restartBtn" type="button"><span>START OVER</span><i aria-hidden="true">↻</i></button>
             </div>
           </section>
         </main>
