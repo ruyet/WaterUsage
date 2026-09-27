@@ -1178,9 +1178,17 @@ function pinDistance(multiplier) {
 
 
 function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount, fps = MORPH_VIDEO_FPS, cueLabel, exitLabel, refreshPriority = 30 }) {
+  const morphChapter = qs(trigger);
   const morphVideo = qs(videoSelector);
   const morphShell = qs(shellSelector);
-  if (!morphVideo || !morphShell) return;
+  if (!morphChapter || !morphVideo || !morphShell) return;
+
+  /* v46: keep the next morph canvas out of the paint tree until its own
+     ScrollTrigger actually starts. Safari can briefly expose the following
+     section while settleAutoplayGate() moves the pinned Lake Urmia chapter to
+     the end of its invisible release buffer. Visibility preserves layout and
+     ScrollTrigger measurements, but prevents that one-frame/one-second flash. */
+  gsap.set(morphChapter, { visibility: "hidden" });
 
   morphVideo.muted = true;
   morphVideo.playsInline = true;
@@ -1250,12 +1258,14 @@ function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount
       invalidateOnRefresh: true,
       refreshPriority,
       onEnter: self => {
+        gsap.set(morphChapter, { visibility: "visible" });
         morphTouchActive = true;
         showStoryReleaseCue("#futureReleaseCue", false);
         activateHeldTouch(self);
         stageCue(self, cueLabel, exitLabel);
       },
       onEnterBack: self => {
+        gsap.set(morphChapter, { visibility: "visible" });
         morphTouchActive = true;
         showStoryReleaseCue("#futureReleaseCue", false);
         activateHeldTouch(self);
@@ -1276,6 +1286,9 @@ function setupMorphStage({ id, trigger, videoSelector, shellSelector, frameCount
         morphTouchActive = false;
         deactivateHeldTouch();
         setGlobalScrollCueVisible(false);
+        /* Once the morph is fully back below its start point, hide it again so
+           the previous pinned chapter can never reveal it during a handoff. */
+        gsap.set(morphChapter, { visibility: "hidden" });
         if (id === "morph-nauyaca") setBrowserTheme("#f4efe7");
       }
     }

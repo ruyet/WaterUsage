@@ -46,3 +46,7 @@ Easy values in `script.js`:
 
 ## v45
 Replaced both morph sources with the user-supplied higher-quality MP4s. They are re-encoded as H.264/yuv420p all-intra video (every frame a keyframe) at their native 25 fps / 120 frames so the existing iOS scroll-scrub seeking remains responsive while avoiding extra quality loss. Posters were regenerated from the new videos.
+
+
+## v46
+Prevents Safari from briefly flashing the upcoming morph canvas during the Lake Urmia autoplay-to-scroll handoff. Morph chapters remain laid out for ScrollTrigger but are paint-hidden until their own trigger actually starts.
