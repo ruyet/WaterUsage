@@ -19,6 +19,15 @@ function progress(id){
 function selectInGroup(container, button){
   [...container.querySelectorAll("button")].forEach(b=>b.classList.remove("active"));
   button.classList.add("active");
+
+  if(container.id === "dishFrequency"){
+    [...container.querySelectorAll(".plate")].forEach(plate=>{
+      plate.querySelector(".plate-fill")?.setAttribute(
+        "fill",
+        plate.classList.contains("active") ? "#c9ff38" : "#f8f4ed"
+      );
+    });
+  }
 }
 
 const showerUI = {
@@ -26,6 +35,12 @@ const showerUI = {
   transitioning: false,
   timeValues: [2, 5, 10, 20],
   flowValues: [3, 5, 7, 10]
+};
+
+const sinkUI = {
+  plateChosen: false,
+  methodStepVisible: false,
+  methodChosen: false
 };
 
 function dialAngleForIndex(index, count){
@@ -120,18 +135,23 @@ function bindAnswerDial({id, values, stateKey, valueId, formatter}){
 function buildNewShowerRain(){
   const container = document.getElementById("newShowerRain");
   container.innerHTML = "";
-  const lanes = [9,16,23,30,37,44,51,58,65,72,79,86,93];
-  for(let i=0;i<28;i++){
+
+  // Keep every stream vertical. The shower head itself already communicates
+  // the width of the spray, so the falling water should feel calm and natural.
+  const lanes = [8,14,20,26,32,38,44,50,56,62,68,74,80,86,92];
+  for(let i=0;i<30;i++){
     const line = document.createElement("i");
     line.className = "water-line";
     const lane = lanes[i % lanes.length];
-    const centerOffset = (lane - 50) / 50;
-    line.style.left = `${lane + (Math.random()*2.4-1.2)}%`;
-    line.style.setProperty("--length", `${62 + Math.random()*74}px`);
-    line.style.setProperty("--speed", `${.88 + Math.random()*.72}s`);
-    line.style.setProperty("--delay", `${-Math.random()*1.4}s`);
-    line.style.setProperty("--alpha", `${.36 + Math.random()*.48}`);
-    line.style.setProperty("--tilt", `${centerOffset*8}deg`);
+
+    line.style.left = `${lane + (Math.random()*1.4 - .7)}%`;
+    line.style.setProperty("--drop-width", `${1.5 + Math.random()*.8}px`);
+    line.style.setProperty("--length", `${52 + Math.random()*62}px`);
+    line.style.setProperty("--speed", `${.9 + Math.random()*.45}s`);
+    line.style.setProperty("--delay", `${-Math.random()*1.3}s`);
+    line.style.setProperty("--alpha", `${.34 + Math.random()*.42}`);
+    line.style.setProperty("--tilt", "0deg");
+    line.style.setProperty("--fan-x", "0px");
     container.appendChild(line);
   }
 }
@@ -180,8 +200,8 @@ function setShowerStep(step){
     count.textContent = "Q2";
     label.textContent = "USE LEFT DIAL";
     question.textContent = "How many times a week do you shower?";
-    helper.textContent = "Same shower. New question. Turn the left dial.";
-    next.textContent = "CONTINUE";
+    helper.textContent = "You are now on question 2. Turn the left dial.";
+    next.textContent = "NEXT: THE SINK";
     timeCaption.textContent = "TEMP";
     flowCaption.textContent = "FREQUENCY";
     timeAction.textContent = "Q1";
@@ -190,35 +210,73 @@ function setShowerStep(step){
   }
 }
 
-function runShowerQuestionTransition(){
+function advanceShowerToQuestionTwo(){
   if(showerUI.transitioning || showerUI.step !== 1) return;
   showerUI.transitioning = true;
-  const transition = document.getElementById("showerTransition");
   const questionBlock = document.getElementById("showerQuestionBlock");
+  questionBlock.classList.add("is-switching");
+
+  setTimeout(()=>{
+    setShowerStep(2);
+    questionBlock.classList.remove("is-switching");
+    showerUI.transitioning = false;
+    document.getElementById("flowDial").focus({preventScroll:true});
+  }, 190);
+}
+
+function runShowerExitTransition(){
+  if(showerUI.transitioning || showerUI.step !== 2) return;
+  showerUI.transitioning = true;
+  const transition = document.getElementById("showerTransition");
   transition.classList.remove("is-running");
   void transition.offsetWidth;
   transition.classList.add("is-running");
 
-  setTimeout(()=>questionBlock.classList.add("is-switching"), 280);
-  setTimeout(()=>{
-    setShowerStep(2);
-    questionBlock.classList.remove("is-switching");
-  }, 525);
   setTimeout(()=>{
     transition.classList.remove("is-running");
     showerUI.transitioning = false;
-    document.getElementById("flowDial").focus({preventScroll:true});
+    document.getElementById("sinkChapter").scrollIntoView({behavior:"smooth", block:"start"});
   }, 1160);
 }
 
 function bindShowerNext(){
   document.getElementById("showerNext").addEventListener("click", ()=>{
     if(showerUI.step === 1){
-      runShowerQuestionTransition();
+      advanceShowerToQuestionTwo();
       return;
     }
-    document.getElementById("sinkChapter").scrollIntoView({behavior:"smooth", block:"start"});
+    runShowerExitTransition();
   });
+}
+
+function setSinkNextVisible(visible){
+  const next = document.getElementById("sinkNext");
+  next.classList.toggle("is-visible", visible);
+  next.setAttribute("aria-hidden", String(!visible));
+  next.tabIndex = visible ? 0 : -1;
+}
+
+function setSinkScrollCueVisible(visible){
+  const cue = document.getElementById("sinkScrollCue");
+  cue.classList.toggle("is-visible", visible);
+  cue.setAttribute("aria-hidden", String(!visible));
+  cue.tabIndex = visible ? 0 : -1;
+}
+
+function showDishMethodStep(){
+  if(!sinkUI.plateChosen || sinkUI.methodStepVisible) return;
+  sinkUI.methodStepVisible = true;
+  sinkUI.methodChosen = false;
+  setSinkNextVisible(false);
+  setSinkScrollCueVisible(false);
+
+  const panel = document.getElementById("dishMethodPanel");
+  panel.classList.add("is-visible");
+  panel.setAttribute("aria-hidden", "false");
+  document.querySelector(".kitchen-room").classList.add("is-method-step");
+
+  const firstMethod = panel.querySelector(".method-plate");
+  setTimeout(()=>firstMethod?.focus({preventScroll:true}), 260);
 }
 
 function bindPlates(){
@@ -227,19 +285,29 @@ function bindPlates(){
     btn.addEventListener("click",()=>{
       selectInGroup(group,btn);
       state.dishesPerWeek=Number(btn.dataset.value);
+      sinkUI.plateChosen=true;
+      if(!sinkUI.methodStepVisible) setSinkNextVisible(true);
       updateSink();
       updateEstimate();
     });
   });
+
+  document.getElementById("sinkNext").addEventListener("click", showDishMethodStep);
 
   const method=document.getElementById("dishMethod");
   [...method.querySelectorAll(".method-plate")].forEach(btn=>{
     btn.addEventListener("click",()=>{
       selectInGroup(method,btn);
       state.dishMethod=btn.dataset.value;
+      sinkUI.methodChosen=true;
+      setSinkScrollCueVisible(true);
       updateSink();
       updateEstimate();
     });
+  });
+
+  document.getElementById("sinkScrollCue").addEventListener("click",()=>{
+    document.getElementById("laundryChapter").scrollIntoView({behavior:"smooth", block:"start"});
   });
 }
 
@@ -256,11 +324,23 @@ function bindLaundry(){
 }
 
 function updateSink(){
-  const methodFactor={dishwasher:.35,basin:.58,running:1}[state.dishMethod];
-  const frequencyFactor=clamp(state.dishesPerWeek/7,.15,1);
-  const h=12+58*methodFactor*frequencyFactor;
-  document.getElementById("sinkStream").style.height=`${80+130*methodFactor}px`;
-  document.getElementById("basinWater").style.height=`${h}%`;
+  const water = document.getElementById("basinWater");
+
+  // Before Q3 is answered, keep a calm neutral water level.
+  if(!sinkUI.plateChosen){
+    water.style.height = "18%";
+    return;
+  }
+
+  // Frequency determines the base amount. Q4 then scales that same amount
+  // according to the washing method. The faucet stream itself stays fixed.
+  const frequencyFactor = clamp(state.dishesPerWeek / 7, .14, 1);
+  const methodFactor = sinkUI.methodStepVisible
+    ? {dishwasher:.34, basin:.64, running:1}[state.dishMethod]
+    : .64;
+
+  const h = 12 + 58 * frequencyFactor * methodFactor;
+  water.style.height = `${h}%`;
 }
 
 function updateLaundry(){
@@ -284,6 +364,17 @@ function updateEstimate(){
   document.getElementById("glassCount").textContent=Math.round(litres/0.5);
   const cost=Math.max(18,Math.round(litres*.46));
   document.getElementById("monthlyCost").textContent=cost;
+
+  const comparison=document.getElementById("resultComparison");
+  const youLabel=document.getElementById("resultYouLabel");
+  if(comparison && youLabel){
+    const scaleMax=220;
+    const userPos=clamp(litres/scaleMax,0,1)*100;
+    const avgPos=clamp(118/scaleMax,0,1)*100;
+    comparison.style.setProperty("--user-position",`${userPos}%`);
+    comparison.style.setProperty("--avg-position",`${avgPos}%`);
+    youLabel.textContent=`YOU • ${litres} L`;
+  }
 }
 
 function buildFlyingGlasses(){
@@ -319,24 +410,13 @@ function updateScrollAnimations(){
   fixture.style.transform=`translateY(${lerp(0,-8,p1)}px)`;
   console.style.transform=`translateY(${lerp(0,-5,p1)}px)`;
 
-  const p3=progress("sinkChapter");
-  document.querySelector(".sink-scene").style.transform=`translateY(${lerp(26,-10,p3)}px) scale(${lerp(.95,1.04,p3)})`;
-  document.getElementById("dishMethodPanel").style.opacity=String(clamp((p3-.55)/.2));
-  document.getElementById("dishMethodPanel").style.transform=`translateY(${lerp(28,0,clamp((p3-.55)/.2))}px)`;
-
-  const p4=progress("drainChapter");
-  const tunnel=document.getElementById("drainTunnel");
-  tunnel.style.transform=`translate(-50%,-50%) scale(${lerp(.65,5.5,p4)}) rotate(${lerp(0,75,p4)}deg)`;
-  tunnel.style.opacity=String(lerp(1,.18,clamp((p4-.72)/.2)));
-  document.querySelector(".drain-copy").style.opacity=String(lerp(1,0,clamp((p4-.35)/.22)));
-
   const p5=progress("laundryChapter");
-  document.querySelector(".washer").style.transform=`translate(-50%,-50%) scale(${lerp(.84,1.08,clamp((p5-.05)/.62))})`;
-  document.querySelector(".washer-drum").style.transform=`rotate(${lerp(0,540,clamp((p5-.2)/.65))}deg)`;
+  document.querySelector(".washer").style.transform=`translate(-50%,-50%) scale(${lerp(.84,1.05,clamp((p5-.05)/.62))})`;
+  document.querySelector(".washer-load").style.transform=`rotate(${lerp(0,540,clamp((p5-.2)/.65))}deg)`;
 
   const p6=progress("resultChapter");
-  document.querySelector(".result-number").style.transform=`translateY(-50%) scale(${lerp(.72,1.08,clamp((p6-.12)/.45))})`;
-  document.querySelector(".marker-strip").style.opacity=String(clamp((p6-.52)/.18));
+  document.querySelector(".result-number").style.transform=`scale(${lerp(.82,1.03,clamp((p6-.12)/.45))})`;
+  document.querySelector(".marker-strip").style.opacity=String(clamp((p6-.42)/.2));
 
   const p7=progress("glassesChapter");
   [...document.querySelectorAll(".fly-glass")].forEach((g,i)=>{

@@ -1,48 +1,20 @@
-# Water You Don't See v9
+# Water You Don't See v15
 
-This version keeps the existing water-story prototype intact, but completely rebuilds the opening shower interaction from scratch.
+This version continues from v14 and focuses on the transition from the sink into the scrolling story.
 
-## Shower redesign in v9
+## Changes in v15
 
-1. The old shower riser, shower head, control bar and separate Q2 shower chapter were removed.
-2. A new simple front-view wall-mounted shower fixture was drawn as lightweight inline SVG.
-3. The shower keeps the existing warm paper / black ink style, with a subtle bathroom-grid texture and blue water accents.
-4. Q1 and Q2 now happen in one clear shower interface instead of two disconnected scroll screens.
-5. Q1 asks for shower duration and highlights the right dial.
-6. Q2 asks for shower frequency and highlights the left dial.
-7. The inactive dial is visually muted so users immediately know which control to use.
-8. Dials support touch / pointer turning, tap stepping, mouse wheel and keyboard arrows.
-9. The selected value is shown directly inside the physical dial.
-10. A connected Next button sits below the mixer, matching the physical-control metaphor.
-11. Pressing Next after Q1 triggers a full-screen water transition: the water level rises, briefly covers the screen, then drains back down while Q2 replaces Q1.
-12. The transition explicitly says “Answer saved / Next question” so the question change is clear.
-13. After Q2, the button becomes Continue and moves the user into the sink chapter.
-14. The shower answers still feed directly into the existing personalised litre calculation.
-15. Reduced-motion and keyboard focus behaviour are retained for accessibility.
+- After Q4 is answered, a clear **SCROLL TO CONTINUE** cue appears so the interaction pattern deliberately changes from clicking back to scrolling.
+- The old **Down the Drain / Follow It** 3D tunnel chapter was removed completely.
+- Laundry now follows the sink directly and becomes the start of the scrolling part of the story.
+- The washing-machine water now has a subtle moving surface, shimmer, and small vertical movement similar to the sink water.
+- Only the laundry/clothes rotate during the scroll animation; the water stays level like real water.
+- The laundry screen was visually refined to use the same warm paper, grid, black-line and soft metal language as the shower and sink screens.
+- The daily-result screen was redesigned as a cleaner measurement card with a large litres-per-day value and a readable comparison to the Dutch average.
+- The result comparison updates with the user's calculated value.
+- The glasses particle section and money section keep their existing scroll behaviour.
+- The later savings content was otherwise left alone for a later pass.
 
-## Important prototype calculations
+## Prototype calculations
 
-The personalised calculation is intentionally easy to edit in `script.js`.
-
-Current assumptions:
-- Shower flow: 8 L/min
-- Dishwasher session: 10 L
-- Filled sink session: 18 L
-- Running-tap dishwashing session: 34 L
-- Laundry load: 50 L
-- Other household baseline: 28 L/day
-
-These are prototype assumptions for interaction design. Replace them with the exact values from your chosen Dutch sources before presenting the final data as factual.
-
-The monthly cost is also still a prototype visual calculation. Replace it once your final cost calculation is defined.
-
-## Run locally
-
-Open `index.html` directly or use:
-- VS Code Live Server
-- `python -m http.server`
-
-Best viewport:
-- 390 × 844
-- 393 × 852
-- similar modern mobile size
+The water-use calculation remains the same prototype model as v14. Replace prototype assumptions with the final sourced values before presenting them as factual data.

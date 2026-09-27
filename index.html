@@ -26,18 +26,26 @@
           <div class="tiny-label top-right shower-step-top" id="showerStepTop">QUESTION 1 / 2</div>
 
           <div class="shower-fixture" aria-hidden="true">
-            <svg class="shower-fixture-svg" viewBox="0 0 390 330" role="presentation">
-              <path class="fixture-shadow-line" d="M326 342 L326 76 Q326 39 289 39 L212 39 Q180 39 180 70 L180 84" />
-              <path class="fixture-pipe" d="M316 342 L316 76 Q316 49 289 49 L214 49 Q190 49 190 72 L190 86" />
-              <rect class="fixture-connector" x="181" y="76" width="18" height="29" rx="8" />
-              <path class="fixture-cap" d="M124 127 Q132 91 190 91 Q248 91 256 127 Z" />
-              <path class="fixture-face" d="M119 127 Q190 153 261 127 Q254 148 190 156 Q126 148 119 127 Z" />
-              <path class="fixture-highlight" d="M145 118 Q160 102 190 101 Q220 101 238 118" />
-              <g class="fixture-nozzles">
-                <circle cx="143" cy="133" r="2.6"/><circle cx="158" cy="137" r="2.6"/>
-                <circle cx="174" cy="140" r="2.6"/><circle cx="190" cy="141" r="2.6"/>
-                <circle cx="206" cy="140" r="2.6"/><circle cx="222" cy="137" r="2.6"/>
-                <circle cx="237" cy="133" r="2.6"/>
+            <svg class="shower-fixture-svg" viewBox="0 0 390 430" role="presentation">
+              <g class="fixture-body">
+                <!-- one simple exposed pipe: up, across, then into the overhead head -->
+                <path class="fixture-pipe-outline" d="M274 430V55Q274 39 258 39H205Q190 39 190 54V61" />
+                <path class="fixture-pipe" d="M274 430V55Q274 39 258 39H205Q190 39 190 54V61" />
+
+                <!-- small wall bracket so the riser feels mounted, not floating -->
+                <circle class="fixture-wall-plate" cx="295" cy="145" r="11" />
+                <rect class="fixture-wall-bracket" x="268" y="137" width="31" height="16" rx="8" />
+
+                <!-- simple round overhead shower head -->
+                <rect class="fixture-head-neck" x="181" y="50" width="18" height="18" rx="6" />
+                <path class="fixture-head-shell" d="M132 75Q141 57 190 57Q239 57 248 75L245 83Q235 94 190 97Q145 94 135 83Z" />
+                <ellipse class="fixture-head-face" cx="190" cy="81" rx="55" ry="17" />
+                <path class="fixture-head-highlight" d="M151 69Q166 62 190 62Q215 62 229 69" />
+                <g class="fixture-nozzles">
+                  <circle cx="151" cy="79" r="1.9"/><circle cx="164" cy="83" r="1.9"/><circle cx="177" cy="85" r="1.9"/>
+                  <circle cx="190" cy="86" r="1.9"/><circle cx="203" cy="85" r="1.9"/><circle cx="216" cy="83" r="1.9"/><circle cx="229" cy="79" r="1.9"/>
+                  <circle cx="159" cy="89" r="1.7"/><circle cx="175" cy="91" r="1.7"/><circle cx="190" cy="92" r="1.7"/><circle cx="205" cy="91" r="1.7"/><circle cx="221" cy="89" r="1.7"/>
+                </g>
               </g>
             </svg>
             <div class="new-shower-rain" id="newShowerRain"></div>
@@ -86,8 +94,8 @@
           <div class="shower-transition" id="showerTransition" aria-hidden="true">
             <div class="transition-water"></div>
             <div class="transition-copy">
-              <span>ANSWER SAVED</span>
-              <strong>NEXT QUESTION</strong>
+              <span>ROUTINE SAVED</span>
+              <strong>NEXT: THE SINK</strong>
             </div>
           </div>
 
@@ -104,75 +112,115 @@
           <div class="sink-copy">
             <span class="question-count">Q3</span>
             <h2>How many times a week do you wash dishes?</h2>
-            <p>Tap one plate.</p>
+            <p>Choose how often.</p>
           </div>
 
-          <div class="sink-scene" aria-hidden="true">
-            <div class="faucet">
-              <div class="faucet-neck"></div>
-              <div class="faucet-spout"></div>
-              <div class="sink-stream" id="sinkStream"></div>
+          <div class="sink-scene">
+            <div class="countertop" aria-hidden="true">
+              <div class="countertop-edge"></div>
             </div>
-            <div class="basin">
+
+            <svg class="sink-faucet" viewBox="0 0 170 220" aria-hidden="true">
+              <path class="sink-pipe-outline" fill="none" stroke="#0d0d0d" stroke-width="15" d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83" />
+              <path class="sink-pipe" fill="none" stroke="#e9e7e1" stroke-width="11" d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83" />
+              <path class="sink-spout-outline" fill="none" stroke="#0d0d0d" stroke-width="15" d="M126 83h31" />
+              <path class="sink-spout" fill="none" stroke="#e9e7e1" stroke-width="11" d="M126 83h31" />
+              <circle class="sink-faucet-mount" cx="38" cy="185" r="13" />
+              <rect class="sink-faucet-base" x="21" y="178" width="34" height="14" rx="7" />
+            </svg>
+            <div class="sink-stream" id="sinkStream" aria-hidden="true"></div>
+
+            <div class="basin" aria-hidden="true">
+              <div class="basin-rim"></div>
               <div class="basin-water" id="basinWater"></div>
-              <div class="soap-bubbles">
+              <div class="basin-drain"></div>
+              <div class="soap-bubbles basin-bubbles">
                 <i></i><i></i><i></i><i></i><i></i>
               </div>
             </div>
+
+            <div class="sponge" aria-hidden="true">
+              <span></span><i></i><i></i><i></i>
+            </div>
+
+            <div class="plate-rack" id="dishFrequency" aria-label="How many times a week do you wash dishes?">
+              <div class="rack-back" aria-hidden="true"></div>
+              <button class="plate" data-value="1" aria-label="1 time a week">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="plate-fill" fill="#f8f4ed" stroke="#0d0d0d" cx="60" cy="60" r="56" />
+                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
+                  <path id="plateArc1" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
+                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc1" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                </svg>
+                <span class="plate-center">1×</span>
+                <span class="plate-bubble b1"></span><span class="plate-bubble b2"></span>
+              </button>
+              <button class="plate" data-value="3" aria-label="3 times a week">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="plate-fill" fill="#f8f4ed" stroke="#0d0d0d" cx="60" cy="60" r="56" />
+                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
+                  <path id="plateArc3" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
+                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc3" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                </svg>
+                <span class="plate-center">3×</span>
+                <span class="plate-bubble b1"></span><span class="plate-bubble b3"></span>
+              </button>
+              <button class="plate" data-value="5" aria-label="5 times a week">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="plate-fill" fill="#c9ff38" stroke="#0d0d0d" cx="60" cy="60" r="56" />
+                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
+                  <path id="plateArc5" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
+                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc5" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                </svg>
+                <span class="plate-center">5×</span>
+                <span class="plate-bubble b2"></span><span class="plate-bubble b3"></span>
+              </button>
+              <button class="plate" data-value="7" aria-label="7 times a week">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="plate-fill" fill="#f8f4ed" stroke="#0d0d0d" cx="60" cy="60" r="56" />
+                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
+                  <path id="plateArc7" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
+                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc7" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                </svg>
+                <span class="plate-center">7×</span>
+                <span class="plate-bubble b1"></span><span class="plate-bubble b2"></span>
+              </button>
+              <div class="rack-feet" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            </div>
           </div>
 
-          <div class="plate-stack" id="dishFrequency">
-            <button class="plate" data-value="1">
-              <b>1×</b><span>a week</span>
-            </button>
-            <button class="plate" data-value="3">
-              <b>3×</b><span>a week</span>
-            </button>
-            <button class="plate active" data-value="5">
-              <b>5×</b><span>a week</span>
-            </button>
-            <button class="plate" data-value="7">
-              <b>7×</b><span>a week</span>
-            </button>
-          </div>
+          <button class="sink-next" id="sinkNext" type="button" aria-hidden="true" tabindex="-1">
+            <span>NEXT QUESTION</span>
+            <i aria-hidden="true">→</i>
+          </button>
 
-          <div class="sink-question-two" id="dishMethodPanel">
+          <div class="sink-question-two" id="dishMethodPanel" aria-hidden="true">
             <span class="question-count">Q4</span>
             <h3>How do you usually wash them?</h3>
             <div class="method-plates" id="dishMethod">
               <button class="method-plate" data-value="dishwasher">
                 Dishwasher
               </button>
-              <button class="method-plate active" data-value="basin">
+              <button class="method-plate" data-value="basin">
                 Filled sink
               </button>
               <button class="method-plate" data-value="running">
                 Running tap
               </button>
             </div>
+            <button class="sink-scroll-cue" id="sinkScrollCue" type="button" aria-hidden="true" tabindex="-1">
+              <span>ANSWER SAVED</span>
+              <strong>SCROLL TO CONTINUE</strong>
+              <i aria-hidden="true">↓</i>
+            </button>
           </div>
         </div>
       </section>
 
-      <!-- 04 drain tunnel -->
-      <section class="chapter chapter-drain" id="drainChapter">
-        <div class="sticky drain-room">
-          <div class="tiny-label top-left light">04 / DOWN THE DRAIN</div>
-          <div class="drain-copy">
-            <strong>FOLLOW IT</strong>
-            <span>KEEP SCROLLING</span>
-          </div>
-          <div class="drain-tunnel" id="drainTunnel" aria-hidden="true">
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-            <div class="drain-hole"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 05 washing machine -->
+      <!-- 04 washing machine -->
       <section class="chapter chapter-laundry" id="laundryChapter">
         <div class="sticky laundry-room">
-          <div class="tiny-label top-left">05 / LAUNDRY</div>
+          <div class="tiny-label top-left">04 / LAUNDRY</div>
           <div class="laundry-copy">
             <span class="question-count">Q5</span>
             <h2>How many times a week do you do laundry?</h2>
@@ -189,9 +237,11 @@
             <div class="washer-door">
               <div class="washer-drum">
                 <div class="washer-water" id="washerWater"></div>
-                <div class="laundry-piece piece-a"></div>
-                <div class="laundry-piece piece-b"></div>
-                <div class="laundry-piece piece-c"></div>
+                <div class="washer-load" aria-hidden="true">
+                  <div class="laundry-piece piece-a"></div>
+                  <div class="laundry-piece piece-b"></div>
+                  <div class="laundry-piece piece-c"></div>
+                </div>
               </div>
             </div>
             <div class="washer-handle"></div>
@@ -200,33 +250,54 @@
           <div class="washer-result" id="washerResult">
             <span>YOUR ANSWER FILLS THE DRUM</span>
           </div>
+          <div class="laundry-scroll-cue" aria-hidden="true">
+            <span>KEEP SCROLLING</span><i>↓</i>
+          </div>
         </div>
       </section>
 
-      <!-- 06 result -->
+      <!-- 05 result -->
       <section class="chapter chapter-result" id="resultChapter">
         <div class="sticky result-room">
-          <div class="tiny-label top-left">06 / YOUR WATER STORY</div>
-          <div class="result-kicker">BASED ON YOUR ROUTINE</div>
-          <div class="result-number">
-            <span id="personalLitres">118</span><small>L / DAY</small>
+          <div class="tiny-label top-left">05 / YOUR WATER STORY</div>
+
+          <div class="result-heading">
+            <span>BASED ON YOUR ROUTINE</span>
+            <h2>Your estimated<br />daily water use.</h2>
           </div>
-          <p class="result-copy">
-            This estimate only uses the habits you answered above. The Dutch
-            average is around <strong>118 L per person per day</strong>.
-          </p>
-          <div class="marker-strip">
-            <span>YOU</span>
-            <i></i>
-            <span>NL AVG 118 L</span>
+
+          <div class="result-card">
+            <div class="result-card-grid" aria-hidden="true"></div>
+            <div class="result-kicker">YOUR DAILY ESTIMATE</div>
+            <div class="result-number">
+              <span id="personalLitres">118</span><small>L / DAY</small>
+            </div>
+            <p class="result-copy">
+              This estimate uses the habits you just selected. Compare it with the Dutch average below.
+            </p>
+
+            <div class="marker-strip" id="resultComparison">
+              <div class="result-scale" aria-hidden="true">
+                <span class="result-user-pin"></span>
+                <span class="result-average-pin"></span>
+              </div>
+              <div class="result-scale-labels">
+                <span id="resultYouLabel">YOU • 118 L</span>
+                <span>NL AVG • 118 L</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-scroll-cue" aria-hidden="true">
+            <span>MAKE THAT NUMBER VISIBLE</span><i>↓</i>
           </div>
         </div>
       </section>
 
-      <!-- 07 glasses -->
+      <!-- 06 glasses -->
       <section class="chapter chapter-glasses" id="glassesChapter">
         <div class="sticky glasses-room">
-          <div class="tiny-label top-left light">07 / MAKE IT VISIBLE</div>
+          <div class="tiny-label top-left light">06 / MAKE IT VISIBLE</div>
           <div class="full-text light">
             <span>THAT IS ABOUT</span>
             <strong><span id="glassCount">236</span> GLASSES</strong>
@@ -246,10 +317,10 @@
         </div>
       </section>
 
-      <!-- 08 money -->
+      <!-- 07 money -->
       <section class="chapter chapter-money" id="moneyChapter">
         <div class="sticky money-room">
-          <div class="tiny-label top-left">08 / WHAT DOES THAT MEAN?</div>
+          <div class="tiny-label top-left">07 / WHAT DOES THAT MEAN?</div>
           <div class="money-title">
             <span>WATER + HEATING</span>
             <strong>€<span id="monthlyCost">54</span><br />A MONTH</strong>
@@ -268,10 +339,10 @@
         </div>
       </section>
 
-      <!-- 09 saving -->
+      <!-- 08 saving -->
       <section class="chapter chapter-saving" id="savingChapter">
         <div class="sticky saving-room">
-          <div class="tiny-label top-left">09 / SMALL CHANGE</div>
+          <div class="tiny-label top-left">08 / SMALL CHANGE</div>
           <div class="saving-big">2 MIN<br />SHORTER</div>
           <div class="saving-arrow">↓</div>
           <div class="saving-result">
@@ -299,7 +370,7 @@
       <!-- 10 relatable value -->
       <section class="chapter chapter-value" id="valueChapter">
         <div class="sticky value-room">
-          <div class="tiny-label top-left">10 / PUT IT IN CONTEXT</div>
+          <div class="tiny-label top-left">09 / PUT IT IN CONTEXT</div>
           <div class="value-copy">
             <strong>€12</strong>
             <span>is not just a number.</span>
@@ -321,10 +392,10 @@
         </div>
       </section>
 
-      <!-- 11 actions -->
+      <!-- 10 actions -->
       <section class="chapter chapter-actions" id="actionsChapter">
         <div class="sticky actions-room">
-          <div class="tiny-label top-left">11 / START HERE</div>
+          <div class="tiny-label top-left">10 / START HERE</div>
           <h2>LET'S GET<br />THAT BAG</h2>
 
           <div class="action-cards">
