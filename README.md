@@ -1,28 +1,18 @@
-# Water Story Mobile v29
+# Water Story Mobile v33
 
-## Stability changes
+Changes in v33:
 
-- Native browser scrolling is now the only scroll coordinate system. GSAP + ScrollTrigger still controls all chapter animation and pinning. ScrollSmoother and ScrollToPlugin were removed because this project is mostly pinned storytelling, where a second transformed scroll layer can create handoff drift.
-- Every pinned chapter has an explicit `refreshPriority` matching document order. All triggers are created first, then one ordered `ScrollTrigger.refresh()` measures the complete page.
-- The two timed autoplay chapters (08 savings and the future-world sequence) now use a hidden 2.2-viewport GSAP pin buffer. This prevents a strong wheel/touch gesture from skipping across the trigger before the input gate starts.
-- When autoplay finishes, the document is moved to the final 2px of that buffer while the chapter is still pinned. The move is visually invisible; the next deliberate scroll releases the chapter immediately.
-- Guided question transitions no longer refresh every ScrollTrigger after their overlay closes. Their geometry does not change, and avoiding mid-session refreshes prevents unrelated chapters from re-evaluating while the user is scrolling.
+- Shorter, consistent touch momentum on mobile so a single iPhone flick does not jump across several pinned chapters.
+- Pinned chapters still begin at `top top`; no forced early scroll-to alignment.
+- Action/tip cards are back to compact, content-driven card heights instead of stretched full-screen rows.
+- Savings story is now only two beats: personalized yearly saving, then a rounded phone-plan / Spotify comparison, then straight to the tips.
+- Spotify Premium Individual NL comparison uses EUR 13.99/month (checked September 2026). Phone plan remains an illustrative EUR 25/month assumption.
+- Daily-estimate comparison starts earlier while the litre number is still filling.
+- Existing 200 ml glass calculation remains in place.
+- Existing morph now has an `EXAMPLE NAME` caption underneath, ready to replace with the official location/source name.
 
-## Main pacing values
+Easy values in `script.js`:
 
-In `script.js`:
-
-```js
-const AUTO_STORY_STEP = 1.72;
-const FUTURE_STORY_STEP = 2.05;
-const AUTO_GATE_VIEWPORTS = 2.2;
-```
-
-`AUTO_GATE_VIEWPORTS` is a safety buffer, not visible scroll distance. Do not reduce it too aggressively; it protects autoplay sections against fast-scroll overshoot.
-
-## v29 shower layout refinement
-
-- The shower answer stepper/slider is now a real standalone panel below the shower mixer instead of living inside the mixer DOM.
-- The mixer is shorter, so the two visual knobs and the question use the available space more efficiently.
-- The question, readout, +/- buttons, slider, and labels are horizontally centered for a cleaner mobile layout.
-- Shower behavior and answer logic are unchanged; this version only restructures the first-screen layout.
+- `PHONE_PLAN_EUR = 25`
+- `SPOTIFY_EUR = 13.99`
+- Touch momentum is controlled in `setupSmoothScrolling()` by the `momentum` callback.

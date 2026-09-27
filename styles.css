@@ -4598,3 +4598,203 @@ body.interaction-locked {
     }
   }
 }
+
+/* ==========================================================================
+   v33 — shorter mobile momentum + natural-height tips + concise savings story
+   ========================================================================== */
+
+/* The action cards keep their original compact, content-driven height. They are
+   no longer stretched into three equal full-screen rows. */
+.actions-intro {
+  top: clamp(56px, 8dvh, 82px) !important;
+}
+.actions-intro h2 {
+  font-size: clamp(36px, 12vw, 52px) !important;
+}
+.action-cards {
+  top: clamp(150px, 19dvh, 182px) !important;
+  bottom: auto !important;
+  gap: 11px !important;
+  grid-template-rows: none !important;
+}
+.action-card {
+  min-height: 0 !important;
+  padding: 13px 16px 14px !important;
+  border-radius: 22px !important;
+  display: block !important;
+  overflow: visible !important;
+}
+.action-card span {
+  width: 25px !important;
+  height: 25px !important;
+  margin-bottom: 7px !important;
+  font-size: 8px !important;
+}
+.action-card strong {
+  font-size: clamp(15px, 4.55vw, 18px) !important;
+  line-height: 1 !important;
+}
+.action-card p {
+  margin-top: 6px !important;
+  font-size: clamp(9px, 2.65vw, 11px) !important;
+  line-height: 1.25 !important;
+}
+
+@media (max-height: 680px) {
+  .actions-intro { top: 44px !important; }
+  .actions-intro h2 { font-size: 31px !important; }
+  .action-cards {
+    top: 120px !important;
+    gap: 7px !important;
+  }
+  .action-card { padding: 9px 12px 10px !important; }
+  .action-card span {
+    width: 21px !important;
+    height: 21px !important;
+    margin-bottom: 4px !important;
+  }
+  .action-card strong { font-size: 13.5px !important; }
+  .action-card p {
+    margin-top: 4px !important;
+    font-size: 8.3px !important;
+    line-height: 1.18 !important;
+  }
+}
+
+/* Savings is deliberately only two beats now: yearly saving, then one short
+   relatable comparison. */
+.saving-compare-content {
+  gap: 18px;
+}
+.saving-comparison-grid {
+  width: min(88vw, 352px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  margin: 20px auto 0;
+}
+.saving-compare-card {
+  min-height: 178px;
+  padding: 16px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  border-radius: 22px;
+  background: #f8f4ed;
+  box-shadow: 0 7px 0 rgba(13, 13, 13, .08);
+  text-align: center;
+}
+.saving-compare-card span,
+.saving-compare-card small {
+  font-size: 7px;
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.saving-compare-card strong {
+  display: block;
+  margin-top: 9px;
+  font-family: "Archivo Black", Inter, sans-serif;
+  font-size: clamp(19px, 6vw, 25px);
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+.saving-compare-card small {
+  margin-top: 7px;
+  opacity: .52;
+}
+.compare-service-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 13px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+}
+.phone-icon {
+  font-family: "Archivo Black", Inter, sans-serif;
+  font-size: 30px;
+  line-height: 1;
+}
+.spotify-icon {
+  position: relative;
+  display: block;
+  background: #1ed760;
+}
+.spotify-icon i {
+  position: absolute;
+  left: 9px;
+  width: 28px;
+  height: 11px;
+  border-top: 3px solid #0d0d0d;
+  border-radius: 50%;
+  transform: rotate(7deg);
+}
+.spotify-icon i:nth-child(1) { top: 12px; }
+.spotify-icon i:nth-child(2) { top: 20px; width: 25px; left: 10px; }
+.spotify-icon i:nth-child(3) { top: 28px; width: 21px; left: 12px; }
+
+/* Existing morph stays a held scroll interaction, but now has a proper source/name
+   caption underneath. The user can replace EXAMPLE NAME with the final place name. */
+.future-morph-room {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+}
+.future-morph-room .morph-frame-shell {
+  flex: 1 1 auto;
+  width: 100%;
+  height: auto !important;
+  min-height: 0;
+}
+.morph-caption {
+  flex: 0 0 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px max(2px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(13,13,13,.14);
+  background: #f4f0e8;
+  color: rgba(13,13,13,.72);
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Keep the pinned viewport exact on touch hardware, while JS now limits the
+   momentum duration globally instead of disabling/re-enabling scrolling at every
+   chapter boundary. */
+@supports (height: 100dvh) {
+  @media (pointer: coarse) {
+    .chapter-laundry,
+    .chapter-result,
+    .chapter-glasses,
+    .chapter-money,
+    .chapter-actions,
+    .saving-story,
+    .future-auto-stage,
+    .future-morph-chapter,
+    .chapter-laundry .laundry-room,
+    .chapter-result .result-room,
+    .chapter-glasses .glasses-room,
+    .chapter-money .money-room,
+    .chapter-actions .actions-room,
+    .future-morph-chapter .future-morph-room,
+    .saving-scroll-beat.saving-auto-slide,
+    .saving-auto-slide .saving-beat-sticky,
+    .future-auto-stage .future-auto-slide,
+    .future-auto-stage .future-screen-inner {
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+    }
+  }
+}

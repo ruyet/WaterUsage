@@ -1,4 +1,4 @@
-/* Water Story v32 — viewport-true pins + research-grounded personalization */
+/* Water Story v33 — shorter touch momentum + concise yearly savings story */
 
 const state = {
   showerMinutes: 2,
@@ -26,7 +26,7 @@ const laundryUI = {
 };
 
 /* Easy pacing controls. Autoplay is intentionally slower than v24. */
-const AUTO_STORY_STEP = 1.72;
+const AUTO_STORY_STEP = 1.55;
 const FUTURE_STORY_STEP = 2.05;
 /* Hidden pin buffer for autoplay chapters. It prevents a fast swipe/wheel from
    skipping across the whole chapter before its input gate can activate. */
@@ -37,11 +37,12 @@ const AUTO_GATE_VIEWPORTS = 2.2;
    - 2026 Brabant Water variable tariff: €1.51 / m³.
    - Milieu Centraal: going from 7.4 to 5 min/day saves about €36/year.
      That is roughly €15/year per daily shower-minute avoided.
-   - €25 phone plan and €9 kapsalon are illustrative comparison values, not averages. */
+   - €25 phone plan is an illustrative comparison value, not an average.
+   - Spotify Premium Individual NL is €13.99/month (checked Sept 2026). */
 const WATER_EUR_PER_M3 = 1.51;
 const SHOWER_WARM_WATER_EUR_PER_DAILY_MINUTE_YEAR = 15;
 const PHONE_PLAN_EUR = 25;
-const KAPSALON_EUR = 9;
+const SPOTIFY_EUR = 13.99;
 const SHOWER_TARGET_MINUTES = 5;
 
 const clamp = (n, a = 0, b = 1) => Math.max(a, Math.min(b, n));
@@ -114,8 +115,7 @@ function unlockPageScroll() {
   scrollGate.locked = false;
   document.documentElement.classList.remove("interaction-locked");
   document.body.classList.remove("interaction-locked");
-  /* v32: touch normalization is managed only while a held/pinned chapter is active.
-     Normal scrolling between chapters stays native. */
+  if (isTouchLike && !reducedMotion) touchNormalizer?.enable?.();
 }
 
 function setupSmoothScrolling() {
@@ -127,17 +127,18 @@ function setupSmoothScrolling() {
     autoRefreshEvents: "visibilitychange,DOMContentLoaded,load"
   });
 
-  /* Keep normal iPhone scrolling between chapters. A normalizer exists only as a
-     temporary pin helper: it is disabled by default, enabled while a held stage is
-     active, and disabled again the moment that stage releases. */
+  /* v33: normalize touch scrolling for the whole experience, but keep momentum
+     deliberately short. iOS native momentum can carry one flick through several
+     pinned chapters before ScrollTrigger has time to settle. This preserves a
+     smooth drag while making a flick travel closer to an app-style feed. */
   if (isTouchLike && !reducedMotion && ScrollTrigger.normalizeScroll) {
     touchNormalizer = ScrollTrigger.normalizeScroll({
+      type: "touch,pointer",
       allowNestedScroll: true,
       lockAxis: true,
       ignore: ".shower-range, button, input, select, textarea",
-      momentum: () => 0.42
+      momentum: self => Math.min(0.38, Math.max(0.16, Math.abs(self.velocityY) / 8000))
     });
-    touchNormalizer.disable?.();
   }
 }
 
@@ -746,34 +747,29 @@ function formatCompactNumber(value, digits = 1) {
 
 function updatePersonalizedStory() {
   const saving = estimateSavingScenario();
-  const monthly = saving.monthlySaving;
-  const annual = saving.annualSaving;
-  const kapsalons = annual / KAPSALON_EUR;
-  const phoneMonths = annual / PHONE_PLAN_EUR;
+  const annual = Math.max(0, saving.annualSaving);
+  const annualRounded = Math.round(annual);
+  const phoneMonths = Math.max(0, Math.round(annual / PHONE_PLAN_EUR));
+  const spotifyMonths = Math.max(0, Math.round(annual / SPOTIFY_EUR));
 
-  const monthlyLine = qs("#savingMonthlyLine");
-  const foodLine = qs("#savingFoodLine");
-  const phoneLine = qs("#savingPhoneLine");
   const yearLine = qs("#savingYearLine");
   const waterLine = qs("#savingYearWaterLine");
+  const phoneMonthsEl = qs("#phonePlanMonths");
+  const spotifyMonthsEl = qs("#spotifyMonths");
 
-  if (monthlyLine) {
-    monthlyLine.textContent = monthly >= 0.5
-      ? `YOU COULD SAVE ABOUT €${formatCompactNumber(monthly)} MONTHLY`
+  if (yearLine) {
+    yearLine.textContent = annualRounded >= 1
+      ? `YOU COULD SAVE ABOUT €${annualRounded} A YEAR`
       : "YOUR ROUTINE IS ALREADY CLOSE TO OUR SAVING TARGET";
   }
-  if (foodLine) {
-    foodLine.textContent = annual >= KAPSALON_EUR
-      ? `THAT'S ABOUT ${formatCompactNumber(kapsalons)} KAPSALONS A YEAR`
-      : `THAT'S ABOUT €${formatCompactNumber(annual)} BACK A YEAR`;
+  if (waterLine) {
+    const litres = Math.round(saving.annualLitresSaved);
+    waterLine.textContent = litres > 0
+      ? `${litres.toLocaleString("en-US")} LITRES LESS WATER A YEAR`
+      : "KEEP THESE WATER-SAVING HABITS GOING";
   }
-  if (phoneLine) {
-    phoneLine.textContent = phoneMonths >= 0.25
-      ? `OR ${formatCompactNumber(phoneMonths)} MONTHS OF A €25 PHONE PLAN`
-      : "SMALL SAVINGS STILL ADD UP OVER TIME";
-  }
-  if (yearLine) yearLine.textContent = `THAT'S ABOUT €${formatCompactNumber(annual)} A YEAR SAVED`;
-  if (waterLine) waterLine.textContent = `${Math.round(saving.annualLitresSaved).toLocaleString("en-US")} LITRES LESS WATER`;
+  if (phoneMonthsEl) phoneMonthsEl.textContent = phoneMonths > 0 ? `${phoneMonths} MONTH${phoneMonths === 1 ? "" : "S"}` : "< 1 MONTH";
+  if (spotifyMonthsEl) spotifyMonthsEl.textContent = spotifyMonths > 0 ? `${spotifyMonths} MONTH${spotifyMonths === 1 ? "" : "S"}` : "< 1 MONTH";
 }
 
 function updatePersonalizedTips() {
@@ -867,7 +863,7 @@ function buildAutoStoryTimeline({ slides, progressRoot, stepDuration, onComplete
   slides.forEach((slide, index) => {
     const start = index * stepDuration;
     const words = qsa(".gsap-word", slide);
-    const media = qsa(".saving-face, .phone-plan-visual, .food-row, .future-reference-image", slide);
+    const media = qsa(".saving-face, .saving-comparison-grid, .future-reference-image", slide);
 
     tl.set(slide, { autoAlpha: 1, visibility: "visible" }, start);
     animateWordsIn(words, tl, start + 0.03);
@@ -1016,21 +1012,15 @@ function setupAutomaticStories() {
 
 function activateHeldTouch(self) {
   if (!isTouchLike || !touchNormalizer || scrollGate.locked) return;
-
-  /* Do not anticipate the pin. Once the trigger has genuinely reached the top,
-     settle it to its exact start and then let GSAP own momentum only for the held
-     chapter. This prevents a single iPhone flick from carrying straight through. */
-  const targetY = Math.round(self.start + 1);
-  if (Math.abs(window.scrollY - targetY) > 1) {
-    window.scrollTo(0, targetY);
-    ScrollTrigger.update();
-  }
+  /* The global normalizer already keeps iOS momentum short and synchronized.
+     Do not force-scroll to self.start here; pinning begins only at `top top`, so
+     the previous chapter cannot be visible when the held stage becomes active. */
   touchNormalizer.enable?.();
 }
 
 function deactivateHeldTouch() {
-  if (!isTouchLike || !touchNormalizer) return;
-  touchNormalizer.disable?.();
+  /* Keep the same normalized, short-momentum scroll between chapters. Disabling
+     it on release allows the remainder of an iOS flick to shoot through sections. */
 }
 
 function stageCue(self, activeLabel, releaseLabel) {
@@ -1114,7 +1104,7 @@ function setupHeldStages() {
       onUpdate: self => {
         /* Fill the litres themselves from bottom to top before the comparison card
            is fully revealed, so the number becomes part of the scroll interaction. */
-        updateResultNumberFill(clamp(self.progress / 0.45));
+        updateResultNumberFill(clamp(self.progress / 0.34));
         stageCue(self, "SCROLL TO COMPARE", "SCROLL TO MAKE IT VISIBLE");
       },
       onLeave: deactivateHeldTouch,
@@ -1122,9 +1112,9 @@ function setupHeldStages() {
     }
   })
     .fromTo("#resultChapter .result-number", { scale: 0.92 }, { scale: 1, ease: "none" }, 0)
-    .to(resultComparison, { y: 0, autoAlpha: 1, ease: "power2.out" }, 0.12)
-    .fromTo(qs(".user-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.19)
-    .fromTo(qs(".average-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.24);
+    .to(resultComparison, { y: 0, autoAlpha: 1, ease: "power2.out" }, 0.06)
+    .fromTo(qs(".user-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.10)
+    .fromTo(qs(".average-fill", resultComparison), { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, ease: "none" }, 0.14);
 
   const glasses = qsa(".fly-glass");
   const glassTl = gsap.timeline({
