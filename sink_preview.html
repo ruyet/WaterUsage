@@ -1,0 +1,2017 @@
+<!doctype html><html><head><meta charset="utf-8"><style>@page{size:390px 844px;margin:0} html,body{margin:0;width:390px;height:844px;overflow:hidden} * {
+  box-sizing: border-box;
+}
+:root {
+  --paper: #f4efe7;
+  --ink: #0d0d0d;
+  --blue: #1769ff;
+  --water: #248cff;
+  --cyan: #79cfff;
+  --lime: #c9ff38;
+  --pink: #ffd4df;
+  --red: #ff321d;
+  --navy: #071b37;
+  --line: rgba(13, 13, 13, 0.18);
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  overflow-x: hidden;
+}
+button {
+  font: inherit;
+}
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.12;
+  background:
+    repeating-radial-gradient(
+      circle at 0 0,
+      rgba(0, 0, 0, 0.18) 0 1px,
+      transparent 1px 4px
+    ),
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.8),
+      transparent 25%
+    );
+  mix-blend-mode: multiply;
+}
+.phone {
+  position: relative;
+}
+.chapter {
+  position: relative;
+  height: 300svh;
+}
+.chapter-drain {
+  height: 360svh;
+}
+.chapter-result,
+.chapter-glasses,
+.chapter-money,
+.chapter-saving,
+.chapter-value {
+  height: 260svh;
+}
+.chapter-actions,
+.chapter-future {
+  height: 330svh;
+}
+.chapter-end {
+  height: 120svh;
+}
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  padding: 18px;
+}
+.tiny-label {
+  position: absolute;
+  z-index: 30;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.top-left {
+  top: 16px;
+  left: 18px;
+}
+.top-right {
+  top: 16px;
+  right: 18px;
+}
+.light {
+  color: #fff;
+}
+.question-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 22px;
+  border: 1.5px solid currentColor;
+  border-radius: 99px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  margin-bottom: 7px;
+}
+h2 {
+  margin: 0;
+  font-family: "Archivo Black", Inter, sans-serif;
+  font-size: clamp(42px, 13vw, 66px);
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+p {
+  margin: 0;
+}
+@media (min-width: 700px) {
+  body:before {
+    content: "Mobile prototype. Resize the browser to about 390 px wide.";
+    position: fixed;
+    z-index: 10000;
+    left: 50%;
+    top: 12px;
+    transform: translateX(-50%);
+    background: white;
+    border: 1px solid var(--line);
+    padding: 9px 13px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+  .phone {
+    max-width: 430px;
+    margin: auto;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* shower — v11 simplified fixture */
+.chapter-shower {
+  height: 138svh;
+}
+.shower-room {
+  --shower-paper: #f5f1e9;
+  --shower-metal: #eceae5;
+  --shower-metal-mid: #c8c8c2;
+  --shower-blue: #287fff;
+  --shower-blue-soft: #a8dcff;
+  --shower-red: #ff4a34;
+  background:
+    radial-gradient(
+      circle at 22% 10%,
+      rgba(255, 255, 255, 0.9),
+      transparent 30%
+    ),
+    linear-gradient(rgba(13, 13, 13, 0.044) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 13, 13, 0.044) 1px, transparent 1px),
+    repeating-linear-gradient(
+      155deg,
+      rgba(13, 13, 13, 0.012) 0 2px,
+      transparent 2px 6px
+    ),
+    var(--shower-paper);
+  background-size:
+    auto,
+    39px 39px,
+    39px 39px,
+    auto,
+    auto;
+}
+.shower-room:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0 72%,
+    rgba(13, 13, 13, 0.025) 100%
+  );
+  z-index: 1;
+}
+.shower-step-top {
+  color: rgba(13, 13, 13, 0.56);
+}
+
+/* Simple overhead shower: one head + one riser. */
+.shower-fixture {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: 35px;
+  height: 455px;
+  pointer-events: none;
+}
+.shower-fixture-svg {
+  position: absolute;
+  left: -3px;
+  top: 35px;
+  height: 450px;
+  width: 100%;
+  overflow: visible;
+}
+.fixture-body {
+  filter: drop-shadow(7px 9px 0 rgba(13, 13, 13, 0.075));
+}
+.fixture-pipe-outline,
+.fixture-pipe {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.fixture-pipe-outline {
+  stroke: var(--ink);
+  stroke-width: 15px;
+}
+.fixture-pipe {
+  stroke: var(--shower-metal);
+  stroke-width: 11px;
+}
+.fixture-wall-plate,
+.fixture-wall-bracket,
+.fixture-head-neck,
+.fixture-head-shell {
+  fill: var(--shower-metal);
+  stroke: var(--ink);
+  stroke-width: 2px;
+}
+.fixture-wall-plate {
+  fill: #d7d6cf;
+}
+.fixture-wall-bracket {
+  fill: #e7e5df;
+}
+.fixture-head-shell {
+  fill: #efede8;
+}
+.fixture-head-face {
+  fill: #909699;
+  stroke: var(--ink);
+  stroke-width: 2.2px;
+}
+.fixture-head-highlight {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 5px;
+  stroke-linecap: round;
+}
+.fixture-nozzles circle {
+  fill: #414749;
+}
+
+/* Water begins immediately under the face and fans OUT, like a real shower. */
+.new-shower-rain {
+  position: absolute;
+  left: 164px;
+  top: 111px;
+  width: 85px;
+  height: 405px;
+  overflow: visible;
+}
+.new-shower-rain .water-line {
+  position: absolute;
+  top: -12px;
+  width: var(--drop-width, 2px);
+  height: var(--length, 82px);
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    rgba(110, 194, 255, 0),
+    rgba(110, 194, 255, 0.88) 22%,
+    rgba(45, 143, 255, 0.96)
+  );
+  opacity: var(--alpha, 0.68);
+  transform: translateX(var(--fan-x, 0px)) rotate(var(--tilt, 0deg));
+  transform-origin: top center;
+  animation: clean-shower-fall var(--speed, 1.05s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes clean-shower-fall {
+  0% {
+    top: -12px;
+    opacity: 0;
+  }
+  9% {
+    opacity: var(--alpha, 0.68);
+  }
+  85% {
+    opacity: var(--alpha, 0.68);
+  }
+  100% {
+    top: 236px;
+    opacity: 0;
+  }
+}
+
+/* The interactive control bar is the mixer/control unit. The riser enters it on the right. */
+.shower-console {
+  position: absolute;
+  z-index: 20;
+  left: 12px;
+  right: 12px;
+  top: 530px;
+  min-height: 186px;
+  padding: 18px 92px 47px;
+  border: 2px solid var(--ink);
+  border-radius: 28px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.8),
+      rgba(255, 255, 255, 0.17)
+    ),
+    #efebe4;
+  box-shadow:
+    0 12px 0 rgba(13, 13, 13, 0.05),
+    0 18px 32px rgba(13, 13, 13, 0.075);
+}
+.console-rail {
+  position: absolute;
+  left: 69.25%;
+  top: -18px;
+  width: 25px;
+  height: 18px;
+  transform: translateX(-50%);
+  border: 2px solid var(--ink);
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  background: #efebe4;
+}
+.console-question {
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.console-question.is-switching {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.question-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.console-question .question-count {
+  margin: 0;
+  min-width: 32px;
+  height: 20px;
+  border-width: 1.5px;
+  font-size: 8px;
+}
+.active-control-label {
+  font-size: 7px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  font-weight: 900;
+  color: var(--shower-blue);
+}
+.console-question h2 {
+  margin: 0;
+  max-width: 174px;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 900;
+}
+.console-question p {
+  margin-top: 7px;
+  max-width: 166px;
+  font-size: 8px;
+  line-height: 1.32;
+  color: rgba(13, 13, 13, 0.57);
+  font-weight: 700;
+}
+
+.answer-dial {
+  --dial-angle: 0deg;
+  position: absolute;
+  top: 50%;
+  width: 78px;
+  height: 108px;
+  transform: translateY(-50%);
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.flow-dial {
+  left: 10px;
+}
+.time-dial {
+  right: 10px;
+}
+.dial-scale {
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  width: 72px;
+  height: 72px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from -130deg,
+    rgba(13, 13, 13, 0.35) 0 1.2deg,
+    transparent 1.2deg 16deg
+  );
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 0 64%,
+    #000 65% 68%,
+    transparent 69%
+  );
+  mask: radial-gradient(
+    circle,
+    transparent 0 64%,
+    #000 65% 68%,
+    transparent 69%
+  );
+  opacity: 0.62;
+}
+.temperature-scale:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 215deg,
+    var(--shower-blue) 0 36deg,
+    transparent 36deg 205deg,
+    var(--shower-red) 205deg 242deg,
+    transparent 242deg
+  );
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 0 60%,
+    #000 61% 66%,
+    transparent 67%
+  );
+  mask: radial-gradient(
+    circle,
+    transparent 0 60%,
+    #000 61% 66%,
+    transparent 67%
+  );
+  opacity: 0.95;
+}
+.dial-scale i {
+  display: none;
+}
+.dial-knob {
+  position: absolute;
+  left: 50%;
+  top: 13px;
+  width: 60px;
+  height: 60px;
+  transform: translateX(-50%);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    #fff 0 10%,
+    #f9f6f0 34%,
+    #ddd8cf 100%
+  );
+  box-shadow:
+    inset -4px -5px 10px rgba(13, 13, 13, 0.08),
+    0 2px 0 rgba(13, 13, 13, 0.08);
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.2s ease;
+}
+.dial-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 24px;
+  transform: translate(-50%, -100%) rotate(var(--dial-angle));
+  transform-origin: 50% 100%;
+  border-radius: 99px;
+  background: var(--ink);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dial-value {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 900;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dial-value span {
+  display: block;
+  margin-top: 2px;
+  font-size: 6px;
+  letter-spacing: 0.05em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.dial-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  text-align: center;
+  font-size: 6px;
+  letter-spacing: 0.1em;
+  font-weight: 900;
+  color: rgba(13, 13, 13, 0.52);
+}
+.dial-action {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  transform: translateX(-50%);
+  padding: 3px 7px;
+  border-radius: 99px;
+  font-size: 6px;
+  letter-spacing: 0.08em;
+  font-weight: 900;
+  background: rgba(13, 13, 13, 0.06);
+  color: rgba(13, 13, 13, 0.46);
+  transition: 0.2s ease;
+}
+.answer-dial.is-active {
+  cursor: grab;
+}
+.answer-dial.is-active:active {
+  cursor: grabbing;
+}
+.answer-dial.is-active .dial-knob {
+  box-shadow:
+    0 0 0 5px rgba(45, 143, 255, 0.14),
+    inset -4px -5px 10px rgba(13, 13, 13, 0.08),
+    0 2px 0 rgba(13, 13, 13, 0.08);
+}
+.answer-dial.is-active .dial-action {
+  background: var(--ink);
+  color: #fff;
+}
+.answer-dial.is-active:before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 76px;
+  height: 76px;
+  transform: translateX(-50%);
+  border: 1.5px solid var(--shower-blue);
+  border-radius: 50%;
+  animation: dial-pulse 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes dial-pulse {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translateX(-50%) scale(0.96);
+  }
+  50% {
+    opacity: 0.65;
+    transform: translateX(-50%) scale(1.04);
+  }
+}
+.answer-dial.is-inactive {
+  opacity: 0.48;
+  filter: grayscale(0.45);
+}
+.answer-dial:focus-visible .dial-knob {
+  box-shadow:
+    0 0 0 5px rgba(45, 143, 255, 0.23),
+    inset -4px -5px 10px rgba(13, 13, 13, 0.08);
+}
+
+.shower-next {
+  position: absolute;
+  left: 50%;
+  bottom: -23px;
+  transform: translateX(-50%);
+  min-width: 156px;
+  height: 46px;
+  padding: 0 16px 0 18px;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 0 rgba(13, 13, 13, 0.12);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+.shower-next i {
+  font-style: normal;
+  font-size: 17px;
+  line-height: 1;
+}
+.shower-next:active {
+  transform: translateX(-50%) translateY(3px);
+  box-shadow: 0 3px 0 rgba(13, 13, 13, 0.12);
+}
+.shower-next:focus-visible {
+  outline: 3px solid rgba(45, 143, 255, 0.28);
+  outline-offset: 3px;
+}
+
+.shower-footnote {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  font-weight: 900;
+  color: rgba(13, 13, 13, 0.42);
+  white-space: nowrap;
+}
+.shower-footnote i {
+  display: block;
+  width: 15px;
+  height: 1px;
+  background: rgba(13, 13, 13, 0.25);
+}
+
+.shower-transition {
+  position: absolute;
+  z-index: 60;
+  inset: 0;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+}
+.transition-water {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -115%;
+  height: 116%;
+  background:
+    radial-gradient(
+      circle at 18% 12%,
+      rgba(255, 255, 255, 0.34) 0 2px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at 72% 24%,
+      rgba(255, 255, 255, 0.22) 0 3px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #62b8ff 0%, #2d8fff 42%, #1769ff 100%);
+  background-size:
+    54px 54px,
+    76px 76px,
+    auto;
+  will-change: transform;
+}
+.transition-water:before {
+  content: "";
+  position: absolute;
+  left: -4%;
+  top: -25px;
+  width: 108%;
+  height: 52px;
+  border-radius: 50%;
+  background: #62b8ff;
+  transform: rotate(-2deg);
+}
+.transition-copy {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+}
+.transition-copy span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  font-weight: 900;
+}
+.transition-copy strong {
+  display: block;
+  margin-top: 4px;
+  font-family: "Archivo Black", Inter, sans-serif;
+  font-size: 34px;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+.shower-transition.is-running {
+  visibility: visible;
+}
+.shower-transition.is-running .transition-water {
+  animation: shower-water-wipe 1.12s cubic-bezier(0.72, 0, 0.22, 1) both;
+}
+.shower-transition.is-running .transition-copy {
+  animation: shower-transition-copy 1.12s ease both;
+}
+@keyframes shower-water-wipe {
+  0% {
+    transform: translateY(0);
+  }
+  39% {
+    transform: translateY(-100%);
+  }
+  58% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes shower-transition-copy {
+  0%,
+  30% {
+    opacity: 0;
+    transform: translate(-50%, -42%);
+  }
+  42%,
+  61% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  76%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -58%);
+  }
+}
+
+@media (max-height: 700px) {
+  .shower-fixture {
+    top: 24px;
+    transform: scale(0.91);
+    transform-origin: 50% 0;
+  }
+  .shower-console {
+    top: 49svh;
+    min-height: 170px;
+  }
+  .shower-footnote {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .new-shower-rain .water-line,
+  .answer-dial.is-active:before {
+    animation-duration: 3s;
+  }
+  .shower-transition.is-running .transition-water,
+  .shower-transition.is-running .transition-copy {
+    animation-duration: 0.18s;
+  }
+}
+
+/* sink */
+.kitchen-room {
+  background:
+    radial-gradient(circle at 74% 12%, rgba(255,255,255,.82), transparent 28%),
+    linear-gradient(rgba(13,13,13,.042) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,13,13,.042) 1px, transparent 1px),
+    repeating-linear-gradient(155deg, rgba(13,13,13,.012) 0 2px, transparent 2px 6px),
+    #f4efe7;
+  background-size: auto, 39px 39px, 39px 39px, auto, auto;
+}
+.sink-copy {
+  position: absolute;
+  left: 18px;
+  top: 46px;
+  width: 74%;
+  z-index: 12;
+}
+.sink-copy h2 {
+  max-width: 285px;
+  font-size: 35px;
+  line-height: .92;
+}
+.sink-copy p {
+  font-size: 11px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+/* One coherent kitchen scene: counter, faucet, sink and drying rack. */
+.sink-scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 225px;
+  height: 500px;
+  z-index: 8;
+  transform-origin: 50% 45%;
+}
+.countertop {
+  position: absolute;
+  z-index: 1;
+  left: -18px;
+  right: -18px;
+  top: 204px;
+  height: 236px;
+  border-top: 2px solid var(--ink);
+  background:
+    repeating-linear-gradient(8deg, rgba(13,13,13,.025) 0 1px, transparent 1px 8px),
+    #e9e2d8;
+  box-shadow: inset 0 9px 0 rgba(255,255,255,.38);
+}
+.countertop-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 27px;
+  height: 1px;
+  background: rgba(13,13,13,.18);
+}
+
+/* Faucet deliberately reuses the shower's outlined metal-pipe language. */
+.sink-faucet {
+  position: absolute;
+  z-index: 7;
+  left: 4px;
+  top: 3px;
+  width: 190px;
+  height: 245px;
+  overflow: visible;
+  filter: drop-shadow(6px 8px 0 rgba(13,13,13,.065));
+}
+.sink-pipe-outline,
+.sink-pipe,
+.sink-spout-outline,
+.sink-spout {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sink-pipe-outline,
+.sink-spout-outline {
+  stroke: var(--ink);
+  stroke-width: 15px;
+}
+.sink-pipe,
+.sink-spout {
+  stroke: #e9e7e1;
+  stroke-width: 11px;
+}
+.sink-faucet-mount,
+.sink-faucet-base {
+  fill: #e4e2dc;
+  stroke: var(--ink);
+  stroke-width: 2px;
+}
+.sink-stream {
+  position: absolute;
+  z-index: 6;
+  left: 177px;
+  top: 96px;
+  width: 5px;
+  height: 145px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, rgba(141,216,255,.72), #49adff 42%, #258cff);
+  box-shadow: 0 0 10px rgba(69,169,255,.18);
+  transition: height .28s ease;
+}
+
+.basin {
+  position: absolute;
+  z-index: 4;
+  left: 18px;
+  top: 201px;
+  width: 220px;
+  height: 205px;
+  border: 3px solid var(--ink);
+  border-radius: 24px 24px 78px 78px;
+  background: #f7f4ee;
+  overflow: hidden;
+  box-shadow: inset 0 9px 0 rgba(255,255,255,.65), 0 8px 0 rgba(13,13,13,.04);
+}
+.basin-rim {
+  position: absolute;
+  z-index: 5;
+  left: 10px;
+  right: 10px;
+  top: 12px;
+  height: 36px;
+  border: 1.5px solid rgba(13,13,13,.28);
+  border-radius: 18px 18px 45% 45%;
+  border-bottom-color: transparent;
+}
+.basin-water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36%;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.12) 0 2px, transparent 2px 8px),
+    linear-gradient(rgba(121,207,255,.7), rgba(36,140,255,.92));
+  transition: height .3s ease;
+}
+.basin-water:before {
+  content: "";
+  position: absolute;
+  left: -4%;
+  top: -8px;
+  width: 108%;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(127,210,255,.72);
+}
+.basin-drain {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 30px;
+  width: 24px;
+  height: 24px;
+  transform: translateX(-50%);
+  border: 2px solid rgba(13,13,13,.72);
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(13,13,13,.55) 0 8deg, transparent 8deg 24deg);
+  opacity: .55;
+}
+.soap-bubbles {
+  position: absolute;
+  z-index: 6;
+}
+.soap-bubbles i {
+  position: absolute;
+  border: 1.7px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(255,255,255,.88);
+  box-shadow: inset 3px 3px 0 rgba(121,207,255,.18);
+}
+.basin-bubbles {
+  left: 25px;
+  right: 22px;
+  bottom: 37px;
+  height: 88px;
+}
+.basin-bubbles i:nth-child(1) { left: 2%; top: 30%; width: 27px; height: 27px; }
+.basin-bubbles i:nth-child(2) { left: 29%; top: 49%; width: 40px; height: 40px; }
+.basin-bubbles i:nth-child(3) { left: 54%; top: 20%; width: 33px; height: 33px; }
+.basin-bubbles i:nth-child(4) { left: 72%; top: 55%; width: 22px; height: 22px; }
+.basin-bubbles i:nth-child(5) { left: 43%; top: 72%; width: 18px; height: 18px; }
+
+.sponge {
+  position: absolute;
+  z-index: 9;
+  left: 238px;
+  top: 219px;
+  width: 52px;
+  height: 27px;
+  border: 2px solid var(--ink);
+  border-radius: 8px 12px 7px 10px;
+  background: #f1d348;
+  transform: rotate(-7deg);
+  box-shadow: 3px 5px 0 rgba(13,13,13,.06);
+}
+.sponge:before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  height: 9px;
+  border: 2px solid var(--ink);
+  border-radius: 0 0 8px 9px;
+  background: #98c85e;
+}
+.sponge span,
+.sponge i {
+  position: absolute;
+  border: 1.3px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(255,255,255,.9);
+}
+.sponge span { width: 11px; height: 11px; right: -7px; top: -11px; }
+.sponge i:nth-child(2) { width: 7px; height: 7px; right: 7px; top: -16px; }
+.sponge i:nth-child(3) { width: 5px; height: 5px; right: -13px; top: 5px; }
+.sponge i:nth-child(4) { width: 6px; height: 6px; left: 5px; top: -9px; }
+
+/* Plates sit in a drying rack instead of floating independently. */
+.plate-rack {
+  position: absolute;
+  z-index: 10;
+  right: 8px;
+  top: 5px;
+  width: 143px;
+  height: 222px;
+}
+.rack-back {
+  position: absolute;
+  z-index: 0;
+  left: 7px;
+  right: 7px;
+  bottom: 5px;
+  height: 178px;
+  border-left: 3px solid var(--ink);
+  border-right: 3px solid var(--ink);
+  border-bottom: 5px solid var(--ink);
+  border-radius: 0 0 12px 12px;
+  opacity: .72;
+}
+.rack-back:before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 13px;
+  height: 2px;
+  background: var(--ink);
+  box-shadow: 0 -16px 0 rgba(13,13,13,.5), 0 -32px 0 rgba(13,13,13,.34);
+}
+.plate {
+  position: absolute;
+  z-index: 3;
+  right: 8px;
+  width: 102px;
+  height: 102px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 7px 8px rgba(13,13,13,.055));
+  transition: transform .18s ease, filter .18s ease;
+}
+.plate:nth-of-type(1) { bottom: 10px; z-index: 6; }
+.plate:nth-of-type(2) { bottom: 47px; z-index: 5; }
+.plate:nth-of-type(3) { bottom: 84px; z-index: 4; }
+.plate:nth-of-type(4) { bottom: 121px; z-index: 3; }
+.plate svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.plate-fill {
+  fill: #f8f4ed;
+  stroke: var(--ink);
+  stroke-width: 2.2px;
+  transition: fill .18s ease;
+}
+.plate-ring {
+  fill: none;
+  stroke: rgba(13,13,13,.34);
+  stroke-width: 1.3px;
+  stroke-dasharray: 2 3;
+}
+.plate-arc {
+  fill: none;
+}
+.plate-label {
+  fill: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .09em;
+}
+.plate.active {
+  transform: translateX(-8px) scale(1.035);
+  filter: drop-shadow(0 8px 10px rgba(13,13,13,.1));
+}
+.plate.active .plate-fill {
+  fill: var(--lime);
+}
+.plate:focus-visible {
+  outline: 3px solid rgba(45,143,255,.34);
+  outline-offset: 3px;
+}
+.plate-bubble {
+  position: absolute;
+  z-index: 8;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(255,255,255,.92);
+  pointer-events: none;
+}
+.plate-bubble.b1 { width: 11px; height: 11px; right: 14px; top: 23px; }
+.plate-bubble.b2 { width: 7px; height: 7px; right: 7px; top: 40px; }
+.plate-bubble.b3 { width: 8px; height: 8px; left: 17px; top: 17px; }
+.rack-feet {
+  position: absolute;
+  z-index: 8;
+  left: 9px;
+  right: 9px;
+  bottom: -2px;
+  height: 18px;
+  pointer-events: none;
+}
+.rack-feet i {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  height: 18px;
+  border-radius: 99px;
+  background: var(--ink);
+  transform: rotate(8deg);
+}
+.rack-feet i:nth-child(1) { left: 8px; }
+.rack-feet i:nth-child(2) { left: 42px; transform: rotate(3deg); }
+.rack-feet i:nth-child(3) { right: 42px; transform: rotate(-3deg); }
+.rack-feet i:nth-child(4) { right: 8px; transform: rotate(-8deg); }
+
+.sink-question-two {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  border-top: 2px solid var(--ink);
+  padding-top: 12px;
+  z-index: 20;
+  background: linear-gradient(transparent, #f4efe7 18%);
+}
+.sink-question-two h3 {
+  font-family: "Archivo Black";
+  font-size: 22px;
+  line-height: 1;
+  margin: 0 0 10px;
+}
+.method-plates {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 4px;
+  scrollbar-width: none;
+}
+.method-plates::-webkit-scrollbar { display: none; }
+.method-plate {
+  flex: 0 0 112px;
+  height: 48px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.method-plate.active { background: var(--pink); }
+
+@media (max-height: 760px) {
+  .sink-copy h2 { font-size: 31px; }
+  .sink-scene { top: 205px; transform-origin: 50% 40%; }
+}
+
+/* drain */
+.drain-room {
+  background: radial-gradient(
+    circle at 50% 48%,
+    #193f70 0 9%,
+    #0c203d 10% 23%,
+    #071426 24% 44%,
+    #02060d 45% 100%
+  );
+  color: #fff;
+  perspective: 600px;
+}
+.drain-copy {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 20;
+}
+.drain-copy strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 16vw;
+  line-height: 0.78;
+  letter-spacing: -0.07em;
+}
+.drain-copy span {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  font-weight: 900;
+  margin-top: 8px;
+}
+.drain-tunnel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90vw;
+  height: 90vw;
+  max-width: 410px;
+  max-height: 410px;
+  transform: translate(-50%, -50%);
+}
+.drain-tunnel i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 2px solid rgba(121, 207, 255, 0.55);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.drain-tunnel i:nth-child(1) {
+  width: 100%;
+  height: 100%;
+}
+.drain-tunnel i:nth-child(2) {
+  width: 84%;
+  height: 84%;
+}
+.drain-tunnel i:nth-child(3) {
+  width: 68%;
+  height: 68%;
+}
+.drain-tunnel i:nth-child(4) {
+  width: 53%;
+  height: 53%;
+}
+.drain-tunnel i:nth-child(5) {
+  width: 39%;
+  height: 39%;
+}
+.drain-tunnel i:nth-child(6) {
+  width: 26%;
+  height: 26%;
+}
+.drain-tunnel i:nth-child(7) {
+  width: 14%;
+  height: 14%;
+}
+.drain-hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9%;
+  height: 9%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #000;
+  box-shadow: 0 0 35px 15px rgba(36, 140, 255, 0.25);
+}
+
+/* laundry */
+.laundry-room {
+  background: #f4efe7;
+}
+.laundry-copy {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 48px;
+  text-align: center;
+  z-index: 10;
+}
+.laundry-copy h2 {
+  font-size: 36px;
+}
+.laundry-copy p {
+  font-size: 11px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.washer {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  width: min(84vw, 350px);
+  height: 420px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: #efebe5;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.09);
+}
+.washer-panel {
+  height: 75px;
+  border-bottom: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+}
+.washer-panel button {
+  height: 36px;
+  padding: 0 10px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.washer-panel button.active {
+  background: var(--lime);
+  transform: scale(1.1);
+}
+.washer-dial {
+  margin-left: auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: conic-gradient(var(--ink) 0 8%, transparent 8% 100%);
+}
+.washer-door {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, -50%);
+  width: 236px;
+  height: 236px;
+  border-radius: 50%;
+  border: 18px solid var(--ink);
+  background: #1b2735;
+  padding: 14px;
+}
+.washer-drum {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #d9dde1;
+  box-shadow: inset 0 0 0 7px #a6adb3;
+}
+.washer-water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+  background: linear-gradient(var(--cyan), var(--water));
+  transition: 0.35s;
+}
+.laundry-piece {
+  position: absolute;
+  width: 90px;
+  height: 50px;
+  border-radius: 45%;
+  background: var(--pink);
+  opacity: 0.88;
+}
+.piece-a {
+  left: 38px;
+  top: 80px;
+  transform: rotate(22deg);
+}
+.piece-b {
+  left: 75px;
+  top: 112px;
+  background: var(--lime);
+  transform: rotate(-25deg);
+}
+.piece-c {
+  left: 32px;
+  top: 132px;
+  background: #fff;
+  transform: rotate(50deg);
+}
+.washer-handle {
+  position: absolute;
+  right: 18px;
+  top: 91px;
+  width: 22px;
+  height: 74px;
+  border-radius: 12px;
+  background: var(--ink);
+}
+.washer-result {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+/* results */
+.result-room {
+  background:
+    radial-gradient(
+      circle at 13% 28%,
+      rgba(201, 255, 56, 0.8) 0 13%,
+      transparent 13.5%
+    ),
+    radial-gradient(
+      circle at 84% 72%,
+      rgba(255, 212, 223, 0.85) 0 12%,
+      transparent 12.5%
+    ),
+    var(--paper);
+}
+.result-kicker {
+  position: absolute;
+  top: 21%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+.result-number {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 39%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-family: "Archivo Black";
+  font-size: 31vw;
+  line-height: 0.72;
+  letter-spacing: -0.09em;
+}
+.result-number small {
+  display: block;
+  font-family: Inter;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  margin-top: 18px;
+}
+.result-copy {
+  position: absolute;
+  left: 36px;
+  right: 36px;
+  top: 59%;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+}
+.marker-strip {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 15%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+.marker-strip i {
+  height: 3px;
+  background: linear-gradient(90deg, var(--blue) 0 63%, var(--ink) 63%);
+}
+
+/* glasses */
+.glasses-room {
+  background: #061935;
+  color: white;
+}
+.full-text {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 47%;
+  transform: translateY(-50%);
+  text-align: center;
+  z-index: 20;
+}
+.full-text > span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  font-weight: 900;
+}
+.full-text strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 18vw;
+  line-height: 0.83;
+  letter-spacing: -0.06em;
+  margin: 8px 0;
+}
+.full-text p {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.flying-glasses {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+.fly-glass {
+  position: absolute;
+  width: 28px;
+  height: 36px;
+  border: 2px solid #fff;
+  border-radius: 4px 4px 9px 9px;
+  overflow: hidden;
+  opacity: 0;
+}
+.fly-glass:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72%;
+  background: var(--water);
+}
+.figma-grid {
+  position: absolute;
+  opacity: 0.24;
+  mix-blend-mode: screen;
+  filter: saturate(0.8);
+}
+.figma-glasses {
+  width: 76%;
+  left: 12%;
+  bottom: 6%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+/* money */
+.money-room {
+  background: #f5efe6;
+}
+.money-title {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 40%;
+  transform: translateY(-50%);
+  text-align: center;
+  z-index: 20;
+}
+.money-title > span {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  font-weight: 900;
+}
+.money-title strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 21vw;
+  line-height: 0.79;
+  letter-spacing: -0.07em;
+  margin: 8px 0;
+}
+.money-title p {
+  font-size: 10px;
+  line-height: 1.4;
+  opacity: 0.55;
+  max-width: 260px;
+  margin: auto;
+}
+.money-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 6;
+}
+.euro {
+  position: absolute;
+  top: -80px;
+  font-family: "Archivo Black";
+  font-size: 40px;
+  color: #308043;
+  animation: euroFall linear infinite;
+  opacity: 0.9;
+}
+@keyframes euroFall {
+  to {
+    transform: translateY(120vh) rotate(250deg);
+  }
+}
+.figma-euros {
+  width: 68%;
+  left: 16%;
+  bottom: 5%;
+  opacity: 0.12;
+  mix-blend-mode: multiply;
+}
+
+/* saving */
+.saving-room {
+  background: #fff;
+}
+.saving-big {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 20%;
+  text-align: center;
+  font-family: "Archivo Black";
+  font-size: 21vw;
+  line-height: 0.77;
+  letter-spacing: -0.07em;
+}
+.saving-arrow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44%;
+  text-align: center;
+  font-size: 60px;
+  font-weight: 900;
+  color: var(--red);
+}
+.saving-result {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 55%;
+  text-align: center;
+}
+.saving-result strong {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+.saving-result span {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 15vw;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  margin: 8px 0;
+}
+.saving-result small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.35;
+  opacity: 0.55;
+}
+.meme {
+  position: absolute;
+  width: 105px;
+  height: 105px;
+  object-fit: cover;
+  border: 3px solid var(--ink);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+.meme-one {
+  left: 18px;
+  bottom: 8%;
+  transform: rotate(-7deg);
+}
+.meme-two {
+  right: 18px;
+  bottom: 12%;
+  transform: rotate(8deg);
+}
+
+/* value */
+.value-room {
+  background: var(--paper);
+}
+.value-copy {
+  position: absolute;
+  top: 10%;
+  left: 18px;
+  right: 18px;
+  text-align: center;
+}
+.value-copy strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 29vw;
+  line-height: 0.8;
+  letter-spacing: -0.08em;
+  color: var(--blue);
+}
+.value-copy span {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.doner-comparison {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 38%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.doner-comparison img {
+  width: 42%;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.14));
+}
+.doner-comparison p {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 105%;
+  text-align: center;
+  font-family: "Archivo Black";
+  font-size: 22px;
+  line-height: 1;
+}
+.outfit-comparison {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4%;
+  height: 42%;
+  overflow: hidden;
+}
+.outfit-comparison img {
+  position: absolute;
+  right: -18px;
+  bottom: 0;
+  height: 100%;
+  object-fit: contain;
+}
+.outfit-comparison p {
+  position: absolute;
+  left: 18px;
+  top: 28%;
+  width: 48%;
+  font-family: "Archivo Black";
+  font-size: 21px;
+  line-height: 1;
+}
+
+/* actions */
+.actions-room {
+  background: #101010;
+  color: white;
+}
+.actions-room > h2 {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 12%;
+  text-align: center;
+  font-size: 18vw;
+}
+.action-cards {
+  position: absolute;
+  inset: 0;
+}
+.action-card {
+  position: absolute;
+  width: 72%;
+  min-height: 205px;
+  border: 2px solid white;
+  padding: 18px;
+  color: #0d0d0d;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.25);
+}
+.action-card span {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 48px;
+  line-height: 0.8;
+  margin-bottom: 28px;
+}
+.action-card strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 25px;
+  line-height: 0.9;
+}
+.action-card p {
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 9px;
+}
+.action-card.lime {
+  background: var(--lime);
+  left: 12px;
+  top: 34%;
+  transform: rotate(-6deg);
+}
+.action-card.pink {
+  background: var(--pink);
+  right: 14px;
+  top: 52%;
+  transform: rotate(6deg);
+}
+.action-card.blue {
+  background: #6eb5ff;
+  left: 24px;
+  bottom: 6%;
+  transform: rotate(-4deg);
+}
+
+/* future */
+.future-room {
+  background: #fff;
+}
+.future-headline {
+  position: absolute;
+  top: 10%;
+  left: 18px;
+  right: 18px;
+  text-align: center;
+  z-index: 12;
+}
+.future-headline > span {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 12vw;
+  line-height: 0.86;
+}
+.future-headline strong {
+  display: block;
+  font-family: "Archivo Black";
+  font-size: 14vw;
+  line-height: 0.82;
+  margin-top: 26px;
+}
+.future-headline em {
+  font-style: normal;
+  color: var(--red);
+}
+.future-collage {
+  position: absolute;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14);
+}
+.future-collage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.collage-dry {
+  left: 9%;
+  right: 9%;
+  top: 42%;
+  height: 25%;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 4px;
+  padding: 4px;
+  background: #111;
+}
+.collage-before-after {
+  left: 12%;
+  right: 12%;
+  bottom: 5%;
+  height: 22%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.future-meme {
+  position: absolute;
+  width: 96px;
+  height: 54px;
+  object-fit: cover;
+  right: 12px;
+  top: 31%;
+  border: 2px solid var(--ink);
+  transform: rotate(6deg);
+}
+
+/* end */
+.end-room {
+  background: #0d0d0d;
+  color: white;
+}
+.end-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+}
+.end-copy > span {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 900;
+}
+.end-copy strong {
+  font-family: "Archivo Black";
+  font-size: 20vw;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  margin: 10px 0;
+}
+.end-copy p {
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 300px;
+  color: rgba(255, 255, 255, 0.76);
+}
+#restartBtn {
+  margin-top: 24px;
+  border: 2px solid #fff;
+  background: #fff;
+  color: #0d0d0d;
+  border-radius: 999px;
+  min-height: 54px;
+  padding: 0 28px;
+  font-weight: 900;
+  cursor: pointer;
+}
+ .chapter{height:844px!important} .sticky{position:relative!important;height:844px!important} .sink-question-two{display:none!important} </style></head><body><main class="phone"><section class="chapter chapter-sink" id="sinkChapter">
+<div class="sticky kitchen-room">
+<div class="tiny-label top-left">03 / THE SINK</div>
+<div class="sink-copy">
+<span class="question-count">Q3</span>
+<h2>How many times a week do you wash dishes?</h2>
+<p>Tap one plate.</p>
+</div>
+<div class="sink-scene">
+<div aria-hidden="true" class="countertop">
+<div class="countertop-edge"></div>
+</div>
+<svg aria-hidden="true" class="sink-faucet" viewbox="0 0 170 220">
+<path class="sink-pipe-outline" d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83"></path>
+<path class="sink-pipe" d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83"></path>
+<path class="sink-spout-outline" d="M126 83h31"></path>
+<path class="sink-spout" d="M126 83h31"></path>
+<circle class="sink-faucet-mount" cx="38" cy="185" r="13"></circle>
+<rect class="sink-faucet-base" height="14" rx="7" width="34" x="21" y="178"></rect>
+</svg>
+<div aria-hidden="true" class="sink-stream" id="sinkStream"></div>
+<div aria-hidden="true" class="basin">
+<div class="basin-rim"></div>
+<div class="basin-water" id="basinWater"></div>
+<div class="basin-drain"></div>
+<div class="soap-bubbles basin-bubbles">
+<i></i><i></i><i></i><i></i><i></i>
+</div>
+</div>
+<div aria-hidden="true" class="sponge">
+<span></span><i></i><i></i><i></i>
+</div>
+<div aria-label="How many times a week do you wash dishes?" class="plate-rack" id="dishFrequency">
+<div aria-hidden="true" class="rack-back"></div>
+<button aria-label="1 time a week" class="plate" data-value="1">
+<svg aria-hidden="true" viewbox="0 0 120 120">
+<circle class="plate-fill" cx="60" cy="60" r="56"></circle>
+<circle class="plate-ring" cx="60" cy="60" r="43"></circle>
+<path class="plate-arc" d="M18 62 A42 42 0 0 1 102 62" id="plateArc1"></path>
+<text class="plate-label"><textpath href="#plateArc1" startoffset="50%" text-anchor="middle">1× · A WEEK ·</textpath></text>
+</svg>
+<span class="plate-bubble b1"></span><span class="plate-bubble b2"></span>
+</button>
+<button aria-label="3 times a week" class="plate" data-value="3">
+<svg aria-hidden="true" viewbox="0 0 120 120">
+<circle class="plate-fill" cx="60" cy="60" r="56"></circle>
+<circle class="plate-ring" cx="60" cy="60" r="43"></circle>
+<path class="plate-arc" d="M18 62 A42 42 0 0 1 102 62" id="plateArc3"></path>
+<text class="plate-label"><textpath href="#plateArc3" startoffset="50%" text-anchor="middle">3× · A WEEK ·</textpath></text>
+</svg>
+<span class="plate-bubble b1"></span><span class="plate-bubble b3"></span>
+</button>
+<button aria-label="5 times a week" class="plate active" data-value="5">
+<svg aria-hidden="true" viewbox="0 0 120 120">
+<circle class="plate-fill" cx="60" cy="60" r="56"></circle>
+<circle class="plate-ring" cx="60" cy="60" r="43"></circle>
+<path class="plate-arc" d="M18 62 A42 42 0 0 1 102 62" id="plateArc5"></path>
+<text class="plate-label"><textpath href="#plateArc5" startoffset="50%" text-anchor="middle">5× · A WEEK ·</textpath></text>
+</svg>
+<span class="plate-bubble b2"></span><span class="plate-bubble b3"></span>
+</button>
+<button aria-label="7 times a week" class="plate" data-value="7">
+<svg aria-hidden="true" viewbox="0 0 120 120">
+<circle class="plate-fill" cx="60" cy="60" r="56"></circle>
+<circle class="plate-ring" cx="60" cy="60" r="43"></circle>
+<path class="plate-arc" d="M18 62 A42 42 0 0 1 102 62" id="plateArc7"></path>
+<text class="plate-label"><textpath href="#plateArc7" startoffset="50%" text-anchor="middle">7× · A WEEK ·</textpath></text>
+</svg>
+<span class="plate-bubble b1"></span><span class="plate-bubble b2"></span>
+</button>
+<div aria-hidden="true" class="rack-feet"><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+<div class="sink-question-two" id="dishMethodPanel">
+<span class="question-count">Q4</span>
+<h3>How do you usually wash them?</h3>
+<div class="method-plates" id="dishMethod">
+<button class="method-plate" data-value="dishwasher">
+                Dishwasher
+              </button>
+<button class="method-plate active" data-value="basin">
+                Filled sink
+              </button>
+<button class="method-plate" data-value="running">
+                Running tap
+              </button>
+</div>
+</div>
+</div>
+</section></main></body></html>

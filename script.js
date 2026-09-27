@@ -407,16 +407,20 @@ function updateScrollAnimations(){
   const p1=progress("showerStart");
   const fixture=document.querySelector(".shower-fixture");
   const console=document.querySelector(".shower-console");
-  fixture.style.transform=`translateY(${lerp(0,-8,p1)}px)`;
-  console.style.transform=`translateY(${lerp(0,-5,p1)}px)`;
+  if(fixture) fixture.style.transform=`translateY(${lerp(0,-8,p1)}px)`;
+  if(console) console.style.transform=`translateY(${lerp(0,-5,p1)}px)`;
 
   const p5=progress("laundryChapter");
-  document.querySelector(".washer").style.transform=`translate(-50%,-50%) scale(${lerp(.84,1.05,clamp((p5-.05)/.62))})`;
-  document.querySelector(".washer-load").style.transform=`rotate(${lerp(0,540,clamp((p5-.2)/.65))}deg)`;
+  const washer=document.querySelector(".washer");
+  const washerLoad=document.querySelector(".washer-load");
+  if(washer) washer.style.transform=`translate(-50%,-50%) scale(${lerp(.84,1.05,clamp((p5-.05)/.62))})`;
+  if(washerLoad) washerLoad.style.transform=`rotate(${lerp(0,540,clamp((p5-.2)/.65))}deg)`;
 
   const p6=progress("resultChapter");
-  document.querySelector(".result-number").style.transform=`scale(${lerp(.82,1.03,clamp((p6-.12)/.45))})`;
-  document.querySelector(".marker-strip").style.opacity=String(clamp((p6-.42)/.2));
+  const resultNumber=document.querySelector(".result-number");
+  const markerStrip=document.querySelector(".marker-strip");
+  if(resultNumber) resultNumber.style.transform=`scale(${lerp(.82,1.03,clamp((p6-.12)/.45))})`;
+  if(markerStrip) markerStrip.style.opacity=String(clamp((p6-.42)/.2));
 
   const p7=progress("glassesChapter");
   [...document.querySelectorAll(".fly-glass")].forEach((g,i)=>{
@@ -427,33 +431,64 @@ function updateScrollAnimations(){
     g.style.opacity=String(local*.88);
     g.style.transform=`translate(-50%,-50%) rotate(${lerp(0,r,local)}deg) scale(${lerp(.25,1,local)})`;
   });
-  document.querySelector(".figma-glasses").style.transform=`scale(${lerp(.75,1.05,p7)})`;
+  const figmaGlasses=document.querySelector(".figma-glasses");
+  if(figmaGlasses) figmaGlasses.style.transform=`scale(${lerp(.75,1.05,p7)})`;
 
   const p8=progress("moneyChapter");
-  document.querySelector(".money-title").style.transform=`translateY(-50%) scale(${lerp(.84,1.04,clamp((p8-.06)/.55))})`;
-  document.getElementById("moneyRain").style.opacity=String(clamp((p8-.15)/.2));
+  const moneyTitle=document.querySelector(".money-title");
+  const moneyRain=document.getElementById("moneyRain");
+  const moneyGif=document.querySelector(".money-gif-card");
+  if(moneyTitle) moneyTitle.style.transform=`translateY(${lerp(28,-4,clamp((p8-.02)/.32))}px) scale(${lerp(.9,1.04,clamp((p8-.02)/.4))})`;
+  if(moneyRain) moneyRain.style.opacity=String(clamp((p8-.08)/.18));
+  if(moneyGif) {
+    const local=clamp((p8-.28)/.3);
+    moneyGif.style.opacity=String(local);
+    moneyGif.style.transform=`translateY(${lerp(24,0,local)}px) scale(${lerp(.94,1,local)})`;
+  }
 
-  const p9=progress("savingChapter");
-  document.querySelector(".saving-big").style.transform=`scale(${lerp(.74,1.06,clamp((p9-.08)/.38))})`;
-  document.querySelector(".meme-one").style.transform=`rotate(${lerp(-18,-7,p9)}deg) translateY(${lerp(50,0,p9)}px)`;
-  document.querySelector(".meme-two").style.transform=`rotate(${lerp(18,8,p9)}deg) translateY(${lerp(70,0,p9)}px)`;
-
-  const p10=progress("valueChapter");
-  document.querySelector(".doner-comparison").style.transform=`translateY(${lerp(70,0,clamp((p10-.08)/.3))}px)`;
-  document.querySelector(".outfit-comparison").style.transform=`translateX(${lerp(80,0,clamp((p10-.45)/.28))}px)`;
-
-  const p11=progress("actionsChapter");
+  const p10=progress("actionsChapter");
   [...document.querySelectorAll(".action-card")].forEach((card,i)=>{
-    const local=clamp((p11-(.08+i*.16))/.22);
-    const rot=[-6,6,-4][i];
+    const local=clamp((p10-(.08+i*.16))/.22);
+    const rot=[-3,3,-2][i];
     card.style.opacity=String(local);
-    card.style.transform=`rotate(${rot}deg) translateY(${lerp(70,0,local)}px) scale(${lerp(.92,1,local)})`;
+    card.style.transform=`rotate(${rot}deg) translateY(${lerp(70,0,local)}px) scale(${lerp(.94,1,local)})`;
   });
 
-  const p12=progress("futureChapter");
-  document.querySelector(".collage-dry").style.transform=`scale(${lerp(.72,1.04,clamp((p12-.18)/.3))})`;
-  document.querySelector(".collage-before-after").style.clipPath=`inset(0 ${lerp(48,0,clamp((p12-.5)/.3))}% 0 0)`;
-  document.querySelector(".future-meme").style.transform=`rotate(${lerp(-12,6,p12)}deg) scale(${lerp(.7,1.05,p12)})`;
+  const morphProgress=progress("morphChapter");
+  const morphFrame=document.getElementById("morphFrame");
+  if(morphFrame){
+    // Scrub the extracted GIF frames through a long sticky section.
+    // The wide progress range intentionally makes the morph feel slow and controlled.
+    const scrub=clamp((morphProgress-.04)/.92);
+    const frameIndex=Math.round(scrub*28);
+    const frameSrc=`assets/morph_frames_webp/frame_${String(frameIndex).padStart(2,"0")}.webp`;
+    if(morphFrame.dataset.frame !== String(frameIndex)){
+      morphFrame.src=frameSrc;
+      morphFrame.dataset.frame=String(frameIndex);
+    }
+  }
+
+  const p12=progress("endChapter");
+  const endRoom=document.querySelector('.end-room');
+  const beforePanel=document.querySelector('.end-before-panel');
+  const afterPanel=document.querySelector('.end-after-panel');
+  const restartBtn=document.getElementById('restartBtn');
+
+  // Final before/after transition is opacity-only: nothing moves or rescales.
+  const fade=clamp((p12-.34)/.34);
+  if(beforePanel) beforePanel.style.opacity=String(1-fade);
+  if(afterPanel) afterPanel.style.opacity=String(fade);
+  if(endRoom){
+    const c=Math.round(7 + (244-7)*fade);
+    const g=Math.round(7 + (236-7)*fade);
+    const b=Math.round(7 + (248-7)*fade);
+    endRoom.style.backgroundColor=`rgb(${c},${g},${b})`;
+  }
+  if(restartBtn){
+    const showButton=p12>.72;
+    restartBtn.classList.toggle('is-visible', showButton);
+  }
+
 }
 
 const timeDialController = bindAnswerDial({
@@ -477,6 +512,11 @@ bindPlates();
 bindLaundry();
 buildFlyingGlasses();
 buildMoneyRain();
+// Preload the 29 extracted morph frames so scroll scrubbing does not flicker.
+for(let i=0;i<29;i++){
+  const img=new Image();
+  img.src=`assets/morph_frames_webp/frame_${String(i).padStart(2,"0")}.webp`;
+}
 updateSink();
 updateLaundry();
 updateEstimate();

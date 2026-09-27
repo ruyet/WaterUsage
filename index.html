@@ -23,28 +23,75 @@
       <section class="chapter chapter-shower" id="showerStart">
         <div class="sticky shower-room">
           <div class="tiny-label top-left">01 / YOUR ROUTINE</div>
-          <div class="tiny-label top-right shower-step-top" id="showerStepTop">QUESTION 1 / 2</div>
+          <div class="tiny-label top-right shower-step-top" id="showerStepTop">
+            QUESTION 1 / 2
+          </div>
 
           <div class="shower-fixture" aria-hidden="true">
-            <svg class="shower-fixture-svg" viewBox="0 0 390 430" role="presentation">
+            <svg
+              class="shower-fixture-svg"
+              viewBox="0 0 390 430"
+              role="presentation"
+            >
               <g class="fixture-body">
                 <!-- one simple exposed pipe: up, across, then into the overhead head -->
-                <path class="fixture-pipe-outline" d="M274 430V55Q274 39 258 39H205Q190 39 190 54V61" />
-                <path class="fixture-pipe" d="M274 430V55Q274 39 258 39H205Q190 39 190 54V61" />
+                <path
+                  class="fixture-pipe-outline"
+                  d="M274 430V55Q274 39 258 39H205Q190 39 190 54V61"
+                />
+                <path
+                  class="fixture-pipe"
+                  d="M274 430V55Q274 39 258 39H205Q190 39 190 54V61"
+                />
 
                 <!-- small wall bracket so the riser feels mounted, not floating -->
                 <circle class="fixture-wall-plate" cx="295" cy="145" r="11" />
-                <rect class="fixture-wall-bracket" x="268" y="137" width="31" height="16" rx="8" />
+                <rect
+                  class="fixture-wall-bracket"
+                  x="268"
+                  y="137"
+                  width="31"
+                  height="16"
+                  rx="8"
+                />
 
                 <!-- simple round overhead shower head -->
-                <rect class="fixture-head-neck" x="181" y="50" width="18" height="18" rx="6" />
-                <path class="fixture-head-shell" d="M132 75Q141 57 190 57Q239 57 248 75L245 83Q235 94 190 97Q145 94 135 83Z" />
-                <ellipse class="fixture-head-face" cx="190" cy="81" rx="55" ry="17" />
-                <path class="fixture-head-highlight" d="M151 69Q166 62 190 62Q215 62 229 69" />
+                <rect
+                  class="fixture-head-neck"
+                  x="181"
+                  y="50"
+                  width="18"
+                  height="18"
+                  rx="6"
+                />
+                <path
+                  class="fixture-head-shell"
+                  d="M132 75Q141 57 190 57Q239 57 248 75L245 83Q235 94 190 97Q145 94 135 83Z"
+                />
+                <ellipse
+                  class="fixture-head-face"
+                  cx="190"
+                  cy="81"
+                  rx="55"
+                  ry="17"
+                />
+                <path
+                  class="fixture-head-highlight"
+                  d="M151 69Q166 62 190 62Q215 62 229 69"
+                />
                 <g class="fixture-nozzles">
-                  <circle cx="151" cy="79" r="1.9"/><circle cx="164" cy="83" r="1.9"/><circle cx="177" cy="85" r="1.9"/>
-                  <circle cx="190" cy="86" r="1.9"/><circle cx="203" cy="85" r="1.9"/><circle cx="216" cy="83" r="1.9"/><circle cx="229" cy="79" r="1.9"/>
-                  <circle cx="159" cy="89" r="1.7"/><circle cx="175" cy="91" r="1.7"/><circle cx="190" cy="92" r="1.7"/><circle cx="205" cy="91" r="1.7"/><circle cx="221" cy="89" r="1.7"/>
+                  <circle cx="151" cy="79" r="1.9" />
+                  <circle cx="164" cy="83" r="1.9" />
+                  <circle cx="177" cy="85" r="1.9" />
+                  <circle cx="190" cy="86" r="1.9" />
+                  <circle cx="203" cy="85" r="1.9" />
+                  <circle cx="216" cy="83" r="1.9" />
+                  <circle cx="229" cy="79" r="1.9" />
+                  <circle cx="159" cy="89" r="1.7" />
+                  <circle cx="175" cy="91" r="1.7" />
+                  <circle cx="190" cy="92" r="1.7" />
+                  <circle cx="205" cy="91" r="1.7" />
+                  <circle cx="221" cy="89" r="1.7" />
                 </g>
               </g>
             </svg>
@@ -54,9 +101,20 @@
           <div class="shower-console" id="showerConsole">
             <div class="console-rail" aria-hidden="true"></div>
 
-            <div class="answer-dial flow-dial is-inactive" id="flowDial" role="slider" tabindex="-1"
-              aria-label="Showers per week" aria-valuemin="3" aria-valuemax="10" aria-valuenow="5" aria-disabled="true">
-              <div class="dial-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div
+              class="answer-dial flow-dial is-inactive"
+              id="flowDial"
+              role="slider"
+              tabindex="-1"
+              aria-label="Showers per week"
+              aria-valuemin="3"
+              aria-valuemax="10"
+              aria-valuenow="5"
+              aria-disabled="true"
+            >
+              <div class="dial-scale" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
               <div class="dial-knob">
                 <span class="dial-marker"></span>
                 <span class="dial-value" id="flowValue">FLOW</span>
@@ -65,21 +123,42 @@
               <span class="dial-action" id="flowAction">Q2</span>
             </div>
 
-            <div class="console-question" id="showerQuestionBlock" aria-live="polite">
+            <div
+              class="console-question"
+              id="showerQuestionBlock"
+              aria-live="polite"
+            >
               <div class="question-meta">
                 <span class="question-count" id="showerQuestionCount">Q1</span>
-                <span class="active-control-label" id="activeControlLabel">USE RIGHT DIAL</span>
+                <span class="active-control-label" id="activeControlLabel"
+                  >USE RIGHT DIAL</span
+                >
               </div>
               <h2 id="showerQuestion">How long is your usual shower?</h2>
-              <p id="showerHelper">Turn the highlighted dial to choose your answer.</p>
+              <p id="showerHelper">
+                Turn the highlighted dial to choose your answer.
+              </p>
             </div>
 
-            <div class="answer-dial time-dial is-active" id="timeDial" role="slider" tabindex="0"
-              aria-label="Shower duration" aria-valuemin="2" aria-valuemax="20" aria-valuenow="10" aria-disabled="false">
-              <div class="dial-scale temperature-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div
+              class="answer-dial time-dial is-active"
+              id="timeDial"
+              role="slider"
+              tabindex="0"
+              aria-label="Shower duration"
+              aria-valuemin="2"
+              aria-valuemax="20"
+              aria-valuenow="10"
+              aria-disabled="false"
+            >
+              <div class="dial-scale temperature-scale" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
               <div class="dial-knob">
                 <span class="dial-marker"></span>
-                <span class="dial-value" id="timeValue">10<span> min</span></span>
+                <span class="dial-value" id="timeValue"
+                  >10<span> min</span></span
+                >
               </div>
               <span class="dial-caption" id="timeCaption">DURATION</span>
               <span class="dial-action" id="timeAction">TURN</span>
@@ -91,7 +170,11 @@
             </button>
           </div>
 
-          <div class="shower-transition" id="showerTransition" aria-hidden="true">
+          <div
+            class="shower-transition"
+            id="showerTransition"
+            aria-hidden="true"
+          >
             <div class="transition-water"></div>
             <div class="transition-copy">
               <span>ROUTINE SAVED</span>
@@ -121,12 +204,43 @@
             </div>
 
             <svg class="sink-faucet" viewBox="0 0 170 220" aria-hidden="true">
-              <path class="sink-pipe-outline" fill="none" stroke="#0d0d0d" stroke-width="15" d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83" />
-              <path class="sink-pipe" fill="none" stroke="#e9e7e1" stroke-width="11" d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83" />
-              <path class="sink-spout-outline" fill="none" stroke="#0d0d0d" stroke-width="15" d="M126 83h31" />
-              <path class="sink-spout" fill="none" stroke="#e9e7e1" stroke-width="11" d="M126 83h31" />
+              <path
+                class="sink-pipe-outline"
+                fill="none"
+                stroke="#0d0d0d"
+                stroke-width="15"
+                d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83"
+              />
+              <path
+                class="sink-pipe"
+                fill="none"
+                stroke="#e9e7e1"
+                stroke-width="11"
+                d="M38 185V73Q38 28 83 28H103Q126 28 126 51V83"
+              />
+              <path
+                class="sink-spout-outline"
+                fill="none"
+                stroke="#0d0d0d"
+                stroke-width="15"
+                d="M126 83h31"
+              />
+              <path
+                class="sink-spout"
+                fill="none"
+                stroke="#e9e7e1"
+                stroke-width="11"
+                d="M126 83h31"
+              />
               <circle class="sink-faucet-mount" cx="38" cy="185" r="13" />
-              <rect class="sink-faucet-base" x="21" y="178" width="34" height="14" rx="7" />
+              <rect
+                class="sink-faucet-base"
+                x="21"
+                y="178"
+                width="34"
+                height="14"
+                rx="7"
+              />
             </svg>
             <div class="sink-stream" id="sinkStream" aria-hidden="true"></div>
 
@@ -143,58 +257,186 @@
               <span></span><i></i><i></i><i></i>
             </div>
 
-            <div class="plate-rack" id="dishFrequency" aria-label="How many times a week do you wash dishes?">
+            <div
+              class="plate-rack"
+              id="dishFrequency"
+              aria-label="How many times a week do you wash dishes?"
+            >
               <div class="rack-back" aria-hidden="true"></div>
               <button class="plate" data-value="1" aria-label="1 time a week">
                 <svg viewBox="0 0 120 120" aria-hidden="true">
-                  <circle class="plate-fill" fill="#f8f4ed" stroke="#0d0d0d" cx="60" cy="60" r="56" />
-                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
-                  <path id="plateArc1" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
-                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc1" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                  <circle
+                    class="plate-fill"
+                    fill="#f8f4ed"
+                    stroke="#0d0d0d"
+                    cx="60"
+                    cy="60"
+                    r="56"
+                  />
+                  <circle
+                    class="plate-ring"
+                    fill="none"
+                    stroke="rgba(13,13,13,.34)"
+                    cx="60"
+                    cy="60"
+                    r="43"
+                  />
+                  <path
+                    id="plateArc1"
+                    class="plate-arc"
+                    fill="none"
+                    d="M18 62 A42 42 0 0 1 102 62"
+                  />
+                  <text class="plate-label" fill="#0d0d0d">
+                    <textPath
+                      href="#plateArc1"
+                      startOffset="50%"
+                      text-anchor="middle"
+                    >
+                      A WEEK
+                    </textPath>
+                  </text>
                 </svg>
                 <span class="plate-center">1×</span>
-                <span class="plate-bubble b1"></span><span class="plate-bubble b2"></span>
+                <span class="plate-bubble b1"></span
+                ><span class="plate-bubble b2"></span>
               </button>
               <button class="plate" data-value="3" aria-label="3 times a week">
                 <svg viewBox="0 0 120 120" aria-hidden="true">
-                  <circle class="plate-fill" fill="#f8f4ed" stroke="#0d0d0d" cx="60" cy="60" r="56" />
-                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
-                  <path id="plateArc3" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
-                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc3" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                  <circle
+                    class="plate-fill"
+                    fill="#f8f4ed"
+                    stroke="#0d0d0d"
+                    cx="60"
+                    cy="60"
+                    r="56"
+                  />
+                  <circle
+                    class="plate-ring"
+                    fill="none"
+                    stroke="rgba(13,13,13,.34)"
+                    cx="60"
+                    cy="60"
+                    r="43"
+                  />
+                  <path
+                    id="plateArc3"
+                    class="plate-arc"
+                    fill="none"
+                    d="M18 62 A42 42 0 0 1 102 62"
+                  />
+                  <text class="plate-label" fill="#0d0d0d">
+                    <textPath
+                      href="#plateArc3"
+                      startOffset="50%"
+                      text-anchor="middle"
+                    >
+                      A WEEK
+                    </textPath>
+                  </text>
                 </svg>
                 <span class="plate-center">3×</span>
-                <span class="plate-bubble b1"></span><span class="plate-bubble b3"></span>
+                <span class="plate-bubble b1"></span
+                ><span class="plate-bubble b3"></span>
               </button>
               <button class="plate" data-value="5" aria-label="5 times a week">
                 <svg viewBox="0 0 120 120" aria-hidden="true">
-                  <circle class="plate-fill" fill="#c9ff38" stroke="#0d0d0d" cx="60" cy="60" r="56" />
-                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
-                  <path id="plateArc5" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
-                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc5" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                  <circle
+                    class="plate-fill"
+                    fill="#c9ff38"
+                    stroke="#0d0d0d"
+                    cx="60"
+                    cy="60"
+                    r="56"
+                  />
+                  <circle
+                    class="plate-ring"
+                    fill="none"
+                    stroke="rgba(13,13,13,.34)"
+                    cx="60"
+                    cy="60"
+                    r="43"
+                  />
+                  <path
+                    id="plateArc5"
+                    class="plate-arc"
+                    fill="none"
+                    d="M18 62 A42 42 0 0 1 102 62"
+                  />
+                  <text class="plate-label" fill="#0d0d0d">
+                    <textPath
+                      href="#plateArc5"
+                      startOffset="50%"
+                      text-anchor="middle"
+                    >
+                      A WEEK
+                    </textPath>
+                  </text>
                 </svg>
                 <span class="plate-center">5×</span>
-                <span class="plate-bubble b2"></span><span class="plate-bubble b3"></span>
+                <span class="plate-bubble b2"></span
+                ><span class="plate-bubble b3"></span>
               </button>
               <button class="plate" data-value="7" aria-label="7 times a week">
                 <svg viewBox="0 0 120 120" aria-hidden="true">
-                  <circle class="plate-fill" fill="#f8f4ed" stroke="#0d0d0d" cx="60" cy="60" r="56" />
-                  <circle class="plate-ring" fill="none" stroke="rgba(13,13,13,.34)" cx="60" cy="60" r="43" />
-                  <path id="plateArc7" class="plate-arc" fill="none" d="M18 62 A42 42 0 0 1 102 62" />
-                  <text class="plate-label" fill="#0d0d0d"><textPath href="#plateArc7" startOffset="50%" text-anchor="middle">A WEEK</textPath></text>
+                  <circle
+                    class="plate-fill"
+                    fill="#f8f4ed"
+                    stroke="#0d0d0d"
+                    cx="60"
+                    cy="60"
+                    r="56"
+                  />
+                  <circle
+                    class="plate-ring"
+                    fill="none"
+                    stroke="rgba(13,13,13,.34)"
+                    cx="60"
+                    cy="60"
+                    r="43"
+                  />
+                  <path
+                    id="plateArc7"
+                    class="plate-arc"
+                    fill="none"
+                    d="M18 62 A42 42 0 0 1 102 62"
+                  />
+                  <text class="plate-label" fill="#0d0d0d">
+                    <textPath
+                      href="#plateArc7"
+                      startOffset="50%"
+                      text-anchor="middle"
+                    >
+                      A WEEK
+                    </textPath>
+                  </text>
                 </svg>
                 <span class="plate-center">7×</span>
-                <span class="plate-bubble b1"></span><span class="plate-bubble b2"></span>
+                <span class="plate-bubble b1"></span
+                ><span class="plate-bubble b2"></span>
               </button>
-              <div class="rack-feet" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              <div class="rack-feet" aria-hidden="true">
+                <i></i><i></i><i></i><i></i>
+              </div>
             </div>
           </div>
 
-          <button class="sink-next" id="sinkNext" type="button" aria-hidden="true" tabindex="-1">
+          <button
+            class="sink-next"
+            id="sinkNext"
+            type="button"
+            aria-hidden="true"
+            tabindex="-1"
+          >
             <span>NEXT QUESTION</span>
             <i aria-hidden="true">→</i>
           </button>
 
-          <div class="sink-question-two" id="dishMethodPanel" aria-hidden="true">
+          <div
+            class="sink-question-two"
+            id="dishMethodPanel"
+            aria-hidden="true"
+          >
             <span class="question-count">Q4</span>
             <h3>How do you usually wash them?</h3>
             <div class="method-plates" id="dishMethod">
@@ -208,7 +450,13 @@
                 Running tap
               </button>
             </div>
-            <button class="sink-scroll-cue" id="sinkScrollCue" type="button" aria-hidden="true" tabindex="-1">
+            <button
+              class="sink-scroll-cue"
+              id="sinkScrollCue"
+              type="button"
+              aria-hidden="true"
+              tabindex="-1"
+            >
               <span>ANSWER SAVED</span>
               <strong>SCROLL TO CONTINUE</strong>
               <i aria-hidden="true">↓</i>
@@ -273,7 +521,8 @@
               <span id="personalLitres">118</span><small>L / DAY</small>
             </div>
             <p class="result-copy">
-              This estimate uses the habits you just selected. Compare it with the Dutch average below.
+              This estimate uses the habits you just selected. Compare it with
+              the Dutch average below.
             </p>
 
             <div class="marker-strip" id="resultComparison">
@@ -321,143 +570,234 @@
       <section class="chapter chapter-money" id="moneyChapter">
         <div class="sticky money-room">
           <div class="tiny-label top-left">07 / WHAT DOES THAT MEAN?</div>
-          <div class="money-title">
-            <span>WATER + HEATING</span>
-            <strong>€<span id="monthlyCost">54</span><br />A MONTH</strong>
-            <p>
-              Prototype example. Replace this with your final researched
-              calculation.
-            </p>
-          </div>
           <div class="money-rain" id="moneyRain" aria-hidden="true"></div>
-          <img
-            class="figma-grid figma-euros"
-            src=""
-            alt=""
-            aria-hidden="true"
-          />
-        </div>
-      </section>
 
-      <!-- 08 saving -->
-      <section class="chapter chapter-saving" id="savingChapter">
-        <div class="sticky saving-room">
-          <div class="tiny-label top-left">08 / SMALL CHANGE</div>
-          <div class="saving-big">2 MIN<br />SHORTER</div>
-          <div class="saving-arrow">↓</div>
-          <div class="saving-result">
-            <strong>YOU CAN SAVE</strong>
-            <span>€12 / MONTH</span>
-            <small
-              >Example value from the concept. Replace when your final
-              calculation is ready.</small
-            >
-          </div>
+          <div class="money-stack">
+            <div class="money-title">
+              <span>WATER + HEATING</span>
+              <strong>€<span id="monthlyCost">54</span><br />A MONTH</strong>
+              <p>
+                That is what your current routine could be costing every month.
+              </p>
+            </div>
 
-          <img
-            class="meme meme-one"
-            src="assets/figma_4.png"
-            alt="placeholder meme"
-          />
-          <img
-            class="meme meme-two"
-            src="assets/figma_5.png"
-            alt="placeholder meme"
-          />
-        </div>
-      </section>
-
-      <!-- 10 relatable value -->
-      <section class="chapter chapter-value" id="valueChapter">
-        <div class="sticky value-room">
-          <div class="tiny-label top-left">09 / PUT IT IN CONTEXT</div>
-          <div class="value-copy">
-            <strong>€12</strong>
-            <span>is not just a number.</span>
-          </div>
-
-          <div class="doner-comparison">
-            <img src="assets/figma_2.png" alt="placeholder food comparison" />
-            <img src="assets/figma_2.png" alt="placeholder food comparison" />
-            <p>That can be roughly <b>two meals</b>.</p>
-          </div>
-
-          <div class="outfit-comparison">
-            <img src="assets/figma_3.png" alt="placeholder outfit comparison" />
-            <p>
-              And across a year, the saving starts to look like real spending
-              money.
-            </p>
+            <img
+              class="saving-face"
+              src="assets/payday-cash.gif"
+              alt="Reaction meme"
+            />
           </div>
         </div>
       </section>
 
-      <!-- 10 actions -->
+      <!-- 08 savings story: deliberate, centered scroll beats -->
+      <section class="saving-story" id="savingChapter">
+        <section class="saving-scroll-beat beat-monthly" data-saving-beat>
+          <div class="saving-beat-sticky">
+            <div class="tiny-label top-left">08 / SAVE IT INSTEAD</div>
+            <div class="saving-beat-content">
+              <div class="saving-main-line">YOU CAN SAVE €12 MONTHLY</div>
+              <img
+                class="saving-face"
+                src="assets/shocked dog.gif"
+                alt="Reaction meme"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="saving-scroll-beat beat-food" data-saving-beat>
+          <div class="saving-beat-sticky">
+            <div class="saving-beat-content">
+              <div class="saving-main-line">THAT'S 2 KAPSALONS</div>
+              <div class="food-row" aria-hidden="true">
+                <img src="assets/figma_2.png" alt="" />
+                <img src="assets/figma_2.png" alt="" />
+              </div>
+              <img
+                class="saving-face"
+                src="assets/Kapsalon.gif"
+                alt="Reaction meme"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section class="saving-scroll-beat beat-beers" data-saving-beat>
+          <div class="saving-beat-sticky">
+            <div class="saving-beat-content">
+              <div class="saving-main-line">...4 BEERS</div>
+              <img class="beer-meme" src="assets/figma_4.png" alt="Beer meme" />
+            </div>
+          </div>
+        </section>
+
+        <section class="saving-scroll-beat beat-year" data-saving-beat>
+          <div class="saving-beat-sticky">
+            <div class="saving-beat-content">
+              <div class="saving-main-line">THAT'S €144 A YEAR SAVED</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="saving-scroll-beat beat-outfit" data-saving-beat>
+          <div class="saving-beat-sticky">
+            <div class="saving-beat-content outfit-layout">
+              <div class="outfit-copy">THAT'S A WHOLE NEW OUTFIT TO GET YO</div>
+              <img
+                class="outfit-visual"
+                src="assets/figma_3.png"
+                alt="Outfit meme"
+              />
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- 09 actions -->
       <section class="chapter chapter-actions" id="actionsChapter">
         <div class="sticky actions-room">
-          <div class="tiny-label top-left">10 / START HERE</div>
-          <h2>LET'S GET<br />THAT BAG</h2>
+          <div class="tiny-label top-left">09 / LET'S GET THAT BAG</div>
+          <div class="actions-intro">
+            <h2>LET'S GET<br />THAT BAG</h2>
+          </div>
 
           <div class="action-cards">
             <article class="action-card lime">
               <span>01</span>
-              <strong>SHOWER 2 MIN LESS</strong>
-              <p>Make the final song in your playlist your cue to finish.</p>
+              <strong>TRY TO SHOWER<br />2 MINS LESS</strong>
+              <p>Use your last song as your cue to wrap it up.</p>
             </article>
             <article class="action-card pink">
               <span>02</span>
-              <strong>PAUSE THE TAP</strong>
-              <p>
-                Turn it off while shampooing, brushing your teeth, or soaping
-                dishes.
-              </p>
+              <strong>TURN OFF THE SINK<br />WHILE DOING THE DISHES</strong>
+              <p>Soap first. Rinse after. Do not keep the tap running.</p>
             </article>
             <article class="action-card blue">
               <span>03</span>
-              <strong>RUN FULL LOADS</strong>
-              <p>
-                Wait until the dishwasher or washing machine is actually full.
-              </p>
+              <strong>TURN OFF THE SINK<br />WHILE BRUSHING YOUR TEETH</strong>
+              <p>It is one of the easiest litres to save every day.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <!-- 12 future -->
-      <section class="chapter chapter-future" id="futureChapter">
-        <div class="sticky future-room">
-          <div class="future-headline">
-            <span>OTHERWISE...</span>
-            <strong><em>THIS</em> WILL BE<br />THE NEW WORLD</strong>
+      <!-- 10 future story: one deliberate viewport per beat -->
+      <section class="future-story" id="futureChapter">
+        <section
+          class="future-screen future-title-screen future-hold-screen"
+          id="futureTitleScreen"
+        >
+          <div class="future-screen-inner">
+            <div class="future-headline">
+              <strong
+                >OTHERWISE...<br /><em>THIS</em> WILL BE<br />THE NEW
+                WORLD</strong
+              >
+            </div>
           </div>
+        </section>
 
-          <div class="future-collage collage-dry">
-            <img src="assets/figma_7.png" alt="placeholder drought visual" />
-            <img src="assets/figma_9.png" alt="placeholder dry landscape" />
+        <section
+          class="future-screen future-comparison-screen future-hold-screen"
+          id="futureComparisonOne"
+        >
+          <div class="future-screen-inner">
+            <figure class="future-comparison-figure">
+              <img
+                class="future-reference-image"
+                src="assets/lake_mead_only.png"
+                alt="Lake Mead comparison over time"
+              />
+              <figcaption>Lake Mead: July 6, 2000 - July 3, 2022</figcaption>
+            </figure>
           </div>
+        </section>
 
-          <div class="future-collage collage-before-after">
-            <img src="assets/figma_10.png" alt="green landscape" />
-            <img src="assets/figma_11.png" alt="dry landscape" />
+        <section
+          class="future-screen future-comparison-screen future-hold-screen"
+          id="futureComparisonTwo"
+        >
+          <div class="future-screen-inner">
+            <figure class="future-comparison-figure">
+              <img
+                class="future-reference-image"
+                src="assets/lake_urmia_only.png"
+                alt="Lake Urmia comparison over time"
+              />
+              <figcaption>
+                Lake Urmia: 1st Sept. 2000 - 1st Sept. 2025
+              </figcaption>
+            </figure>
           </div>
+        </section>
 
-          <img
-            class="future-meme"
-            src="assets/figma_6.png"
-            alt="placeholder reaction meme"
-          />
-        </div>
+        <section class="future-morph-chapter" id="morphChapter">
+          <div class="sticky future-morph-room">
+            <div class="morph-frame-shell">
+              <img
+                id="morphFrame"
+                src="assets/morph_frames_webp/frame_00.webp"
+                alt="Waterfall changing from green to dry while scrolling"
+              />
+            </div>
+            <div class="morph-scroll-hint" aria-hidden="true">
+              KEEP SCROLLING ↓
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="future-screen future-reaction-screen future-hold-screen"
+          id="futureReactionScreen"
+        >
+          <div class="future-screen-inner">
+            <div class="reaction-media">
+              <img src="assets/nonono.gif" alt="Reaction meme" />
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="future-screen future-warning-screen future-hold-screen"
+          id="futureWarningScreen"
+        >
+          <div class="future-screen-inner">
+            <div class="future-warning-copy">
+              <strong>CHANGE IT BEFORE<br />IT'S TOO LATE</strong>
+            </div>
+          </div>
+        </section>
       </section>
 
-      <!-- 13 ending -->
+      <!-- 11 ending: fixed composition, fade only -->
       <section class="chapter chapter-end" id="endChapter">
         <div class="sticky end-room">
-          <div class="end-copy">
-            <span>CHANGE IT BEFORE</span>
-            <strong>IT'S TOO LATE</strong>
-            <p>Make the invisible visible. Then make one routine smaller.</p>
-            <button id="restartBtn">START AGAIN</button>
+          <div class="end-stage">
+            <div class="end-before-panel">
+              <div class="end-face-shell dark">
+                <img
+                  src="assets/before.png"
+                  alt="Before changes"
+                  class="end-face-img before"
+                />
+              </div>
+              <span>BEFORE CHANGES</span>
+            </div>
+
+            <div class="end-after-panel">
+              <div class="end-face-shell bright">
+                <img
+                  src="assets/after.png"
+                  alt="After changes"
+                  class="end-face-img after"
+                />
+              </div>
+              <span>AFTER CHANGES</span>
+            </div>
           </div>
+
+          <button id="restartBtn">START AGAIN</button>
         </div>
       </section>
     </main>
