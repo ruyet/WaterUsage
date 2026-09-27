@@ -16,3 +16,8 @@ Easy values in `script.js`:
 - `PHONE_PLAN_EUR = 25`
 - `SPOTIFY_EUR = 13.99`
 - Touch momentum is controlled in `setupSmoothScrolling()` by the `momentum` callback.
+
+## v35 morph sequencing hotfix
+- Nationaal Park Veluwezoom and Nauyaca Waterfalls now use one shared `MORPH_SCROLL_VIEWPORTS` value.
+- Pin refresh order follows DOM order: Veluwezoom is measured before Nauyaca, so Nauyaca includes the first morph's pin spacing.
+- The final morph hides the scroll cue and hands the background directly to the black ending when it releases.

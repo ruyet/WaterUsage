@@ -31,6 +31,7 @@ const FUTURE_STORY_STEP = 2.05;
 /* Hidden pin buffer for autoplay chapters. It prevents a fast swipe/wheel from
    skipping across the whole chapter before its input gate can activate. */
 const AUTO_GATE_VIEWPORTS = 2.2;
+const MORPH_SCROLL_VIEWPORTS = 1.85;
 
 /* v32 calculation assumptions. Keep these centralized so the storytelling numbers
    can be adjusted without hunting through the UI code.
@@ -1031,6 +1032,50 @@ function pinDistance(multiplier) {
   return () => `+=${Math.max(320, Math.round(window.innerHeight * multiplier))}`;
 }
 
+
+function setupMorphStage({ id, trigger, frameSelector, shellSelector, framePath, frameCount, cueLabel, exitLabel, refreshPriority = 30 }) {
+  const morphFrame = qs(frameSelector);
+  const morphShell = qs(shellSelector);
+  if (!morphFrame || !morphShell) return;
+
+  gsap.set(morphShell, { y: 76, scale: 0.86, opacity: 0.72 });
+  ScrollTrigger.create({
+    id,
+    trigger,
+    start: "top top",
+    end: pinDistance(MORPH_SCROLL_VIEWPORTS),
+    pin: true,
+    pinSpacing: true,
+    anticipatePin: 0,
+    scrub: reducedMotion ? false : 0.32,
+    invalidateOnRefresh: true,
+    refreshPriority,
+    onEnter: self => { activateHeldTouch(self); stageCue(self, cueLabel, exitLabel); },
+    onEnterBack: self => { activateHeldTouch(self); stageCue(self, cueLabel, exitLabel); },
+    onUpdate: self => {
+      const p = clamp(self.progress);
+      const intro = clamp(p / 0.16);
+      gsap.set(morphShell, { y: 76 * (1 - intro), scale: 0.86 + 0.14 * intro, opacity: 0.72 + 0.28 * intro });
+      const morphProgress = clamp((p - 0.16) / 0.84);
+      const frameIndex = Math.round(morphProgress * (frameCount - 1));
+      if (morphFrame.dataset.frame !== String(frameIndex)) {
+        morphFrame.src = `${framePath}${String(frameIndex).padStart(2, "0")}.webp`;
+        morphFrame.dataset.frame = String(frameIndex);
+      }
+      stageCue(self, cueLabel, exitLabel);
+    },
+    onLeave: self => {
+      deactivateHeldTouch();
+      setGlobalScrollCueVisible(false);
+      if (id === "morph-nauyaca") setBrowserTheme("#070707");
+    },
+    onLeaveBack: self => {
+      deactivateHeldTouch();
+      if (id === "morph-nauyaca") setBrowserTheme("#f4efe7");
+    }
+  });
+}
+
 function setupHeldStages() {
   if (!window.ScrollTrigger) return;
 
@@ -1194,37 +1239,29 @@ function setupHeldStages() {
   });
   cards.forEach((card, i) => actionsTl.fromTo(card, { y: 45, opacity: 0 }, { y: 0, opacity: 1, ease: "power2.out" }, i * 0.23));
 
-  /* Morph is a longer held stage because its scroll is the interaction. */
-  const morphFrame = qs("#morphFrame");
-  const morphShell = qs(".morph-frame-shell");
-  gsap.set(morphShell, { y: 76, scale: 0.86, opacity: 0.72 });
-  ScrollTrigger.create({
-    id: "morph-pin",
-    trigger: "#morphChapter",
-    start: "top top",
-    end: pinDistance(1.85),
-    pin: true,
-    pinSpacing: true,
-    anticipatePin: 0,
-    scrub: reducedMotion ? false : 0.32,
-    invalidateOnRefresh: true,
-    refreshPriority: 30,
-    onEnter: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"); },
-    onEnterBack: self => { activateHeldTouch(self); stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH"); },
-    onUpdate: self => {
-      const p = clamp(self.progress);
-      const intro = clamp(p / 0.16);
-      gsap.set(morphShell, { y: 76 * (1 - intro), scale: 0.86 + 0.14 * intro, opacity: 0.72 + 0.28 * intro });
-      const morphProgress = clamp((p - 0.16) / 0.84);
-      const frameIndex = Math.round(morphProgress * 28);
-      if (morphFrame.dataset.frame !== String(frameIndex)) {
-        morphFrame.src = `assets/morph_frames_webp/frame_${String(frameIndex).padStart(2, "0")}.webp`;
-        morphFrame.dataset.frame = String(frameIndex);
-      }
-      stageCue(self, "SCROLL TO CHANGE THE WORLD", "SCROLL TO FINISH");
-    },
-    onLeave: deactivateHeldTouch,
-    onLeaveBack: deactivateHeldTouch
+  /* Morph stages are longer held interactions because scroll itself scrubs the change. */
+  setupMorphStage({
+    id: "morph-veluwe",
+    trigger: "#morphChapterVeluwe",
+    frameSelector: "#morphFrameVeluwe",
+    shellSelector: "#morphChapterVeluwe .morph-frame-shell",
+    framePath: "assets/morph_veluwe_frames_webp/frame_",
+    frameCount: 30,
+    cueLabel: "SCROLL TO CHANGE THE WORLD",
+    exitLabel: "SCROLL FOR THE NEXT EXAMPLE",
+    refreshPriority: 35
+  });
+
+  setupMorphStage({
+    id: "morph-nauyaca",
+    trigger: "#morphChapterNauyaca",
+    frameSelector: "#morphFrameNauyaca",
+    shellSelector: "#morphChapterNauyaca .morph-frame-shell",
+    framePath: "assets/morph_frames_webp/frame_",
+    frameCount: 29,
+    cueLabel: "SCROLL TO CHANGE THE WORLD",
+    exitLabel: "SCROLL TO FINISH",
+    refreshPriority: 30
   });
 
   const endHeading = qs("#endMessage h2");
@@ -1264,6 +1301,10 @@ function setBrowserTheme(color) {
 }
 
 function preloadMorphFrames() {
+  for (let i = 0; i < 30; i++) {
+    const img = new Image();
+    img.src = `assets/morph_veluwe_frames_webp/frame_${String(i).padStart(2, "0")}.webp`;
+  }
   for (let i = 0; i < 29; i++) {
     const img = new Image();
     img.src = `assets/morph_frames_webp/frame_${String(i).padStart(2, "0")}.webp`;
